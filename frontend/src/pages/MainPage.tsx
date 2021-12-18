@@ -1,6 +1,6 @@
 import ActorSelector from "../components/ActorSelector";
 import CategorySelector from "../components/CategorySelector";
-import MetadataEditor from "../components/MetadataEditor";
+import MovieData from "../components/MovieData";
 import MovieList from "../components/MovieList";
 
 const MainPage = () => {
@@ -11,7 +11,7 @@ const MainPage = () => {
           <MovieList />
         </div>
         <div className="m-2 lg:w-2/5">
-          <MetadataEditor />
+          <MovieData />
         </div>
       </div>
 

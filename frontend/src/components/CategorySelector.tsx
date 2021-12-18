@@ -1,9 +1,11 @@
 import { useContext } from "react";
+import { Field } from "formik";
 
 import MovieSection from "./MovieSection";
 import StateContext from "../state/StateContext";
+import { MovieSectionProps } from "../types/form";
 
-const CategorySelector = () => {
+const CategorySelector = ({ formik }: MovieSectionProps) => {
   const { state } = useContext(StateContext);
 
   return (
@@ -13,7 +15,12 @@ const CategorySelector = () => {
           {state?.categories.map((category, index) => (
             <div key={index}>
               <label>
-                <input type="checkbox" /> {category}
+                <Field
+                  type="checkbox"
+                  name="movieCategories"
+                  value={index.toString()}
+                />{" "}
+                {category}
               </label>
             </div>
           ))}

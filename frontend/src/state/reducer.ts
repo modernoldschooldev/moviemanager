@@ -7,26 +7,25 @@ export const reducer = (state: StateType, action: ActionType) => {
         ...state,
         actors: [...state.actors, action.payload],
       };
+
     case Actions.AddCategory:
       return {
         ...state,
         categories: [...state.categories, action.payload],
       };
+
     case Actions.AddSeries:
       return {
         ...state,
         movieSeries: [...state.movieSeries, action.payload],
       };
+
     case Actions.AddStudio:
       return {
         ...state,
         movieStudios: [...state.movieStudios, action.payload],
       };
-    case Actions.SetSelectedMovieId:
-      return {
-        ...state,
-        selectedMovieId: action.payload,
-      };
+
     default:
       return state;
   }

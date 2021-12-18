@@ -1,25 +1,35 @@
 import { useContext } from "react";
+import { Field } from "formik";
 
 import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
-import StateContext from "../state/StateContext";
 
-const MovieData = () => {
+import StateContext from "../state/StateContext";
+import { MovieSectionProps } from "../types/form";
+
+const MovieData = ({ formik }: MovieSectionProps) => {
   const { state } = useContext(StateContext);
 
   return (
     <MovieSection title="Movie Data">
       <div className="h-64">
-        <form>
+        <form onSubmit={formik.handleSubmit}>
           <fieldset>
             <div>
               <MovieDataFormRow title="Name">
-                <input className="movie-data-input" type="text" />
+                <Field
+                  className="movie-data-input"
+                  type="text"
+                  name="movieName"
+                />
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Studio">
-                <select className="py-1 rounded-lg w-full">
-                  <option value="0">None</option>
+                <select
+                  className="py-1 rounded-lg w-full"
+                  {...formik.getFieldProps("movieStudioId")}
+                >
+                  <option value="">None</option>
                   {state?.movieStudios.map((studio, index) => (
                     <option key={index} value={index}>
                       {studio}
@@ -29,8 +39,11 @@ const MovieData = () => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series">
-                <select className="py-1 rounded-lg w-full">
-                  <option value="0">None</option>
+                <select
+                  className="py-1 rounded-lg w-full"
+                  {...formik.getFieldProps("movieSeriesId")}
+                >
+                  <option value="">None</option>
                   {state?.movieSeries.map((series, index) => (
                     <option key={index} value={index}>
                       {series}
@@ -40,7 +53,11 @@ const MovieData = () => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series #">
-                <input className="movie-data-input" type="text" />
+                <Field
+                  className="movie-data-input"
+                  type="text"
+                  name="movieSeriesNumber"
+                />
               </MovieDataFormRow>
 
               <div className="flex my-4">

@@ -1,25 +1,14 @@
 // Reducer State
 export interface StateType {
   actors: string[];
-  selectedActors: string[] | null;
-
   categories: string[];
-  selectedCategories: string[] | null;
-
-  movies: string[];
-  selectedMovieId: number | null;
-
-  movieName: string | null;
-  movieStudios: string[];
-  movieStudioId: number | null;
   movieSeries: string[];
-  movieSeriesId: number | null;
-  movieSeriesNumber: number | null;
+  movieStudios: string[];
+  movies: string[];
 }
 
 // Reducer Actions
 export type ActionType =
-  | SetSelectedMovieIdAction
   | AddActorAction
   | AddCategoryAction
   | AddSeriesAction
@@ -30,12 +19,6 @@ export enum Actions {
   AddCategory,
   AddSeries,
   AddStudio,
-  SetSelectedMovieId,
-}
-
-export interface SetSelectedMovieIdAction {
-  type: Actions.SetSelectedMovieId;
-  payload: number | null;
 }
 
 export interface AddActorAction {

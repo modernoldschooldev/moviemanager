@@ -1,70 +1,56 @@
+import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
 
 const MovieData = () => {
   return (
     <MovieSection title="Movie Data">
-      <div>
+      <div className="h-64">
         <form>
           <fieldset>
-            <div className="flex my-2">
-              <div className="w-1/4">Name</div>
-              <div className="w-3/4">
-                <input
-                  className="border border-black focus:border-blue-700 w-full outline-1 rounded px-1"
-                  type="text"
-                />
-              </div>
-            </div>
+            <div>
+              <MovieDataFormRow title="Name">
+                <input className="movie-data-input" type="text" />
+              </MovieDataFormRow>
 
-            <div className="flex my-2">
-              <div className="w-1/4">Studio</div>
-              <div className="w-3/4">
-                <select className="w-full py-1">
+              <MovieDataFormRow title="Studio">
+                <select className="py-1 rounded-lg w-full">
                   <option>Studio 1</option>
                   <option>Studio 2</option>
                   <option>Studio 3</option>
                   <option>Studio 4</option>
                   <option>Studio 5</option>
                 </select>
-              </div>
-            </div>
+              </MovieDataFormRow>
 
-            <div className="flex my-2">
-              <div className="w-1/4">Series</div>
-              <div className="w-3/4">
-                <select className="w-full py-1">
+              <MovieDataFormRow title="Series">
+                <select className="py-1 rounded-lg w-full">
                   <option>Series 1</option>
                   <option>Series 2</option>
                   <option>Series 3</option>
                   <option>Series 4</option>
                   <option>Series 5</option>
                 </select>
-              </div>
-            </div>
+              </MovieDataFormRow>
 
-            <div className="flex my-2">
-              <div className="w-1/4">Series #</div>
-              <div className="w-3/4">
-                <input
-                  className="border border-black focus:border-blue-700 w-full outline-1 rounded px-1"
-                  type="text"
-                />
-              </div>
-            </div>
+              <MovieDataFormRow title="Series #">
+                <input className="movie-data-input" type="text" />
+              </MovieDataFormRow>
 
-            <div className="flex mt-6 mb-2">
-              <button
-                className="inline-block w-1/2 bg-green-700 hover:bg-green-600 text-white mx-2 p-2 uppercase font-bold rounded"
-                type="submit"
-              >
-                Update
-              </button>
-              <button
-                className="inline-block w-1/2 bg-red-700 hover:bg-red-600 text-white mx-2 p-2 uppercase font-bold rounded"
-                type="button"
-              >
-                Remove
-              </button>
+              <div className="flex my-4">
+                <button
+                  className="movie-data-button bg-green-700 hover:bg-green-600"
+                  type="submit"
+                >
+                  Update
+                </button>
+
+                <button
+                  className="movie-data-button bg-red-700 hover:bg-red-600"
+                  type="button"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           </fieldset>
         </form>

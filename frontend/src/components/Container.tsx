@@ -4,7 +4,7 @@ interface Props {
 
 const Container = ({ children }: Props) => {
   return (
-    <main className="container bg-white mx-auto my-4 p-4">{children}</main>
+    <main className="bg-white container mx-auto my-4 p-4">{children}</main>
   );
 };
 

@@ -29,7 +29,9 @@ export const initialState: StateType = {
   selectedMovieId: null,
 
   movieName: null,
+  movieStudios: ["Disney", "Fox", "Warner Brothers"],
   movieStudioId: null,
+  movieSeries: ["Dark Knight Triology", "Harry Potter", "Star Wars"],
   movieSeriesId: null,
   movieSeriesNumber: null,
 };

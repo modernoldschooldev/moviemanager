@@ -8,7 +8,7 @@ const CategorySelector = () => {
 
   return (
     <MovieSection title="Categories">
-      <div className="h-96">
+      <div className="h-72">
         <div className="gap-1 grid grid-cols-3 overflow-y-auto">
           {state?.categories.map((category, index) => (
             <div key={index}>

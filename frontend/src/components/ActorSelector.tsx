@@ -9,9 +9,9 @@ const ActorSelector = () => {
 
   return (
     <MovieSection title="Actors">
-      <div className="flex h-96">
+      <div className="flex h-72">
         <ActorSelectorList title="Available">
-          <select className="border border-green-500 w-full" size={13}>
+          <select className="border border-green-500 w-full" size={10}>
             {state?.actors.map((actor, index) => (
               <option key={index}>{actor}</option>
             ))}
@@ -19,7 +19,7 @@ const ActorSelector = () => {
         </ActorSelectorList>
 
         <ActorSelectorList title="Selected">
-          <select className="border border-green-500 w-full" size={13}>
+          <select className="border border-green-500 w-full" size={10}>
             <option>Selected 1</option>
             <option>Selected 2</option>
             <option>Selected 3</option>

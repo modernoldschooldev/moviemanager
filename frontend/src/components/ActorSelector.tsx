@@ -1,22 +1,20 @@
+import { useContext } from "react";
+
 import ActorSelectorList from "./ActorSelectorList";
 import MovieSection from "./MovieSection";
+import StateContext from "../state/StateContext";
 
 const ActorSelector = () => {
+  const { state } = useContext(StateContext);
+
   return (
     <MovieSection title="Actors">
       <div className="flex h-96">
         <ActorSelectorList title="Available">
           <select className="border border-green-500 w-full" size={13}>
-            <option>Actor 1</option>
-            <option>Actor 2</option>
-            <option>Actor 3</option>
-            <option>Actor 4</option>
-            <option>Actor 5</option>
-            <option>Actor 6</option>
-            <option>Actor 7</option>
-            <option>Actor 8</option>
-            <option>Actor 9</option>
-            <option>Actor 0</option>
+            {state?.actors.map((actor, index) => (
+              <option key={index}>{actor}</option>
+            ))}
           </select>
         </ActorSelectorList>
 

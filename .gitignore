@@ -1,3 +1,5 @@
-venv/
-node_modules
+.vscode/
 __pycache__
+backend/sqlite.db*
+node_modules
+venv/

@@ -1,0 +1,7 @@
+---
+actors: ./../db/actors
+categories: ./../db/categories
+imports: ./../db/imports
+movies: ./../db/movies
+series: ./../db/series
+studios: ./../db/studios

@@ -26,8 +26,8 @@ const AdminImportMovies = () => {
   };
 
   return (
-    <div className="border border-black p-4 mx-auto w-max">
-      <div className="flex justify-center">
+    <div className="border border-black p-4 text-center mx-auto w-max">
+      <div>
         <button
           className="bg-blue-700 hover:bg-blue-600 font-semibold px-8 py-2 text-center text-lg text-white"
           type="button"

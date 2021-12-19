@@ -26,6 +26,12 @@ export const reducer = (state: StateType, action: ActionType) => {
         movieStudios: [...state.movieStudios, action.payload],
       };
 
+    case Actions.SetMovies:
+      return {
+        ...state,
+        movies: action.payload,
+      };
+
     default:
       return state;
   }

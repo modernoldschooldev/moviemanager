@@ -19,17 +19,32 @@ class Category(MovieData):
     pass
 
 
+class HTTPExceptionMessage(BaseModel):
+    message: str
+
+
+class HTTPExceptionSchema(BaseModel):
+    detail: HTTPExceptionMessage
+
+
+class MovieBase(BaseModel):
+    id: int
+    filename: str
+
+    class Config:
+        orm_mode = True
+
+
+class MovieFile(MovieBase):
+    pass
+
+
 class Series(MovieData):
     pass
 
 
 class Studio(MovieData):
     pass
-
-
-class MovieBase(BaseModel):
-    id: int
-    filename: str
 
 
 class Movie(MovieBase):
@@ -42,11 +57,3 @@ class Movie(MovieBase):
 
     class Config:
         orm_mode = True
-
-
-class HTTPExceptionMessage(BaseModel):
-    message: str
-
-
-class HTTPExceptionSchema(BaseModel):
-    detail: HTTPExceptionMessage

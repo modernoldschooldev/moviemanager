@@ -40,6 +40,14 @@ def hello():
     return "Hello from FastAPI"
 
 
+@app.get(
+    '/movies',
+    response_model=List[schemas.MovieFile]
+)
+def get_all_movies(db: Session = Depends(get_db)):
+    return crud.get_all_movies(db)
+
+
 @app.post(
     '/movies',
     response_model=List[schemas.Movie],

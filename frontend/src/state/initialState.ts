@@ -16,14 +16,7 @@ export const initialState: StateType = {
 
   categories: ["animated", "action", "comic", "fantasy", "sci-fi"],
 
-  movies: [
-    "Avatar",
-    "Batman Dark Knight",
-    "Catwoman",
-    "Harry Potter and the Sorcerer's Stone",
-    "Star Wars The Force Awakens",
-    "The Wizard of Oz",
-  ],
+  movies: [],
 
   movieStudios: ["Disney", "Fox", "Warner Brothers"],
   movieSeries: ["Dark Knight Triology", "Harry Potter", "Star Wars"],

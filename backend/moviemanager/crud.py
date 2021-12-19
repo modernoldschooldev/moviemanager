@@ -43,3 +43,19 @@ def add_movie(
     util.migrate_file(movie)
 
     return movie
+
+
+def get_all_movies(db: Session) -> List[models.Movie]:
+    return (
+        db
+        .query(models.Movie)
+        .outerjoin(models.Studio)
+        .outerjoin(models.Series)
+        .order_by(
+            models.Movie.processed,
+            models.Studio.name,
+            models.Series.name,
+            models.Movie.name,
+        )
+        .all()
+    )

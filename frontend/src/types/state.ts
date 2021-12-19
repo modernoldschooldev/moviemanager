@@ -4,7 +4,12 @@ export interface StateType {
   categories: string[];
   movieSeries: string[];
   movieStudios: string[];
-  movies: string[];
+  movies: MovieFileType[];
+}
+
+export interface MovieFileType {
+  id: number;
+  filename: string;
 }
 
 // Reducer Actions
@@ -12,13 +17,15 @@ export type ActionType =
   | AddActorAction
   | AddCategoryAction
   | AddSeriesAction
-  | AddStudioAction;
+  | AddStudioAction
+  | SetMoviesAction;
 
 export enum Actions {
   AddActor,
   AddCategory,
   AddSeries,
   AddStudio,
+  SetMovies,
 }
 
 export interface AddActorAction {
@@ -38,4 +45,9 @@ export interface AddSeriesAction {
 export interface AddStudioAction {
   type: Actions.AddStudio;
   payload: string;
+}
+
+export interface SetMoviesAction {
+  type: Actions.SetMovies;
+  payload: MovieFileType[];
 }

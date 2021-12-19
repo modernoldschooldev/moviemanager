@@ -2,32 +2,11 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-
-class MovieData(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        orm_mode = True
+################################################################################
+# Extensible Base Types
 
 
-class Actor(MovieData):
-    pass
-
-
-class Category(MovieData):
-    pass
-
-
-class HTTPExceptionMessage(BaseModel):
-    message: str
-
-
-class HTTPExceptionSchema(BaseModel):
-    detail: HTTPExceptionMessage
-
-
-class MovieBase(BaseModel):
+class BaseMovie(BaseModel):
     id: int
     filename: str
 
@@ -35,19 +14,42 @@ class MovieBase(BaseModel):
         orm_mode = True
 
 
-class MovieFile(MovieBase):
+class BaseMovieProperty(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+################################################################################
+# Database Models
+
+
+class Actor(BaseMovieProperty):
     pass
 
 
-class Series(MovieData):
+class Category(BaseMovieProperty):
     pass
 
 
-class Studio(MovieData):
+class MovieFile(BaseMovie):
     pass
 
 
-class Movie(MovieBase):
+class MoviePropertySchema(BaseModel):
+    name: str
+
+
+class Series(BaseMovieProperty):
+    pass
+
+
+class Studio(BaseMovieProperty):
+    pass
+
+
+class Movie(BaseMovie):
     name: Optional[str] = None
     actors: Optional[List[Actor]] = None
     categories: Optional[List[Category]] = None
@@ -57,3 +59,14 @@ class Movie(MovieBase):
 
     class Config:
         orm_mode = True
+
+################################################################################
+# Exception Models
+
+
+class HTTPExceptionMessage(BaseModel):
+    message: str
+
+
+class HTTPExceptionSchema(BaseModel):
+    detail: HTTPExceptionMessage

@@ -1,11 +1,21 @@
 // Reducer State
 export interface StateType {
-  actors: string[];
+  actors: ActorType[];
   categories: string[];
   movieSeries: string[];
   movieStudios: string[];
   movies: MovieFileType[];
 }
+
+export interface BaseMovieProperty {
+  id: number;
+  name: string;
+}
+
+export interface ActorType extends BaseMovieProperty {}
+export interface CategoryType extends BaseMovieProperty {}
+export interface SeriesType extends BaseMovieProperty {}
+export interface StudioType extends BaseMovieProperty {}
 
 export interface MovieFileType {
   id: number;
@@ -14,23 +24,18 @@ export interface MovieFileType {
 
 // Reducer Actions
 export type ActionType =
-  | AddActorAction
   | AddCategoryAction
   | AddSeriesAction
   | AddStudioAction
+  | SetAvailableActorsAction
   | SetMoviesAction;
 
 export enum Actions {
-  AddActor,
   AddCategory,
   AddSeries,
   AddStudio,
+  SetAvailableActors,
   SetMovies,
-}
-
-export interface AddActorAction {
-  type: Actions.AddActor;
-  payload: string;
 }
 
 export interface AddCategoryAction {
@@ -47,6 +52,10 @@ export interface AddStudioAction {
   payload: string;
 }
 
+export interface SetAvailableActorsAction {
+  type: Actions.SetAvailableActors;
+  payload: ActorType[];
+}
 export interface SetMoviesAction {
   type: Actions.SetMovies;
   payload: MovieFileType[];

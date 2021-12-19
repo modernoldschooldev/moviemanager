@@ -6,6 +6,25 @@ from sqlalchemy.orm import Session
 from . import models, util
 
 
+def add_actor(
+    db: Session,
+    name: str,
+) -> models.Actor:
+    actor = models.Actor(
+        name=name
+    )
+
+    try:
+        db.add(actor)
+        db.commit()
+        db.refresh(actor)
+    except IntegrityError:
+        db.rollback()
+        return None
+
+    return actor
+
+
 def add_movie(
     db: Session,
     filename: str,
@@ -43,6 +62,17 @@ def add_movie(
     util.migrate_file(movie)
 
     return movie
+
+
+def get_all_actors(db: Session) -> List[models.Actor]:
+    return (
+        db
+        .query(models.Actor)
+        .order_by(
+            models.Actor.name,
+        )
+        .all()
+    )
 
 
 def get_all_movies(db: Session) -> List[models.Movie]:

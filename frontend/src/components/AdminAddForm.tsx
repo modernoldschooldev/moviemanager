@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Field, Formik, FormikHelpers } from "formik";
 
 import StateContext from "../state/StateContext";
@@ -7,6 +7,7 @@ import { AdminFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
 const AdminAddForm = () => {
+  const [addStatus, setAddStatus] = useState("");
   const { dispatch } = useContext(StateContext);
 
   const initialValues: AdminFormValuesType = {
@@ -20,10 +21,33 @@ const AdminAddForm = () => {
   ) => {
     switch (selection) {
       case "actor":
-        dispatch({
-          type: Actions.AddActor,
-          payload: name,
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND}/actors`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name,
+            }),
+          }
+        );
+        await response.json();
+
+        switch (response.status) {
+          case 200:
+            setAddStatus(`Actor ${name} added`);
+            break;
+
+          case 409:
+            setAddStatus(`Actor ${name} already exists`);
+            break;
+
+          default:
+            setAddStatus("Unknown response from backend");
+            break;
+        }
         break;
 
       case "category":
@@ -49,6 +73,7 @@ const AdminAddForm = () => {
 
       default:
         console.error("You should not be seeing this...");
+        break;
     }
 
     helpers.setFieldValue("name", "");
@@ -69,6 +94,7 @@ const AdminAddForm = () => {
                 />
                 Actor
               </label>
+
               <label>
                 <Field
                   className="mx-2"
@@ -78,6 +104,7 @@ const AdminAddForm = () => {
                 />
                 Category
               </label>
+
               <label>
                 <Field
                   className="mx-2"
@@ -87,6 +114,7 @@ const AdminAddForm = () => {
                 />
                 Series
               </label>
+
               <label>
                 <Field
                   className="mx-2"
@@ -106,6 +134,8 @@ const AdminAddForm = () => {
                 required
               />
             </div>
+
+            {addStatus && <div className="my-1 text-center">{addStatus}</div>}
 
             <div className="grid mt-3 mx-4">
               <button

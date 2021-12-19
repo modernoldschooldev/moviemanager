@@ -41,6 +41,39 @@ def hello():
 
 
 @app.get(
+    '/actors',
+    response_model=List[schemas.Actor]
+)
+def get_all_actors(db: Session = Depends(get_db)):
+    return crud.get_all_actors(db)
+
+
+@app.post(
+    '/actors',
+    response_model=schemas.Actor,
+    responses={
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Actor'
+        }
+    },
+)
+def add_actor(
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    actor = crud.add_actor(db, data.name)
+
+    if actor is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': f'Actor {data.name} already in database'}
+        )
+
+    return actor
+
+
+@app.get(
     '/movies',
     response_model=List[schemas.MovieFile]
 )

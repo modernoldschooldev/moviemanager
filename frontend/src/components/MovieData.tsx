@@ -1,14 +1,32 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Field } from "formik";
 
+import Loading from "./Loading";
 import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
+
 import { MovieSectionProps } from "../types/form";
+import { Actions } from "../types/state";
 
 const MovieData = ({ formik }: MovieSectionProps) => {
-  const { state } = useContext(StateContext);
+  const [loading, setLoading] = useState(true);
+  const { state, dispatch } = useContext(StateContext);
+
+  useEffect(() => {
+    (async () => {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND}/series`);
+      const data = await response.json();
+
+      dispatch({
+        type: Actions.SetSeries,
+        payload: data,
+      });
+
+      setLoading(false);
+    })();
+  }, [dispatch]);
 
   return (
     <MovieSection title="Movie Data">
@@ -39,17 +57,21 @@ const MovieData = ({ formik }: MovieSectionProps) => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series">
-                <select
-                  className="py-1 rounded-lg w-full"
-                  {...formik.getFieldProps("movieSeriesId")}
-                >
-                  <option value="">None</option>
-                  {state?.movieSeries.map((series, index) => (
-                    <option key={index} value={index}>
-                      {series}
-                    </option>
-                  ))}
-                </select>
+                {loading ? (
+                  <Loading />
+                ) : (
+                  <select
+                    className="py-1 rounded-lg w-full"
+                    {...formik.getFieldProps("movieSeriesId")}
+                  >
+                    <option value="">None</option>
+                    {state?.movieSeries.map((series) => (
+                      <option key={series.id} value={series.id}>
+                        {series.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series #">

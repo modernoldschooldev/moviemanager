@@ -155,3 +155,39 @@ def import_movies(db: Session = Depends(get_db)):
             movies.append(movie)
 
     return movies
+
+################################################################################
+# /series endpoints
+
+
+@app.get(
+    '/series',
+    response_model=List[schemas.Series]
+)
+def get_all_series(db: Session = Depends(get_db)):
+    return crud.get_all_series(db)
+
+
+@app.post(
+    '/series',
+    response_model=schemas.Series,
+    responses={
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Series'
+        }
+    },
+)
+def add_series(
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    series = crud.add_series(db, data.name)
+
+    if series is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': f'Series {data.name} already in database'}
+        )
+
+    return series

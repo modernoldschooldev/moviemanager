@@ -44,6 +44,25 @@ def add_category(
     return category
 
 
+def add_series(
+    db: Session,
+    name: str,
+) -> models.Series:
+    series = models.Series(
+        name=name
+    )
+
+    try:
+        db.add(series)
+        db.commit()
+        db.refresh(series)
+    except IntegrityError:
+        db.rollback()
+        return None
+
+    return series
+
+
 def add_movie(
     db: Session,
     filename: str,
@@ -116,6 +135,17 @@ def get_all_movies(db: Session) -> List[models.Movie]:
             models.Studio.name,
             models.Series.name,
             models.Movie.name,
+        )
+        .all()
+    )
+
+
+def get_all_series(db: Session) -> List[models.Series]:
+    return (
+        db
+        .query(models.Series)
+        .order_by(
+            models.Series.name,
         )
         .all()
     )

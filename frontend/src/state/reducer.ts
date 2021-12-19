@@ -2,12 +2,6 @@ import { Actions, ActionType, StateType } from "../types/state";
 
 export const reducer = (state: StateType, action: ActionType) => {
   switch (action.type) {
-    case Actions.AddSeries:
-      return {
-        ...state,
-        movieSeries: [...state.movieSeries, action.payload],
-      };
-
     case Actions.AddStudio:
       return {
         ...state,
@@ -30,6 +24,12 @@ export const reducer = (state: StateType, action: ActionType) => {
       return {
         ...state,
         movies: action.payload,
+      };
+
+    case Actions.SetSeries:
+      return {
+        ...state,
+        movieSeries: action.payload,
       };
 
     default:

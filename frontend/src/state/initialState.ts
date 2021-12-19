@@ -4,6 +4,6 @@ export const initialState: StateType = {
   actors: [],
   categories: [],
   movies: [],
+  movieSeries: [],
   movieStudios: ["Disney", "Fox", "Warner Brothers"],
-  movieSeries: ["Dark Knight Triology", "Harry Potter", "Star Wars"],
 };

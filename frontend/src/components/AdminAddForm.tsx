@@ -62,10 +62,7 @@ const AdminAddForm = () => {
         break;
 
       case "series":
-        dispatch({
-          type: Actions.AddSeries,
-          payload: name,
-        });
+        helper("series");
         break;
 
       case "studio":

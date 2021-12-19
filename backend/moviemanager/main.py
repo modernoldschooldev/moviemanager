@@ -34,10 +34,16 @@ def get_db():
     finally:
         db.close()
 
+################################################################################
+# Root Endpoint
+
 
 @app.get('/')
 def hello():
     return "Hello from FastAPI"
+
+################################################################################
+# /actors endpoints
 
 
 @app.get(
@@ -71,6 +77,45 @@ def add_actor(
         )
 
     return actor
+
+################################################################################
+# /categories endpoints
+
+
+@app.get(
+    '/categories',
+    response_model=List[schemas.Category]
+)
+def get_all_categories(db: Session = Depends(get_db)):
+    return crud.get_all_categories(db)
+
+
+@app.post(
+    '/categories',
+    response_model=schemas.Category,
+    responses={
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Category'
+        }
+    },
+)
+def add_category(
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    category = crud.add_category(db, data.name)
+
+    if category is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': f'Category {data.name} already in database'}
+        )
+
+    return category
+
+################################################################################
+# /movies endpoints
 
 
 @app.get(

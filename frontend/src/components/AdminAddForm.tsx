@@ -15,46 +15,50 @@ const AdminAddForm = () => {
     selection: "actor",
   };
 
-  const onSubmit = async (
+  const onSubmit = (
     { name, selection }: AdminFormValuesType,
     helpers: FormikHelpers<AdminFormValuesType>
   ) => {
+    const helper = async (endpoint: string) => {
+      const selectionTitle =
+        selection.charAt(0).toUpperCase() + selection.slice(1);
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND}/${endpoint}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+          }),
+        }
+      );
+      await response.json();
+
+      switch (response.status) {
+        case 200:
+          setAddStatus(`${selectionTitle} ${name} added`);
+          break;
+
+        case 409:
+          setAddStatus(`${selectionTitle} ${name} already exists`);
+          break;
+
+        default:
+          setAddStatus("Unknown response from backend");
+          break;
+      }
+    };
+
     switch (selection) {
       case "actor":
-        const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/actors`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name,
-            }),
-          }
-        );
-        await response.json();
-
-        switch (response.status) {
-          case 200:
-            setAddStatus(`Actor ${name} added`);
-            break;
-
-          case 409:
-            setAddStatus(`Actor ${name} already exists`);
-            break;
-
-          default:
-            setAddStatus("Unknown response from backend");
-            break;
-        }
+        helper("actors");
         break;
 
       case "category":
-        dispatch({
-          type: Actions.AddCategory,
-          payload: name,
-        });
+        helper("categories");
         break;
 
       case "series":
@@ -135,7 +139,7 @@ const AdminAddForm = () => {
               />
             </div>
 
-            {addStatus && <div className="my-1 text-center">{addStatus}</div>}
+            {addStatus && <div className="text-center">{addStatus}</div>}
 
             <div className="grid mt-3 mx-4">
               <button

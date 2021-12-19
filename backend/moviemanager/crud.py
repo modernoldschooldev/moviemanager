@@ -25,6 +25,25 @@ def add_actor(
     return actor
 
 
+def add_category(
+    db: Session,
+    name: str,
+) -> models.Category:
+    category = models.Category(
+        name=name
+    )
+
+    try:
+        db.add(category)
+        db.commit()
+        db.refresh(category)
+    except IntegrityError:
+        db.rollback()
+        return None
+
+    return category
+
+
 def add_movie(
     db: Session,
     filename: str,
@@ -70,6 +89,17 @@ def get_all_actors(db: Session) -> List[models.Actor]:
         .query(models.Actor)
         .order_by(
             models.Actor.name,
+        )
+        .all()
+    )
+
+
+def get_all_categories(db: Session) -> List[models.Category]:
+    return (
+        db
+        .query(models.Category)
+        .order_by(
+            models.Category.name,
         )
         .all()
     )

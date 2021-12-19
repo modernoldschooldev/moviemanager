@@ -2,7 +2,7 @@
 export interface StateType {
   actors: ActorType[];
   categories: CategoryType[];
-  movieSeries: SeriesType[];
+  series: SeriesType[];
   studios: StudioType[];
   movies: MovieFileType[];
 }

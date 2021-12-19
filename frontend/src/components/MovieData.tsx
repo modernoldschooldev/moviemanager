@@ -76,7 +76,7 @@ const MovieData = ({ formik }: MovieSectionProps) => {
                     {...formik.getFieldProps("movieSeriesId")}
                   >
                     <option value="">None</option>
-                    {state?.movieSeries.map((series) => (
+                    {state?.series.map((series) => (
                       <option key={series.id} value={series.id}>
                         {series.name}
                       </option>

@@ -23,7 +23,7 @@ export const reducer = (state: StateType, action: ActionType) => {
     case Actions.SetSeries:
       return {
         ...state,
-        movieSeries: action.payload,
+        series: action.payload,
       };
 
     case Actions.SetStudios:

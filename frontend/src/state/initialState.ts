@@ -4,6 +4,6 @@ export const initialState: StateType = {
   actors: [],
   categories: [],
   movies: [],
-  movieSeries: [],
+  series: [],
   studios: [],
 };

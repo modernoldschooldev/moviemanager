@@ -44,25 +44,6 @@ def add_category(
     return category
 
 
-def add_series(
-    db: Session,
-    name: str,
-) -> models.Series:
-    series = models.Series(
-        name=name
-    )
-
-    try:
-        db.add(series)
-        db.commit()
-        db.refresh(series)
-    except IntegrityError:
-        db.rollback()
-        return None
-
-    return series
-
-
 def add_movie(
     db: Session,
     filename: str,
@@ -100,6 +81,44 @@ def add_movie(
     util.migrate_file(movie)
 
     return movie
+
+
+def add_series(
+    db: Session,
+    name: str,
+) -> models.Series:
+    series = models.Series(
+        name=name
+    )
+
+    try:
+        db.add(series)
+        db.commit()
+        db.refresh(series)
+    except IntegrityError:
+        db.rollback()
+        return None
+
+    return series
+
+
+def add_studio(
+    db: Session,
+    name: str,
+) -> models.Studio:
+    studio = models.Studio(
+        name=name
+    )
+
+    try:
+        db.add(studio)
+        db.commit()
+        db.refresh(studio)
+    except IntegrityError:
+        db.rollback()
+        return None
+
+    return studio
 
 
 def get_all_actors(db: Session) -> List[models.Actor]:
@@ -146,6 +165,17 @@ def get_all_series(db: Session) -> List[models.Series]:
         .query(models.Series)
         .order_by(
             models.Series.name,
+        )
+        .all()
+    )
+
+
+def get_all_studios(db: Session) -> List[models.Studio]:
+    return (
+        db
+        .query(models.Studio)
+        .order_by(
+            models.Studio.name,
         )
         .all()
     )

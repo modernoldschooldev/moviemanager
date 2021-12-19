@@ -191,3 +191,39 @@ def add_series(
         )
 
     return series
+
+################################################################################
+# /studios endpoints
+
+
+@app.get(
+    '/studios',
+    response_model=List[schemas.Studio]
+)
+def get_all_studios(db: Session = Depends(get_db)):
+    return crud.get_all_studios(db)
+
+
+@app.post(
+    '/studios',
+    response_model=schemas.Studio,
+    responses={
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Studio'
+        }
+    },
+)
+def add_studio(
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    studio = crud.add_studio(db, data.name)
+
+    if studio is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': f'Studio {data.name} already in database'}
+        )
+
+    return studio

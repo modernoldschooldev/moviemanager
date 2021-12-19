@@ -1,14 +1,10 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Field, Formik, FormikHelpers } from "formik";
 
-import StateContext from "../state/StateContext";
-
 import { AdminFormValuesType } from "../types/form";
-import { Actions } from "../types/state";
 
 const AdminAddForm = () => {
   const [addStatus, setAddStatus] = useState("");
-  const { dispatch } = useContext(StateContext);
 
   const initialValues: AdminFormValuesType = {
     name: "",
@@ -66,10 +62,7 @@ const AdminAddForm = () => {
         break;
 
       case "studio":
-        dispatch({
-          type: Actions.AddStudio,
-          payload: name,
-        });
+        helper("studios");
         break;
 
       default:

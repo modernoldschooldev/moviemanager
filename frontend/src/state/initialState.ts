@@ -5,5 +5,5 @@ export const initialState: StateType = {
   categories: [],
   movies: [],
   movieSeries: [],
-  movieStudios: ["Disney", "Fox", "Warner Brothers"],
+  studios: [],
 };

@@ -16,13 +16,20 @@ const MovieData = ({ formik }: MovieSectionProps) => {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND}/series`);
-      const data = await response.json();
+      const helper = async (endpoint: string, type: Actions) => {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND}/${endpoint}`
+        );
+        const payload = await response.json();
 
-      dispatch({
-        type: Actions.SetSeries,
-        payload: data,
-      });
+        dispatch({
+          type,
+          payload,
+        });
+      };
+
+      await helper("series", Actions.SetSeries);
+      await helper("studios", Actions.SetStudios);
 
       setLoading(false);
     })();
@@ -43,17 +50,21 @@ const MovieData = ({ formik }: MovieSectionProps) => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Studio">
-                <select
-                  className="py-1 rounded-lg w-full"
-                  {...formik.getFieldProps("movieStudioId")}
-                >
-                  <option value="">None</option>
-                  {state?.movieStudios.map((studio, index) => (
-                    <option key={index} value={index}>
-                      {studio}
-                    </option>
-                  ))}
-                </select>
+                {loading ? (
+                  <Loading />
+                ) : (
+                  <select
+                    className="py-1 rounded-lg w-full"
+                    {...formik.getFieldProps("movieStudioId")}
+                  >
+                    <option value="">None</option>
+                    {state?.studios.map((studio) => (
+                      <option key={studio.id} value={studio.id}>
+                        {studio.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series">

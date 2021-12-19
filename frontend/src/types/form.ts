@@ -1,5 +1,9 @@
 import { FormikProps } from "formik";
 
+export interface AdminFormValuesType {
+  name: string;
+  selection: "actor" | "category" | "series" | "studio";
+}
 export interface MainPageFormValuesType {
   movieId: string | undefined;
   movieName: string;

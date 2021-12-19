@@ -3,6 +3,7 @@ from typing import List
 
 from fastapi import Depends, FastAPI, status
 from fastapi.exceptions import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import crud, schemas
@@ -14,6 +15,13 @@ from .util import list_files
 config = get_config()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r'https?://(?:127\.0\.0\.1|localhost):300[0-9]',
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,7 +40,16 @@ def hello():
     return "Hello from FastAPI"
 
 
-@app.post('/movies', response_model=List[schemas.Movie])
+@app.post(
+    '/movies',
+    response_model=List[schemas.Movie],
+    responses={
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'A fatal error'
+        }
+    }
+)
 def import_movies(db: Session = Depends(get_db)):
     try:
         files = list_files(config['imports'])

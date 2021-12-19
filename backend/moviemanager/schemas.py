@@ -42,3 +42,11 @@ class Movie(MovieBase):
 
     class Config:
         orm_mode = True
+
+
+class HTTPExceptionMessage(BaseModel):
+    message: str
+
+
+class HTTPExceptionSchema(BaseModel):
+    detail: HTTPExceptionMessage

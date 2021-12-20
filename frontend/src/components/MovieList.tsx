@@ -5,6 +5,7 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
+import { MovieInfoResponseType } from "../types/api";
 import { MovieSectionProps } from "../types/form";
 import { Actions } from "../types/state";
 
@@ -34,13 +35,21 @@ const MovieList = ({ formik }: MovieSectionProps) => {
         const response = await fetch(
           `${process.env.REACT_APP_BACKEND}/movies/${id}`
         );
-        const data = await response.json();
+        const data: MovieInfoResponseType = await response.json();
 
         if (response.ok) {
           // TODO: finish me!
           formik.setValues({
             ...formik.values,
-            movieName: data.name,
+            movieName: data.name ?? "",
+            movieSeriesId: data.series ? data.series.id.toString() : "",
+            movieSeriesNumber: data.series_number
+              ? data.series_number.toString()
+              : "",
+            movieStudioId: data.studio ? data.studio.id.toString() : "",
+            movieCategories: data.categories.map((category) =>
+              category.id.toString()
+            ),
           });
         }
       }

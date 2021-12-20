@@ -83,6 +83,24 @@ def add_movie(
     return movie
 
 
+def add_movie_category(
+    db: Session,
+    movie_id: int,
+    category_id: int
+) -> models.Movie:
+    movie = get_movie(db, movie_id)
+    category = get_category(db, category_id)
+
+    if movie is None or category is None:
+        return None
+
+    movie.categories.append(category)
+    db.commit()
+    db.refresh(movie)
+
+    return movie
+
+
 def add_series(
     db: Session,
     name: str,
@@ -119,6 +137,24 @@ def add_studio(
         return None
 
     return studio
+
+
+def delete_movie_category(
+    db: Session,
+    movie_id: int,
+    category_id: int
+) -> models.Movie:
+    movie = get_movie(db, movie_id)
+    category = get_category(db, category_id)
+
+    if movie is None or category is None:
+        return None
+
+    movie.categories.remove(category)
+    db.commit()
+    db.refresh(movie)
+
+    return movie
 
 
 def get_all_actors(db: Session) -> List[models.Actor]:
@@ -178,6 +214,15 @@ def get_all_studios(db: Session) -> List[models.Studio]:
             models.Studio.name,
         )
         .all()
+    )
+
+
+def get_category(db: Session, id: int) -> models.Category:
+    return (
+        db
+        .query(models.Category)
+        .filter(models.Category.id == id)
+        .first()
     )
 
 

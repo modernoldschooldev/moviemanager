@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import models, util
+from . import models, schemas, util
 
 
 def add_actor(
@@ -179,3 +179,44 @@ def get_all_studios(db: Session) -> List[models.Studio]:
         )
         .all()
     )
+
+
+def get_movie(db: Session, id: int) -> models.Movie:
+    return (
+        db
+        .query(models.Movie)
+        .filter(models.Movie.id == id)
+        .first()
+    )
+
+
+def update_movie(
+    db: Session,
+    id: int,
+    data: schemas.MovieUpdateSchema
+) -> models.Movie:
+    movie = get_movie(db, id)
+
+    if movie is None:
+        return None
+
+    if (
+        data.name == movie.name
+        and data.series_id == movie.series_id
+        and data.series_number == movie.series_number
+        and data.studio_id == movie.studio_id
+    ):
+        return movie
+
+    movie.name = data.name
+    movie.series_id = data.series_id
+    movie.series_number = data.series_number
+    movie.studio_id = data.studio_id
+
+    if not movie.processed:
+        movie.processed = True
+
+    db.commit()
+    db.refresh(movie)
+
+    return movie

@@ -126,6 +126,28 @@ def get_all_movies(db: Session = Depends(get_db)):
     return crud.get_all_movies(db)
 
 
+@app.get(
+    '/movies/{id}',
+    response_model=schemas.Movie,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        }
+    },
+)
+def get_movie(id: int, db: Session = Depends(get_db)):
+    movie = crud.get_movie(db, id)
+
+    if movie is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': f'Movie with id {id} does not exist'}
+        )
+
+    return movie
+
+
 @app.post(
     '/movies',
     response_model=List[schemas.Movie],
@@ -155,6 +177,33 @@ def import_movies(db: Session = Depends(get_db)):
             movies.append(movie)
 
     return movies
+
+
+@app.put(
+    '/movies/{id}',
+    response_model=schemas.Movie,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        }
+    },
+)
+def update_movie_data(
+    id: int,
+    data: schemas.MovieUpdateSchema,
+    db: Session = Depends(get_db)
+):
+    movie = crud.update_movie(db, id, data)
+
+    if movie is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': f'Movie with id {id} does not exist'}
+        )
+
+    return movie
+
 
 ################################################################################
 # /series endpoints

@@ -8,8 +8,8 @@ import { MainPageFormValuesType } from "../types/form";
 const initialValues: MainPageFormValuesType = {
   movieId: undefined,
   movieName: "",
-  movieStudioId: undefined,
-  movieSeriesId: undefined,
+  movieStudioId: "",
+  movieSeriesId: "",
   movieSeriesNumber: "",
   movieActorAvailableId: undefined,
   movieActorSelectedId: undefined,
@@ -20,7 +20,28 @@ const onSubmit = async (
   values: MainPageFormValuesType,
   helpers: FormikHelpers<MainPageFormValuesType>
 ) => {
-  console.log(values);
+  if (values.movieId) {
+    const body = {
+      name: values.movieName ? values.movieName : null,
+      series_id: values.movieSeriesId ? +values.movieSeriesId : null,
+      series_number: values.movieSeriesNumber
+        ? +values.movieSeriesNumber
+        : null,
+      studio_id: values.movieStudioId ? +values.movieStudioId : null,
+    };
+
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND}/movies/${values.movieId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    await response.json();
+  }
 };
 
 const MainPage = () => {

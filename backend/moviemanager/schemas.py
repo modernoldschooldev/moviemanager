@@ -37,10 +37,6 @@ class MovieFile(BaseMovie):
     pass
 
 
-class MoviePropertySchema(BaseModel):
-    name: str
-
-
 class Series(BaseMovieProperty):
     pass
 
@@ -59,6 +55,20 @@ class Movie(BaseMovie):
 
     class Config:
         orm_mode = True
+
+################################################################################
+# JSON Schemas
+
+
+class MoviePropertySchema(BaseModel):
+    name: str
+
+
+class MovieUpdateSchema(BaseModel):
+    name: Optional[str] = None
+    series_id: Optional[int] = None
+    series_number: Optional[int] = None
+    studio_id: Optional[int] = None
 
 ################################################################################
 # Exception Models

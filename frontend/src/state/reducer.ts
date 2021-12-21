@@ -2,10 +2,16 @@ import { Actions, ActionType, StateType } from "../types/state";
 
 export const reducer = (state: StateType, action: ActionType) => {
   switch (action.type) {
-    case Actions.SetAvailableActors:
+    case Actions.SetActorsAvailable:
       return {
         ...state,
-        actors: action.payload,
+        actorsAvailable: action.payload,
+      };
+
+    case Actions.SetActorsSelected:
+      return {
+        ...state,
+        actorsSelected: action.payload,
       };
 
     case Actions.SetCategories:

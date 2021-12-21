@@ -115,7 +115,68 @@ def add_category(
     return category
 
 ################################################################################
-# /movie_actor and /movie_category endpoints
+# /movie_actor endpoints
+
+
+@app.post(
+    '/movie_actor',
+    response_model=schemas.Movie,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        }
+    },
+)
+def add_movie_actor(
+    movie_id: int,
+    actor_id: int,
+    db: Session = Depends(get_db)
+):
+    movie = crud.add_movie_actor(db, movie_id, actor_id)
+
+    if movie is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={
+                'message':
+                f'Movie ID {movie_id} or Actor ID {actor_id} does not exist'
+            }
+        )
+
+    return movie
+
+
+@app.delete(
+    '/movie_actor',
+    response_model=schemas.Movie,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        }
+    },
+)
+def delete_movie_actor(
+    movie_id: int,
+    actor_id: int,
+    db: Session = Depends(get_db)
+):
+    movie = crud.delete_movie_actor(db, movie_id, actor_id)
+
+    if movie is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={
+                'message':
+                f'Movie ID {movie_id} or Actor ID {actor_id} does not exist'
+            }
+        )
+
+    return movie
+
+################################################################################
+# /movie_category endpoints
 
 
 @app.post(

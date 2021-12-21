@@ -51,10 +51,15 @@ const MovieList = ({ formik }: MovieSectionProps) => {
               category.id.toString()
             ),
           });
+
+          dispatch({
+            type: Actions.SetActorsSelected,
+            payload: data.actors,
+          });
         }
       }
     })();
-  }, [formik.values.movieId]);
+  }, [dispatch, formik.values.movieId]);
 
   return (
     <MovieSection title="Movie List">
@@ -66,7 +71,8 @@ const MovieList = ({ formik }: MovieSectionProps) => {
         <select
           className="h-64 w-full"
           size={10}
-          {...formik.getFieldProps("movieId")}
+          name="movieId"
+          onChange={formik.handleChange}
         >
           {state?.movies.map((movie) => (
             <option key={movie.id} value={movie.id}>

@@ -95,6 +95,8 @@ def add_movie_actor(
         return None
 
     movie.actors.append(actor)
+    util.rename_movie_file(movie)
+
     db.commit()
     db.refresh(movie)
 
@@ -169,6 +171,8 @@ def delete_movie_actor(
         return None
 
     movie.actors.remove(actor)
+    util.rename_movie_file(movie)
+
     db.commit()
     db.refresh(movie)
 
@@ -305,6 +309,8 @@ def update_movie(
 
     if not movie.processed:
         movie.processed = True
+
+    util.rename_movie_file(movie)
 
     db.commit()
     db.refresh(movie)

@@ -1,5 +1,6 @@
 import os
 import os.path
+from pathlib import Path
 from typing import List
 
 from fastapi import status
@@ -93,3 +94,67 @@ def rename_movie_file(movie: models.Movie) -> None:
 
         os.rename(path_current, path_new)
         movie.filename = filename_new
+
+    for actor in movie.actors:
+        update_actor_link(filename_current, actor.name, False)
+        update_actor_link(filename_new, actor.name, True)
+
+    for category in movie.categories:
+        update_category_link(filename_current, category.name, False)
+        update_category_link(filename_new, category.name, True)
+
+
+def update_link(
+    filename: str,
+    path_link_base: str,
+    name: str,
+    selected: bool
+) -> None:
+    path_movies = os.path.abspath(config['movies'])
+    path_file = f'{path_movies}/{filename}'
+
+    path_base = f'{path_link_base}/{name}'
+    path_link = f'{path_base}/{filename}'
+
+    if selected:
+        if not os.path.isdir(path_base):
+            try:
+                path = Path(path_base)
+                path.mkdir(parents=True, exist_ok=True)
+            except:
+                raise HTTPException(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail={
+                        'message': f'Directory {path_base} could not be created'
+                    }
+                )
+
+        if not os.path.lexists(path_link):
+            try:
+                os.symlink(path_file, path_link)
+            except:
+                raise HTTPException(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail={
+                        'message': f'Unable to create link {path_file} -> {path_link}'
+                    }
+                )
+    else:
+        if os.path.lexists(path_link):
+            try:
+                os.remove(path_link)
+            except:
+                raise HTTPException(
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail={
+                        'message': f'Unable to remove link {path_file} -> {path_link}'
+                    }
+                )
+
+
+def update_actor_link(filename: str, name: str, selected: bool) -> None:
+    update_link(filename, config['actors'], name, selected)
+
+
+def update_category_link(filename: str, name: str, selected: bool) -> None:
+    update_link(filename, config['categories'], name, selected)

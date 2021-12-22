@@ -96,6 +96,7 @@ def add_movie_actor(
 
     movie.actors.append(actor)
     util.rename_movie_file(movie)
+    util.update_actor_link(movie.filename, actor.name, True)
 
     db.commit()
     db.refresh(movie)
@@ -115,6 +116,8 @@ def add_movie_category(
         return None
 
     movie.categories.append(category)
+    util.update_category_link(movie.filename, category.name, True)
+
     db.commit()
     db.refresh(movie)
 
@@ -171,6 +174,7 @@ def delete_movie_actor(
         return None
 
     movie.actors.remove(actor)
+    util.update_actor_link(movie.filename, actor.name, False)
     util.rename_movie_file(movie)
 
     db.commit()
@@ -191,6 +195,8 @@ def delete_movie_category(
         return None
 
     movie.categories.remove(category)
+    util.update_category_link(movie.filename, category.name, False)
+
     db.commit()
     db.refresh(movie)
 

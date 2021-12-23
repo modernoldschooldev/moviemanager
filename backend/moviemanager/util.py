@@ -95,13 +95,23 @@ def rename_movie_file(movie: models.Movie) -> None:
         os.rename(path_current, path_new)
         movie.filename = filename_new
 
-    for actor in movie.actors:
-        update_actor_link(filename_current, actor.name, False)
-        update_actor_link(filename_new, actor.name, True)
+        actor: models.Actor
+        for actor in movie.actors:
+            update_actor_link(filename_current, actor.name, False)
+            update_actor_link(filename_new, actor.name, True)
 
-    for category in movie.categories:
-        update_category_link(filename_current, category.name, False)
-        update_category_link(filename_new, category.name, True)
+        category: models.Category
+        for category in movie.categories:
+            update_category_link(filename_current, category.name, False)
+            update_category_link(filename_new, category.name, True)
+
+        if movie.series is not None:
+            update_series_link(filename_current, movie.series.name, False)
+            update_series_link(filename_new, movie.series.name, True)
+
+        if movie.studio is not None:
+            update_studio_link(filename_current, movie.studio.name, False)
+            update_studio_link(filename_new, movie.studio.name, True)
 
 
 def update_link(
@@ -151,6 +161,11 @@ def update_link(
                     }
                 )
 
+            try:
+                os.rmdir(path_base)
+            except:
+                pass
+
 
 def update_actor_link(filename: str, name: str, selected: bool) -> None:
     update_link(filename, config['actors'], name, selected)
@@ -158,3 +173,11 @@ def update_actor_link(filename: str, name: str, selected: bool) -> None:
 
 def update_category_link(filename: str, name: str, selected: bool) -> None:
     update_link(filename, config['categories'], name, selected)
+
+
+def update_series_link(filename: str, name: str, selected: bool) -> None:
+    update_link(filename, config['series'], name, selected)
+
+
+def update_studio_link(filename: str, name: str, selected: bool) -> None:
+    update_link(filename, config['studios'], name, selected)

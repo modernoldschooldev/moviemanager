@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import false
 
 from . import models, schemas, util
 
@@ -290,6 +291,24 @@ def get_movie(db: Session, id: int) -> models.Movie:
     )
 
 
+def get_series(db: Session, id: int) -> models.Series:
+    return (
+        db
+        .query(models.Series)
+        .filter(models.Series.id == id)
+        .first()
+    )
+
+
+def get_studio(db: Session, id: int) -> models.Studio:
+    return (
+        db
+        .query(models.Studio)
+        .filter(models.Studio.id == id)
+        .first()
+    )
+
+
 def update_movie(
     db: Session,
     id: int,
@@ -307,6 +326,40 @@ def update_movie(
         and data.studio_id == movie.studio_id
     ):
         return movie
+
+    if movie.series_id != data.series_id:
+        series_current = get_series(db, movie.series_id).name \
+            if movie.series_id is not None else None
+        series_new = get_series(db, data.series_id).name \
+            if data.series_id is not None else None
+
+        if data.series_id is None:
+            # remove series
+            util.update_series_link(movie.filename, series_current, False)
+        elif movie.series_id is None:
+            # add series
+            util.update_series_link(movie.filename, series_new, True)
+        else:
+            # change series
+            util.update_series_link(movie.filename, series_current, False)
+            util.update_series_link(movie.filename, series_new, True)
+
+    if movie.studio_id != data.studio_id:
+        studio_current = get_studio(db, movie.studio_id).name \
+            if movie.studio_id is not None else None
+        studio_new = get_studio(db, data.studio_id).name \
+            if data.studio_id is not None else None
+
+        if data.studio_id is None:
+            # remove studio
+            util.update_studio_link(movie.filename, studio_current, False)
+        elif movie.studio_id is None:
+            # add studio
+            util.update_studio_link(movie.filename, studio_new, True)
+        else:
+            # change studio
+            util.update_studio_link(movie.filename, studio_current, False)
+            util.update_studio_link(movie.filename, studio_new, True)
 
     movie.name = data.name
     movie.series_id = data.series_id

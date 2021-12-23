@@ -38,7 +38,6 @@ const MovieList = ({ formik }: MovieSectionProps) => {
         const data: MovieInfoResponseType = await response.json();
 
         if (response.ok) {
-          // TODO: finish me!
           formik.setValues({
             ...formik.values,
             movieName: data.name ?? "",

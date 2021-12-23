@@ -14,6 +14,30 @@ const MovieData = ({ formik }: MovieSectionProps) => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
 
+  const onRemoveMovie = async () => {
+    if (formik.values.movieId) {
+      const id = +formik.values.movieId;
+      const filename = state?.movies.filter((movie) => movie.id === id)[0]
+        .filename;
+
+      if (window.confirm(`Really remove ${filename}?`)) {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND}/movies/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+        await response.json();
+
+        if (response.ok) {
+          formik.setStatus(`Successfully removed ${filename}`);
+        } else {
+          formik.setStatus(`Error removing ${filename}`);
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     (async () => {
       const helper = async (endpoint: string, type: Actions) => {
@@ -104,10 +128,17 @@ const MovieData = ({ formik }: MovieSectionProps) => {
                 <button
                   className="movie-data-button bg-red-700 hover:bg-red-600"
                   type="button"
+                  onClick={onRemoveMovie}
                 >
                   Remove
                 </button>
               </div>
+
+              {formik.status && (
+                <div>
+                  <p className="font-semibold text-center">{formik.status}</p>
+                </div>
+              )}
             </div>
           </fieldset>
         </form>

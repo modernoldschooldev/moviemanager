@@ -72,7 +72,31 @@ def migrate_file(movie: models.Movie, adding: bool = True):
     path_new = f'{base_new}/{movie.filename}'
 
     # logger.info(f'migrating {path_current} -> {path_new}')
+    if os.path.exists(path_new):
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                'message': f'Unable to move {path_current} -> {path_new} as it already exists'
+            }
+        )
+
     os.rename(path_current, path_new)
+
+
+def remove_movie(movie: models.Movie) -> None:
+    migrate_file(movie, False)
+
+    for actor in movie.actors:
+        update_actor_link(movie.filename, actor.name, False)
+
+    for category in movie.categories:
+        update_category_link(movie.filename, category.name, False)
+
+    if movie.series is not None:
+        update_series_link(movie.filename, movie.series.name, False)
+
+    if movie.studio is not None:
+        update_studio_link(movie.filename, movie.studio.name, False)
 
 
 def rename_movie_file(movie: models.Movie) -> None:

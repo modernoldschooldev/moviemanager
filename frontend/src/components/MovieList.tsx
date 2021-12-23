@@ -55,6 +55,8 @@ const MovieList = ({ formik }: MovieSectionProps) => {
             type: Actions.SetActorsSelected,
             payload: data.actors,
           });
+
+          formik.setStatus("");
         }
       }
     })();

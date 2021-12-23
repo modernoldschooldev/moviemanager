@@ -6,6 +6,7 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
+import { MovieInfoResponseType } from "../types/api";
 import { MovieSectionProps } from "../types/form";
 import { Actions } from "../types/state";
 
@@ -39,13 +40,25 @@ const ActorSelector = ({ formik }: MovieSectionProps) => {
           method: selected ? "POST" : "DELETE",
         }
       );
-      const data = await response.json();
+      const data: MovieInfoResponseType = await response.json();
+
+      const actorName = state?.actorsAvailable.filter(
+        (actor) => actor.id === +id
+      )[0].name;
 
       if (response.ok) {
         dispatch({
           type: Actions.SetActorsSelected,
           payload: data.actors,
         });
+
+        formik.setStatus(
+          `Successfully ${selected ? "added" : "removed"} ${actorName} ${
+            selected ? "to" : "from"
+          } ${data.name}`
+        );
+      } else {
+        formik.setStatus("Error updating actor");
       }
     }
   };

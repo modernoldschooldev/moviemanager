@@ -6,6 +6,7 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
+import { MovieInfoResponseType } from "../types/api";
 import { MovieSectionProps } from "../types/form";
 import { Actions } from "../types/state";
 
@@ -25,7 +26,21 @@ const CategorySelector = ({ formik }: MovieSectionProps) => {
           method: selected ? "POST" : "DELETE",
         }
       );
-      await response.json();
+      const data: MovieInfoResponseType = await response.json();
+
+      const categoryName = state?.categories.filter(
+        (category) => category.id === +id
+      )[0].name;
+
+      if (response.ok) {
+        formik.setStatus(
+          `Successfully ${
+            selected ? "added" : "removed"
+          } category ${categoryName} ${selected ? "to" : "from"} ${data.name}`
+        );
+      } else {
+        formik.setStatus("Error updating category");
+      }
     }
   };
 

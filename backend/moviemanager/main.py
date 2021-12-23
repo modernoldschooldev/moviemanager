@@ -327,6 +327,19 @@ def update_movie_data(
     return movie
 
 
+@app.delete(
+    '/movies/{id}'
+)
+def delete_movie(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    crud.delete_movie(db, id)
+
+    return {
+        'message': f'Deleted movie with ID {id}'
+    }
+
 ################################################################################
 # /series endpoints
 

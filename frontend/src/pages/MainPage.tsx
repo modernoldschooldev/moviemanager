@@ -41,6 +41,12 @@ const onSubmit = async (
       }
     );
     await response.json();
+
+    if (response.ok) {
+      helpers.setStatus(`Successfully updated movie ${values.movieName}`);
+    } else {
+      helpers.setStatus("Error updating movie.");
+    }
   }
 };
 

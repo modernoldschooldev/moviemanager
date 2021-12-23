@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import false
@@ -161,6 +163,26 @@ def add_studio(
         return None
 
     return studio
+
+
+def delete_movie(
+    db: Session,
+    id: int,
+) -> None:
+    movie = get_movie(db, id)
+
+    if movie is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={
+                'message': f'Unable to find movie with ID {id}'
+            }
+        )
+
+    util.remove_movie(movie)
+
+    db.delete(movie)
+    db.commit()
 
 
 def delete_movie_actor(

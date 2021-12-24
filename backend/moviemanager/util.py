@@ -4,13 +4,11 @@ import re
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from . import crud, models
 from .config import get_config
-from .exceptions import ListFilesException
+from .exceptions import ListFilesException, PathException
 
 config = get_config()
 
@@ -85,14 +83,9 @@ def migrate_file(movie: models.Movie, adding: bool = True):
     path_current = f'{base_current}/{movie.filename}'
     path_new = f'{base_new}/{movie.filename}'
 
-    # TODO: should HTTPExceptions be raised here?
     if os.path.exists(path_new):
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                'message': f'Unable to move {path_current} -> {path_new} as it already exists'
-            }
-        )
+        raise PathException(
+            f'Unable to migrate {movie.filename} as {path_new} already exists')
 
     os.rename(path_current, path_new)
 
@@ -181,17 +174,11 @@ def rename_movie_file(movie: models.Movie) -> None:
     path_current = f'{path_base}/{filename_current}'
     path_new = f'{path_base}/{filename_new}'
 
-    # TODO: should HTTPExceptions be thrown here?
     if path_current != path_new:
         if os.path.exists(path_new):
-            raise HTTPException(
-                status.HTTP_409_CONFLICT,
-                detail={
-                    'message': f'New filename conflicts with existing movie file {filename_new}'
-                }
-            )
+            raise PathException(
+                f'Unable to rename {movie.filename} as {filename_new} already exists')
 
-        # TODO: is this safe to do?
         os.rename(path_current, path_new)
         movie.filename = filename_new
 
@@ -232,37 +219,22 @@ def update_link(
                 path = Path(path_base)
                 path.mkdir(parents=True, exist_ok=True)
             except:
-                # TODO: should HTTPException be raised here?
-                raise HTTPException(
-                    status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail={
-                        'message': f'Directory {path_base} could not be created'
-                    }
-                )
+                raise PathException(
+                    f'Link directory {path_base} could not be created')
 
         if not os.path.lexists(path_link):
             try:
                 os.symlink(path_file, path_link)
             except:
-                # TODO: should HTTPException be raised here?
-                raise HTTPException(
-                    status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail={
-                        'message': f'Unable to create link {path_file} -> {path_link}'
-                    }
-                )
+                raise PathException(
+                    f'Unable to create link {path_file} -> {path_link}')
     else:
         if os.path.lexists(path_link):
             try:
                 os.remove(path_link)
             except:
-                # TODO: should HTTPException be raised here?
-                raise HTTPException(
-                    status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail={
-                        'message': f'Unable to remove link {path_file} -> {path_link}'
-                    }
-                )
+                raise PathException(
+                    f'Unable to delete link {path_file} -> {path_link}')
 
             try:
                 os.rmdir(path_base)

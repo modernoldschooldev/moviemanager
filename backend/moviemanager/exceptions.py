@@ -8,3 +8,7 @@ class InvalidIDException(Exception):
 
 class ListFilesException(Exception):
     pass
+
+
+class PathException(Exception):
+    pass

@@ -9,7 +9,7 @@ from . import crud, schemas
 from .config import get_config
 from .database import SessionLocal, engine
 from .exceptions import (DuplicateEntryException, InvalidIDException,
-                         ListFilesException)
+                         ListFilesException, PathException)
 from .models import Base
 from .util import list_files, parse_filename
 
@@ -126,6 +126,10 @@ def add_category(
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Problem'
         }
     },
 )
@@ -141,6 +145,11 @@ def add_movie_actor(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={'message': str(e)}
+        )
 
     return movie
 
@@ -152,6 +161,10 @@ def add_movie_actor(
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Problem'
         }
     },
 )
@@ -165,6 +178,11 @@ def delete_movie_actor(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -181,6 +199,10 @@ def delete_movie_actor(
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Problem'
         }
     },
 )
@@ -196,6 +218,11 @@ def add_movie_category(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={'message': str(e)}
+        )
 
     return movie
 
@@ -207,6 +234,10 @@ def add_movie_category(
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Problem'
         }
     },
 )
@@ -220,6 +251,11 @@ def delete_movie_category(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -269,7 +305,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'A fatal error'
+            'description': 'Path Error'
         }
     }
 )
@@ -299,6 +335,11 @@ def import_movies(db: Session = Depends(get_db)):
                 status.HTTP_409_CONFLICT,
                 detail={'message': str(e)}
             )
+        except PathException as e:
+            raise HTTPException(
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={'message': str(e)}
+            )
 
     return movies
 
@@ -310,6 +351,10 @@ def import_movies(db: Session = Depends(get_db)):
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error'
         }
     },
 )
@@ -318,12 +363,16 @@ def update_movie_data(
     data: schemas.MovieUpdateSchema,
     db: Session = Depends(get_db)
 ):
-    # TODO: can other problems arise in update_movie?
     try:
         movie = crud.update_movie(db, id, data)
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -336,6 +385,10 @@ def update_movie_data(
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
+        },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error'
         }
     },
 )
@@ -348,6 +401,11 @@ def delete_movie(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 

@@ -15,7 +15,6 @@ config = get_config()
 
 
 def generate_movie_filename(movie: models.Movie) -> str:
-    # [Studio] {Series SeriesNumber} Name (Actor 1, Actor 2, ..., Actor N).extension
     filename = ''
     _, ext = os.path.splitext(movie.filename)
 
@@ -85,7 +84,7 @@ def migrate_file(movie: models.Movie, adding: bool = True):
     path_current = f'{base_current}/{movie.filename}'
     path_new = f'{base_new}/{movie.filename}'
 
-    # logger.info(f'migrating {path_current} -> {path_new}')
+    # TODO: should HTTPExceptions be raised here?
     if os.path.exists(path_new):
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -108,17 +107,18 @@ def parse_filename(
 ]:
     name, _ = os.path.splitext(filename)
 
-    # [Studio] {Series Series#} Name (Actor, Actor ...)
+    # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
     regex = (
-        r'^'
-        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'
-        r' ?'
+        r'^'                                            # Start of line
+        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'                # Optional studio
+        r' ?'                                           # Optional space
+        # Optional series name/number
         r'(?:{([A-Za-z0-9 .,\'-]+?)(?: ([0-9]+))?})?'
-        r' ?'
-        r'([A-Za-z0-9 .,\'-]+?)?'
-        r' ?'
-        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'
-        r'$'
+        r' ?'                                           # Optional space
+        r'([A-Za-z0-9 .,\'-]+?)?'                       # Optional novie Name
+        r' ?'                                           # Optional space
+        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'                # Optional actor list
+        r'$'                                            # End of line
     )
 
     studio_id = None
@@ -180,6 +180,7 @@ def rename_movie_file(movie: models.Movie) -> None:
     path_current = f'{path_base}/{filename_current}'
     path_new = f'{path_base}/{filename_new}'
 
+    # TODO: should HTTPExceptions be thrown here?
     if path_current != path_new:
         if os.path.exists(path_new):
             raise HTTPException(
@@ -189,6 +190,7 @@ def rename_movie_file(movie: models.Movie) -> None:
                 }
             )
 
+        # TODO: is this safe to do?
         os.rename(path_current, path_new)
         movie.filename = filename_new
 
@@ -229,6 +231,7 @@ def update_link(
                 path = Path(path_base)
                 path.mkdir(parents=True, exist_ok=True)
             except:
+                # TODO: should HTTPException be raised here?
                 raise HTTPException(
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail={
@@ -240,6 +243,7 @@ def update_link(
             try:
                 os.symlink(path_file, path_link)
             except:
+                # TODO: should HTTPException be raised here?
                 raise HTTPException(
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail={
@@ -251,6 +255,7 @@ def update_link(
             try:
                 os.remove(path_link)
             except:
+                # TODO: should HTTPException be raised here?
                 raise HTTPException(
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail={

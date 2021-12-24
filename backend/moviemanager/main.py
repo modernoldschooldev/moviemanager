@@ -67,6 +67,7 @@ def add_actor(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
+    # TODO: trim whitespace
     actor = crud.add_actor(db, data.name)
 
     if actor is None:
@@ -103,6 +104,7 @@ def add_category(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
+    # TODO: trim whitespace
     category = crud.add_category(db, data.name)
 
     if category is None:
@@ -134,6 +136,7 @@ def add_movie_actor(
 ):
     movie = crud.add_movie_actor(db, movie_id, actor_id)
 
+    # TODO: error code is overly broad
     if movie is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -163,6 +166,7 @@ def delete_movie_actor(
 ):
     movie = crud.delete_movie_actor(db, movie_id, actor_id)
 
+    # TODO: error code overly broad
     if movie is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -195,6 +199,7 @@ def add_movie_category(
 ):
     movie = crud.add_movie_category(db, movie_id, category_id)
 
+    # TODO: error code overly broad
     if movie is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -224,6 +229,7 @@ def delete_movie_category(
 ):
     movie = crud.delete_movie_category(db, movie_id, category_id)
 
+    # TODO: error code overly broad
     if movie is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -288,6 +294,7 @@ def import_movies(db: Session = Depends(get_db)):
             detail={'message': str(e)}
         )
 
+    # TODO: can this be a list comprehension with a generator expression?
     movies = []
 
     for file in files:
@@ -297,6 +304,7 @@ def import_movies(db: Session = Depends(get_db)):
             db, file, name, studio_id, series_id, series_number, actors
         )
 
+        # TODO: should this throw an exception?
         if movie is not None:
             movies.append(movie)
 
@@ -338,6 +346,7 @@ def delete_movie(
 ):
     crud.delete_movie(db, id)
 
+    # TODO: what if movie doesn't exist?
     return {
         'message': f'Deleted movie with ID {id}'
     }
@@ -368,6 +377,7 @@ def add_series(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
+    # TODO: trim whitespace
     series = crud.add_series(db, data.name)
 
     if series is None:
@@ -404,6 +414,7 @@ def add_studio(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
+    # TODO: trim whitespace
     studio = crud.add_studio(db, data.name)
 
     if studio is None:
@@ -413,3 +424,5 @@ def add_studio(
         )
 
     return studio
+
+# TODO: add endpoints for deleting/updating actor/category/series/studio

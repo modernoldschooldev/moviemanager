@@ -23,6 +23,8 @@ def add_actor(
         db.refresh(actor)
     except IntegrityError:
         db.rollback()
+
+        # TODO: raise exception
         return None
 
     return actor
@@ -42,6 +44,8 @@ def add_category(
         db.refresh(category)
     except IntegrityError:
         db.rollback()
+
+        # TODO: raise exception
         return None
 
     return category
@@ -80,6 +84,8 @@ def add_movie(
         db.refresh(movie)
     except IntegrityError:
         db.rollback()
+
+        # TODO: raise exception
         return None
 
     util.migrate_file(movie)
@@ -95,6 +101,7 @@ def add_movie_actor(
     movie = get_movie(db, movie_id)
     actor = get_actor(db, actor_id)
 
+    # TODO: raise exception
     if movie is None or actor is None:
         return None
 
@@ -116,6 +123,7 @@ def add_movie_category(
     movie = get_movie(db, movie_id)
     category = get_category(db, category_id)
 
+    # TODO: raise exception
     if movie is None or category is None:
         return None
 
@@ -143,6 +151,8 @@ def add_series(
         db.refresh(series)
     except IntegrityError:
         db.rollback()
+
+        # TODO: raise exception
         return None
 
     return series
@@ -163,6 +173,8 @@ def add_studio(
         db.refresh(studio)
     except IntegrityError:
         db.rollback()
+
+        # TODO: raise exception
         return None
 
     return studio
@@ -196,6 +208,7 @@ def delete_movie_actor(
     movie = get_movie(db, movie_id)
     actor = get_actor(db, actor_id)
 
+    # TODO: raise exception
     if movie is None or actor is None:
         return None
 
@@ -217,6 +230,7 @@ def delete_movie_category(
     movie = get_movie(db, movie_id)
     category = get_category(db, category_id)
 
+    # TODO: raise exception
     if movie is None or category is None:
         return None
 
@@ -377,6 +391,7 @@ def update_movie(
 ) -> models.Movie:
     movie = get_movie(db, id)
 
+    # TODO: raise exception
     if movie is None:
         return None
 
@@ -386,6 +401,7 @@ def update_movie(
         and data.series_number == movie.series_number
         and data.studio_id == movie.studio_id
     ):
+        # TODO: update processed here
         return movie
 
     if movie.name != data.name:

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from . import crud, models
 from .config import get_config
+from .exceptions import ListFilesException
 
 config = get_config()
 
@@ -72,7 +73,7 @@ def list_files(path: str) -> List[str]:
     try:
         files = sorted(os.listdir(path))
     except:
-        raise Exception(f'Unable to read path {path}')
+        raise ListFilesException(f'Unable to read path {path}')
 
     return files
 

@@ -6,7 +6,7 @@ Demo Movie Manager App with React and FastAPI
 
 ### Version 1.0
 
-- proper API response codes and error handling
+- improve error handling
 - breakdown the Admin form into multiple sections with more editing options
 - API logging
 - rebuild database from file system

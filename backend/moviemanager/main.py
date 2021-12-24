@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from . import crud, schemas
 from .config import get_config
 from .database import SessionLocal, engine
+from .exceptions import (DuplicateEntryException, InvalidIDException,
+                         ListFilesException)
 from .models import Base
 from .util import list_files, parse_filename
 
@@ -67,13 +69,12 @@ def add_actor(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
-    # TODO: trim whitespace
-    actor = crud.add_actor(db, data.name)
-
-    if actor is None:
+    try:
+        actor = crud.add_actor(db, data.name.strip())
+    except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail={'message': f'Actor {data.name} already in database'}
+            detail={'message': str(e)}
         )
 
     return actor
@@ -104,13 +105,12 @@ def add_category(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
-    # TODO: trim whitespace
-    category = crud.add_category(db, data.name)
-
-    if category is None:
+    try:
+        category = crud.add_category(db, data.name.strip())
+    except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail={'message': f'Category {data.name} already in database'}
+            detail={'message': str(e)}
         )
 
     return category
@@ -134,16 +134,12 @@ def add_movie_actor(
     actor_id: int,
     db: Session = Depends(get_db)
 ):
-    movie = crud.add_movie_actor(db, movie_id, actor_id)
-
-    # TODO: error code is overly broad
-    if movie is None:
+    try:
+        movie = crud.add_movie_actor(db, movie_id, actor_id)
+    except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={
-                'message':
-                f'Movie ID {movie_id} or Actor ID {actor_id} does not exist'
-            }
+            detail={'message': str(e)}
         )
 
     return movie
@@ -164,16 +160,12 @@ def delete_movie_actor(
     actor_id: int,
     db: Session = Depends(get_db)
 ):
-    movie = crud.delete_movie_actor(db, movie_id, actor_id)
-
-    # TODO: error code overly broad
-    if movie is None:
+    try:
+        movie = crud.delete_movie_actor(db, movie_id, actor_id)
+    except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={
-                'message':
-                f'Movie ID {movie_id} or Actor ID {actor_id} does not exist'
-            }
+            detail={'message': str(e)}
         )
 
     return movie
@@ -197,16 +189,12 @@ def add_movie_category(
     category_id: int,
     db: Session = Depends(get_db)
 ):
-    movie = crud.add_movie_category(db, movie_id, category_id)
-
-    # TODO: error code overly broad
-    if movie is None:
+    try:
+        movie = crud.add_movie_category(db, movie_id, category_id)
+    except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={
-                'message':
-                f'Movie ID {movie_id} or Category ID {category_id} does not exist'
-            }
+            detail={'message': str(e)}
         )
 
     return movie
@@ -227,16 +215,12 @@ def delete_movie_category(
     category_id: int,
     db: Session = Depends(get_db)
 ):
-    movie = crud.delete_movie_category(db, movie_id, category_id)
-
-    # TODO: error code overly broad
-    if movie is None:
+    try:
+        movie = crud.delete_movie_category(db, movie_id, category_id)
+    except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={
-                'message':
-                f'Movie ID {movie_id} or Category ID {category_id} does not exist'
-            }
+            detail={'message': str(e)}
         )
 
     return movie
@@ -269,7 +253,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
     if movie is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={'message': f'Movie with id {id} does not exist'}
+            detail={'message': f'Movie ID {id} does not exist'}
         )
 
     return movie
@@ -279,6 +263,10 @@ def get_movie(id: int, db: Session = Depends(get_db)):
     '/movies',
     response_model=List[schemas.Movie],
     responses={
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Movie'
+        },
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'A fatal error'
@@ -288,7 +276,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
 def import_movies(db: Session = Depends(get_db)):
     try:
         files = list_files(config['imports'])
-    except Exception as e:
+    except ListFilesException as e:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -300,13 +288,17 @@ def import_movies(db: Session = Depends(get_db)):
     for file in files:
         name, studio_id, series_id, series_number, actors = \
             parse_filename(db, file)
-        movie = crud.add_movie(
-            db, file, name, studio_id, series_id, series_number, actors
-        )
 
-        # TODO: should this throw an exception?
-        if movie is not None:
+        try:
+            movie = crud.add_movie(
+                db, file, name, studio_id, series_id, series_number, actors
+            )
             movies.append(movie)
+        except DuplicateEntryException as e:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                detail={'message': str(e)}
+            )
 
     return movies
 
@@ -326,27 +318,39 @@ def update_movie_data(
     data: schemas.MovieUpdateSchema,
     db: Session = Depends(get_db)
 ):
-    movie = crud.update_movie(db, id, data)
-
-    if movie is None:
+    # TODO: can other problems arise in update_movie?
+    try:
+        movie = crud.update_movie(db, id, data)
+    except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={'message': f'Movie with id {id} does not exist'}
+            detail={'message': str(e)}
         )
 
     return movie
 
 
 @app.delete(
-    '/movies/{id}'
+    '/movies/{id}',
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        }
+    },
 )
 def delete_movie(
     id: int,
     db: Session = Depends(get_db)
 ):
-    crud.delete_movie(db, id)
+    try:
+        crud.delete_movie(db, id)
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
 
-    # TODO: what if movie doesn't exist?
     return {
         'message': f'Deleted movie with ID {id}'
     }
@@ -377,13 +381,12 @@ def add_series(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
-    # TODO: trim whitespace
-    series = crud.add_series(db, data.name)
-
-    if series is None:
+    try:
+        series = crud.add_series(db, data.name.strip())
+    except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail={'message': f'Series {data.name} already in database'}
+            detail={'message': str(e)}
         )
 
     return series
@@ -414,13 +417,12 @@ def add_studio(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
-    # TODO: trim whitespace
-    studio = crud.add_studio(db, data.name)
-
-    if studio is None:
+    try:
+        studio = crud.add_studio(db, data.name.strip())
+    except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail={'message': f'Studio {data.name} already in database'}
+            detail={'message': str(e)}
         )
 
     return studio

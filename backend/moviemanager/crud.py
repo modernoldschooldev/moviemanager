@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import false
 
 from . import models, schemas, util
+from .exceptions import DuplicateEntryException, InvalidIDException
 
 
 def add_actor(
@@ -24,8 +22,7 @@ def add_actor(
     except IntegrityError:
         db.rollback()
 
-        # TODO: raise exception
-        return None
+        raise DuplicateEntryException(f'Actor {name} already exists')
 
     return actor
 
@@ -45,8 +42,7 @@ def add_category(
     except IntegrityError:
         db.rollback()
 
-        # TODO: raise exception
-        return None
+        raise DuplicateEntryException(f'Category {name} already exists')
 
     return category
 
@@ -85,8 +81,7 @@ def add_movie(
     except IntegrityError:
         db.rollback()
 
-        # TODO: raise exception
-        return None
+        raise DuplicateEntryException(f'Movie {filename} already exists')
 
     util.migrate_file(movie)
 
@@ -99,11 +94,14 @@ def add_movie_actor(
     actor_id: int
 ) -> models.Movie:
     movie = get_movie(db, movie_id)
+
+    if movie is None:
+        raise InvalidIDException(f'Movie ID {movie_id} does not exist')
+
     actor = get_actor(db, actor_id)
 
-    # TODO: raise exception
-    if movie is None or actor is None:
-        return None
+    if actor is None:
+        raise InvalidIDException(f'Actor ID {actor_id} does not exist')
 
     movie.actors.append(actor)
     util.rename_movie_file(movie)
@@ -121,11 +119,14 @@ def add_movie_category(
     category_id: int
 ) -> models.Movie:
     movie = get_movie(db, movie_id)
+
+    if movie is None:
+        raise InvalidIDException(f'Movie ID {movie_id} does not exist')
+
     category = get_category(db, category_id)
 
-    # TODO: raise exception
-    if movie is None or category is None:
-        return None
+    if category is None:
+        raise InvalidIDException(f'Category ID {category_id} does not exist')
 
     movie.categories.append(category)
     util.update_category_link(movie.filename, category.name, True)
@@ -152,8 +153,7 @@ def add_series(
     except IntegrityError:
         db.rollback()
 
-        # TODO: raise exception
-        return None
+        raise DuplicateEntryException(f'Series {name} already exists')
 
     return series
 
@@ -174,8 +174,7 @@ def add_studio(
     except IntegrityError:
         db.rollback()
 
-        # TODO: raise exception
-        return None
+        raise DuplicateEntryException(f'Studio {name} already exists')
 
     return studio
 
@@ -187,12 +186,7 @@ def delete_movie(
     movie = get_movie(db, id)
 
     if movie is None:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={
-                'message': f'Unable to find movie with ID {id}'
-            }
-        )
+        raise InvalidIDException(f'Movie ID {id} does not exist')
 
     util.remove_movie(movie)
 
@@ -206,11 +200,14 @@ def delete_movie_actor(
     actor_id: int
 ) -> models.Movie:
     movie = get_movie(db, movie_id)
+
+    if movie is None:
+        raise InvalidIDException(f'Movie ID {movie_id} does not exist')
+
     actor = get_actor(db, actor_id)
 
-    # TODO: raise exception
-    if movie is None or actor is None:
-        return None
+    if actor is None:
+        raise InvalidIDException(f'Actor ID {actor_id} does not exist')
 
     movie.actors.remove(actor)
     util.update_actor_link(movie.filename, actor.name, False)
@@ -228,11 +225,14 @@ def delete_movie_category(
     category_id: int
 ) -> models.Movie:
     movie = get_movie(db, movie_id)
+
+    if movie is None:
+        raise InvalidIDException(f'Movie ID {movie_id} does not exist')
+
     category = get_category(db, category_id)
 
-    # TODO: raise exception
-    if movie is None or category is None:
-        return None
+    if category is None:
+        raise InvalidIDException(f'Category ID {category_id} does not exist')
 
     movie.categories.remove(category)
     util.update_category_link(movie.filename, category.name, False)
@@ -391,9 +391,10 @@ def update_movie(
 ) -> models.Movie:
     movie = get_movie(db, id)
 
-    # TODO: raise exception
     if movie is None:
-        return None
+        raise InvalidIDException(f'Movie ID {id} does not exist')
+
+    movie.processed = True
 
     if (
         data.name == movie.name
@@ -401,7 +402,9 @@ def update_movie(
         and data.series_number == movie.series_number
         and data.studio_id == movie.studio_id
     ):
-        # TODO: update processed here
+        # update processed flag
+        db.commit()
+
         return movie
 
     if movie.name != data.name:
@@ -445,9 +448,6 @@ def update_movie(
     movie.series_id = data.series_id
     movie.series_number = data.series_number
     movie.studio_id = data.studio_id
-
-    if not movie.processed:
-        movie.processed = True
 
     util.rename_movie_file(movie)
 

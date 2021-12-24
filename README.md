@@ -7,7 +7,6 @@ Demo Movie Manager App with React and FastAPI
 ### Version 1.0
 
 - HTTP 4xx response on invalid add/remove actor/category to movie
-- parse filename on import
 - rebuild database from file system
 - fix too many state change issues causing unlimited reloads
 

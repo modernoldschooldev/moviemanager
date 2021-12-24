@@ -1,4 +1,3 @@
-from os.path import splitext
 from typing import List
 
 from fastapi import Depends, FastAPI, status
@@ -10,7 +9,7 @@ from . import crud, schemas
 from .config import get_config
 from .database import SessionLocal, engine
 from .models import Base
-from .util import list_files
+from .util import list_files, parse_filename
 
 config = get_config()
 
@@ -292,8 +291,11 @@ def import_movies(db: Session = Depends(get_db)):
     movies = []
 
     for file in files:
-        name, _ = splitext(file)
-        movie = crud.add_movie(db, file, name)
+        name, studio_id, series_id, series_number, actors = \
+            parse_filename(db, file)
+        movie = crud.add_movie(
+            db, file, name, studio_id, series_id, series_number, actors
+        )
 
         if movie is not None:
             movies.append(movie)

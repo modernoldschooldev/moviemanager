@@ -2,12 +2,13 @@ import os
 import os.path
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Tuple
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from sqlalchemy.orm import Session
 
-from . import models
+from . import crud, models
 from .config import get_config
 
 config = get_config()
@@ -94,6 +95,65 @@ def migrate_file(movie: models.Movie, adding: bool = True):
         )
 
     os.rename(path_current, path_new)
+
+
+def parse_filename(
+    db: Session, filename: str
+) -> Tuple[
+    str,
+    Optional[int],
+    Optional[int],
+    Optional[int],
+    List[models.Actor],
+]:
+    name, _ = os.path.splitext(filename)
+
+    # [Studio] {Series Series#} Name (Actor, Actor ...)
+    regex = (
+        r'^'
+        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'
+        r' ?'
+        r'(?:{([A-Za-z0-9 .,\'-]+?)(?: ([0-9]+))?})?'
+        r' ?'
+        r'([A-Za-z0-9 .,\'-]+)?'
+        r' ?'
+        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'
+        r'$'
+    )
+
+    studio_id = None
+    series_id = None
+    series_number = None
+    actors = None
+
+    matches = re.search(regex, name)
+
+    if matches is not None:
+        studio_name, series_name, series_number, name, actor_names = matches.groups()
+
+        if studio_name is not None:
+            studio = crud.get_studio_by_name(db, studio_name)
+
+            if studio is not None:
+                studio_id = studio.id
+
+        if series_name is not None:
+            series = crud.get_series_by_name(db, series_name)
+
+            if series is not None:
+                series_id = series.id
+
+        if actor_names is not None:
+            actors = [
+                actor for actor in
+                (
+                    crud.get_actor_by_name(db, actor_name)
+                    for actor_name in actor_names.split(', ')
+                )
+                if actor is not None
+            ]
+
+    return (name, studio_id, series_id, series_number, actors)
 
 
 def remove_movie(movie: models.Movie) -> None:

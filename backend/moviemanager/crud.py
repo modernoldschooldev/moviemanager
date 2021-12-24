@@ -54,8 +54,8 @@ def add_movie(
     studio_id: Optional[int] = None,
     series_id: Optional[int] = None,
     series_number: Optional[int] = None,
-    actor_ids: Optional[List[int]] = None,
-    category_ids: Optional[List[int]] = None,
+    actors: Optional[List[models.Actor]] = None,
+    categories: Optional[List[models.Category]] = None,
     processed: Optional[bool] = False,
 ) -> models.Movie:
     movie = models.Movie(
@@ -68,11 +68,11 @@ def add_movie(
         processed=processed,
     )
 
-    if actor_ids is not None:
-        movie.actors = actor_ids
+    if actors is not None:
+        movie.actors = actors
 
-    if category_ids is not None:
-        movie.categories = category_ids
+    if categories is not None:
+        movie.categories = categories
 
     try:
         db.add(movie)
@@ -298,11 +298,29 @@ def get_actor(db: Session, id: int) -> models.Actor:
     )
 
 
+def get_actor_by_name(db: Session, name: str) -> models.Actor:
+    return (
+        db
+        .query(models.Actor)
+        .filter(models.Actor.name == name)
+        .first()
+    )
+
+
 def get_category(db: Session, id: int) -> models.Category:
     return (
         db
         .query(models.Category)
         .filter(models.Category.id == id)
+        .first()
+    )
+
+
+def get_category_by_name(db: Session, name: str) -> models.Category:
+    return (
+        db
+        .query(models.Category)
+        .filter(models.Category.name == name)
         .first()
     )
 
@@ -325,11 +343,29 @@ def get_series(db: Session, id: int) -> models.Series:
     )
 
 
+def get_series_by_name(db: Session, name: str) -> models.Series:
+    return (
+        db
+        .query(models.Series)
+        .filter(models.Series.name == name)
+        .first()
+    )
+
+
 def get_studio(db: Session, id: int) -> models.Studio:
     return (
         db
         .query(models.Studio)
         .filter(models.Studio.id == id)
+        .first()
+    )
+
+
+def get_studio_by_name(db: Session, name: str) -> models.Studio:
+    return (
+        db
+        .query(models.Studio)
+        .filter(models.Studio.name == name)
         .first()
     )
 

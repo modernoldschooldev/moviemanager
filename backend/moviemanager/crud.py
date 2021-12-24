@@ -136,7 +136,15 @@ def add_movie_category(
     if category is None:
         raise InvalidIDException(f'Category ID {category_id} does not exist')
 
+    movie_category: models.Category
+    for movie_category in movie.categories:
+        if category_id == movie_category.id:
+            raise DuplicateEntryException(
+                f'Category ID {category_id} is already on Movie ID {movie_id}')
+
     movie.categories.append(category)
+    db.commit()
+
     util.update_category_link(movie.filename, category.name, True)
 
     db.commit()

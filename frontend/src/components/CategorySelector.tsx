@@ -32,14 +32,26 @@ const CategorySelector = ({ formik }: MovieSectionProps) => {
         (category) => category.id === +id
       )[0].name;
 
-      if (response.ok) {
-        formik.setStatus(
-          `Successfully ${
-            selected ? "added" : "removed"
-          } category ${categoryName} ${selected ? "to" : "from"} ${data.name}`
-        );
-      } else {
-        formik.setStatus("Error updating category");
+      switch (response.status) {
+        case 200:
+          formik.setStatus(
+            `Successfully ${
+              selected ? "added" : "removed"
+            } category ${categoryName} ${selected ? "to" : "from"} ${data.name}`
+          );
+          break;
+
+        case 404:
+          formik.setStatus("Server could not find category");
+          break;
+
+        case 409:
+          formik.setStatus(`Category ${categoryName} is already selected`);
+          break;
+
+        default:
+          formik.setStatus("Unknown server error");
+          break;
       }
     }
   };

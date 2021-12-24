@@ -62,7 +62,7 @@ def get_all_actors(db: Session = Depends(get_db)):
         409: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Actor'
-        }
+        },
     },
 )
 def add_actor(
@@ -98,7 +98,7 @@ def get_all_categories(db: Session = Depends(get_db)):
         409: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Category'
-        }
+        },
     },
 )
 def add_category(
@@ -134,7 +134,7 @@ def add_category(
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def add_movie_actor(
@@ -174,7 +174,7 @@ def add_movie_actor(
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def delete_movie_actor(
@@ -209,10 +209,14 @@ def delete_movie_actor(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
         },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Category'
+        },
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def add_movie_category(
@@ -222,6 +226,11 @@ def add_movie_category(
 ):
     try:
         movie = crud.add_movie_category(db, movie_id, category_id)
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -247,7 +256,7 @@ def add_movie_category(
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def delete_movie_category(
@@ -289,7 +298,7 @@ def get_all_movies(db: Session = Depends(get_db)):
         404: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
-        }
+        },
     },
 )
 def get_movie(id: int, db: Session = Depends(get_db)):
@@ -315,7 +324,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     }
 )
 def import_movies(db: Session = Depends(get_db)):
@@ -327,7 +336,6 @@ def import_movies(db: Session = Depends(get_db)):
             detail={'message': str(e)}
         )
 
-    # TODO: can this be a list comprehension with a generator expression?
     movies = []
 
     for file in files:
@@ -364,7 +372,7 @@ def import_movies(db: Session = Depends(get_db)):
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def update_movie_data(
@@ -398,7 +406,7 @@ def update_movie_data(
         500: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Path Error'
-        }
+        },
     },
 )
 def delete_movie(
@@ -441,7 +449,7 @@ def get_all_series(db: Session = Depends(get_db)):
         409: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Series'
-        }
+        },
     },
 )
 def add_series(
@@ -477,7 +485,7 @@ def get_all_studios(db: Session = Depends(get_db)):
         409: {
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Studio'
-        }
+        },
     },
 )
 def add_studio(
@@ -493,5 +501,3 @@ def add_studio(
         )
 
     return studio
-
-# TODO: add endpoints for deleting/updating actor/category/series/studio

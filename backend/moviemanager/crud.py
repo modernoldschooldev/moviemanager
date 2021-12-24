@@ -103,7 +103,15 @@ def add_movie_actor(
     if actor is None:
         raise InvalidIDException(f'Actor ID {actor_id} does not exist')
 
+    movie_actor: models.Actor
+    for movie_actor in movie.actors:
+        if actor_id == movie_actor.id:
+            raise DuplicateEntryException(
+                f'Actor ID {actor_id} is already on Movie ID {movie_id}')
+
     movie.actors.append(actor)
+    db.commit()
+
     util.rename_movie_file(movie)
     util.update_actor_link(movie.filename, actor.name, True)
 

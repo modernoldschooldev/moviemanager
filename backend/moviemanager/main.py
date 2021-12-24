@@ -127,9 +127,13 @@ def add_category(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Invalid ID'
         },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Actor'
+        },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Problem'
+            'description': 'Path Error'
         }
     },
 )
@@ -140,6 +144,11 @@ def add_movie_actor(
 ):
     try:
         movie = crud.add_movie_actor(db, movie_id, actor_id)
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -164,7 +173,7 @@ def add_movie_actor(
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Problem'
+            'description': 'Path Error'
         }
     },
 )
@@ -202,7 +211,7 @@ def delete_movie_actor(
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Problem'
+            'description': 'Path Error'
         }
     },
 )
@@ -237,7 +246,7 @@ def add_movie_category(
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Problem'
+            'description': 'Path Error'
         }
     },
 )

@@ -46,19 +46,31 @@ const ActorSelector = ({ formik }: MovieSectionProps) => {
         (actor) => actor.id === +id
       )[0].name;
 
-      if (response.ok) {
-        dispatch({
-          type: Actions.SetActorsSelected,
-          payload: data.actors,
-        });
+      switch (response.status) {
+        case 200:
+          dispatch({
+            type: Actions.SetActorsSelected,
+            payload: data.actors,
+          });
 
-        formik.setStatus(
-          `Successfully ${selected ? "added" : "removed"} ${actorName} ${
-            selected ? "to" : "from"
-          } ${data.name}`
-        );
-      } else {
-        formik.setStatus("Error updating actor");
+          formik.setStatus(
+            `Successfully ${selected ? "added" : "removed"} ${actorName} ${
+              selected ? "to" : "from"
+            } ${data.name}`
+          );
+          break;
+
+        case 404:
+          formik.setStatus("Server could not find actor");
+          break;
+
+        case 409:
+          formik.setStatus(`Actor ${actorName} is already selected`);
+          break;
+
+        default:
+          formik.setStatus("Unknown server error");
+          break;
       }
     }
   };

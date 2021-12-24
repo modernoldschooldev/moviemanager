@@ -1,5 +1,6 @@
 import os
 import os.path
+import re
 from pathlib import Path
 from typing import List
 
@@ -53,6 +54,18 @@ def generate_movie_filename(movie: models.Movie) -> str:
         filename = movie.filename
 
     return filename
+
+
+def generate_sort_name(name: str) -> str:
+    return re.sub(
+        r'^(?:a|an|the) ',
+        '',
+        re.sub(
+            r'[^a-z0-9 ]',
+            '',
+            name.lower(),
+        ),
+    )
 
 
 def list_files(path: str) -> List[str]:

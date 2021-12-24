@@ -61,6 +61,7 @@ def add_movie(
     movie = models.Movie(
         filename=filename,
         name=name,
+        sort_name=util.generate_sort_name(name),
         studio_id=studio_id,
         series_id=series_id,
         series_number=series_number,
@@ -132,7 +133,8 @@ def add_series(
     name: str,
 ) -> models.Series:
     series = models.Series(
-        name=name
+        name=name,
+        sort_name=util.generate_sort_name(name),
     )
 
     try:
@@ -151,7 +153,8 @@ def add_studio(
     name: str,
 ) -> models.Studio:
     studio = models.Studio(
-        name=name
+        name=name,
+        sort_name=util.generate_sort_name(name),
     )
 
     try:
@@ -256,9 +259,9 @@ def get_all_movies(db: Session) -> List[models.Movie]:
         .outerjoin(models.Series)
         .order_by(
             models.Movie.processed,
-            models.Studio.name,
-            models.Series.name,
-            models.Movie.name,
+            models.Studio.sort_name,
+            models.Series.sort_name,
+            models.Movie.sort_name,
         )
         .all()
     )
@@ -348,6 +351,9 @@ def update_movie(
         and data.studio_id == movie.studio_id
     ):
         return movie
+
+    if movie.name != data.name:
+        movie.sort_name = util.generate_sort_name(data.name)
 
     if movie.series_id != data.series_id:
         series_current = get_series(db, movie.series_id).name \

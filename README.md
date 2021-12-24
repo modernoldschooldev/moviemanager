@@ -6,11 +6,10 @@ Demo Movie Manager App with React and FastAPI
 
 ### Version 1.0
 
-- reset checkbox on category update failure
 - HTTP 4xx response on invalid add/remove actor/category to movie
-- shorten actor list when the filename is too long
 - parse filename on import
 - rebuild database from file system
+- fix too many state change issues causing unlimited reloads
 
 ### Version 2.0
 

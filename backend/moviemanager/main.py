@@ -79,6 +79,67 @@ def add_actor(
 
     return actor
 
+
+@app.put(
+    '/actors/{id}',
+    response_model=schemas.Actor,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Actor'
+        },
+    }
+)
+def update_actor(
+    id: int,
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    try:
+        actor = crud.update_actor(db, id, data.name.strip())
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return actor
+
+
+@app.delete(
+    '/actors/{id}',
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+    }
+)
+def delete_actor(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        crud.delete_actor(db, id)
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted actor ID {id}'
+    }
+
 ################################################################################
 # /categories endpoints
 
@@ -114,6 +175,67 @@ def add_category(
         )
 
     return category
+
+
+@app.put(
+    '/categories/{id}',
+    response_model=schemas.Category,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Category'
+        },
+    }
+)
+def update_category(
+    id: int,
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    try:
+        category = crud.update_category(db, id, data.name.strip())
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return category
+
+
+@app.delete(
+    '/categories/{id}',
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+    }
+)
+def delete_category(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        crud.delete_category(db, id)
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted category ID {id}'
+    }
 
 ################################################################################
 # /movie_actor endpoints
@@ -427,7 +549,7 @@ def delete_movie(
         )
 
     return {
-        'message': f'Deleted movie with ID {id}'
+        'message': f'Deleted movie ID {id}'
     }
 
 ################################################################################
@@ -466,6 +588,68 @@ def add_series(
 
     return series
 
+
+@app.put(
+    '/series/{id}',
+    response_model=schemas.Series,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Series'
+        },
+    }
+)
+def update_series(
+    id: int,
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    try:
+        series = crud.update_series(db, id, data.name.strip())
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return series
+
+
+@app.delete(
+    '/series/{id}',
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+    }
+)
+def delete_series(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        crud.delete_series(db, id)
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted series ID {id}'
+    }
+
+
 ################################################################################
 # /studios endpoints
 
@@ -501,3 +685,64 @@ def add_studio(
         )
 
     return studio
+
+
+@app.put(
+    '/studios/{id}',
+    response_model=schemas.Studio,
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+        409: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Duplicate Studio'
+        },
+    }
+)
+def update_studio(
+    id: int,
+    data: schemas.MoviePropertySchema,
+    db: Session = Depends(get_db)
+):
+    try:
+        studio = crud.update_studio(db, id, data.name.strip())
+    except DuplicateEntryException as e:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return studio
+
+
+@app.delete(
+    '/studios/{id}',
+    responses={
+        404: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Invalid ID'
+        },
+    }
+)
+def delete_studio(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        crud.delete_studio(db, id)
+    except InvalidIDException as e:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted studio ID {id}'
+    }

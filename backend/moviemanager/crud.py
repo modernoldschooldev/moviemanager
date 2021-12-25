@@ -195,6 +195,32 @@ def add_studio(
     return studio
 
 
+def delete_actor(
+    db: Session,
+    id: int,
+) -> None:
+    actor = get_actor(db, id)
+
+    if actor is None:
+        raise InvalidIDException(f'Actor ID {id} does not exist')
+
+    db.delete(actor)
+    db.commit()
+
+
+def delete_category(
+    db: Session,
+    id: int,
+) -> None:
+    category = get_category(db, id)
+
+    if category is None:
+        raise InvalidIDException(f'Category ID {id} does not exist')
+
+    db.delete(category)
+    db.commit()
+
+
 def delete_movie(
     db: Session,
     id: int,
@@ -257,6 +283,32 @@ def delete_movie_category(
     db.refresh(movie)
 
     return movie
+
+
+def delete_series(
+    db: Session,
+    id: int,
+) -> None:
+    series = get_series(db, id)
+
+    if series is None:
+        raise InvalidIDException(f'Series ID {id} does not exist')
+
+    db.delete(series)
+    db.commit()
+
+
+def delete_studio(
+    db: Session,
+    id: int,
+) -> None:
+    studio = get_studio(db, id)
+
+    if studio is None:
+        raise InvalidIDException(f'Studio ID {id} does not exist')
+
+    db.delete(studio)
+    db.commit()
 
 
 def get_all_actors(db: Session) -> List[models.Actor]:
@@ -400,6 +452,52 @@ def get_studio_by_name(db: Session, name: str) -> models.Studio:
     )
 
 
+def update_actor(
+    db: Session,
+    id: int,
+    name: str,
+) -> models.Actor:
+    actor = get_actor(db, id)
+
+    if actor is None:
+        raise InvalidIDException(f'Actor ID {id} does not exist')
+
+    actor.name = name
+
+    try:
+        db.commit()
+        db.refresh(actor)
+    except IntegrityError:
+        db.rollback()
+
+        raise DuplicateEntryException(f'Actor {name} already exists')
+
+    return actor
+
+
+def update_category(
+    db: Session,
+    id: int,
+    name: str,
+) -> models.Category:
+    category = get_category(db, id)
+
+    if category is None:
+        raise InvalidIDException(f'Category ID {id} does not exist')
+
+    category.name = name
+
+    try:
+        db.commit()
+        db.refresh(category)
+    except IntegrityError:
+        db.rollback()
+
+        raise DuplicateEntryException(f'Category {name} already exists')
+
+    return category
+
+
 def update_movie(
     db: Session,
     id: int,
@@ -471,3 +569,49 @@ def update_movie(
     db.refresh(movie)
 
     return movie
+
+
+def update_series(
+    db: Session,
+    id: int,
+    name: str,
+) -> models.Series:
+    series = get_series(db, id)
+
+    if series is None:
+        raise InvalidIDException(f'Series ID {id} does not exist')
+
+    series.name = name
+
+    try:
+        db.commit()
+        db.refresh(series)
+    except IntegrityError:
+        db.rollback()
+
+        raise DuplicateEntryException(f'Series {name} already exists')
+
+    return series
+
+
+def update_studio(
+    db: Session,
+    id: int,
+    name: str,
+) -> models.Actor:
+    studio = get_studio(db, id)
+
+    if studio is None:
+        raise InvalidIDException(f'Studio ID {id} does not exist')
+
+    studio.name = name
+
+    try:
+        db.commit()
+        db.refresh(studio)
+    except IntegrityError:
+        db.rollback()
+
+        raise DuplicateEntryException(f'Studio {name} already exists')
+
+    return studio

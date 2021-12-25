@@ -45,7 +45,11 @@ const NameSelectorChanged = () => {
           break;
       }
 
-      setFieldValue("name", names.filter((name) => id === name.id)[0].name);
+      const nameFilter = names.filter((name) => id === name.id);
+
+      if (nameFilter.length > 0) {
+        setFieldValue("name", nameFilter[0].name);
+      }
     }
   }, [nameSelection, selection, setFieldValue, state]);
 
@@ -60,6 +64,7 @@ const PropertySelectionChanged = () => {
 
   useEffect(() => {
     setFieldValue("name", "");
+    setFieldValue("nameSelection", "");
   }, [selection, setFieldValue]);
 
   return null;
@@ -76,10 +81,10 @@ const MoviePropertyForm = () => {
   };
 
   const onSubmit = (
-    { name, selection }: AdminFormValuesType,
+    { action, name, nameSelection, selection }: AdminFormValuesType,
     helpers: FormikHelpers<AdminFormValuesType>
   ) => {
-    const helper = async (endpoint: string) => {
+    const addHelper = async (endpoint: string) => {
       const selectionTitle =
         selection.charAt(0).toUpperCase() + selection.slice(1);
 
@@ -112,6 +117,89 @@ const MoviePropertyForm = () => {
       }
     };
 
+    const removeHelper = async (endpoint: string) => {
+      const selectionTitle =
+        selection.charAt(0).toUpperCase() + selection.slice(1);
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND}/${endpoint}/${nameSelection}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      await response.json();
+
+      switch (response.status) {
+        case 200:
+          helpers.setStatus(`${selectionTitle} ${name} deleted`);
+          break;
+
+        case 404:
+          helpers.setStatus(`${selectionTitle} ${name} not found on server`);
+          break;
+
+        default:
+          helpers.setStatus("Unknown response from backend");
+          break;
+      }
+    };
+
+    const updateHelper = async (endpoint: string) => {
+      const selectionTitle =
+        selection.charAt(0).toUpperCase() + selection.slice(1);
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND}/${endpoint}/${nameSelection}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+          }),
+        }
+      );
+      await response.json();
+
+      switch (response.status) {
+        case 200:
+          helpers.setStatus(`${selectionTitle} ${name} updated`);
+          break;
+
+        case 404:
+          helpers.setStatus(`${selectionTitle} ${name} not found on server`);
+          break;
+
+        case 409:
+          helpers.setStatus(`${selectionTitle} ${name} already exists`);
+          break;
+
+        default:
+          helpers.setStatus("Unknown response from backend");
+          break;
+      }
+    };
+
+    let helper;
+
+    switch (action) {
+      case "add":
+        helper = addHelper;
+        break;
+
+      case "remove":
+        helper = removeHelper;
+        break;
+
+      case "update":
+        helper = updateHelper;
+        break;
+    }
+
     switch (selection) {
       case "actor":
         helper("actors");
@@ -127,10 +215,6 @@ const MoviePropertyForm = () => {
 
       case "studio":
         helper("studios");
-        break;
-
-      default:
-        console.error("You should not be seeing this...");
         break;
     }
 
@@ -221,52 +305,56 @@ const MoviePropertyForm = () => {
               </MoviePropertyFormSelector>
             </div>
 
-            <div className="my-3">
-              <select
-                className="p-1 rounded-lg w-full"
-                name="nameSelection"
-                onChange={formik.handleChange}
-              >
-                <option value="">None</option>
+            {formik.values.action !== "add" && (
+              <div className="my-3">
+                <select
+                  className="p-1 rounded-lg w-full"
+                  name="nameSelection"
+                  onChange={formik.handleChange}
+                >
+                  <option value="">None</option>
 
-                {formik.values.selection === "actor" &&
-                  state?.actorsAvailable.map((actor) => (
-                    <option key={actor.id} value={actor.id}>
-                      {actor.name}
-                    </option>
-                  ))}
+                  {formik.values.selection === "actor" &&
+                    state?.actorsAvailable.map((actor) => (
+                      <option key={actor.id} value={actor.id}>
+                        {actor.name}
+                      </option>
+                    ))}
 
-                {formik.values.selection === "category" &&
-                  state?.categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {formik.values.selection === "category" &&
+                    state?.categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
 
-                {formik.values.selection === "series" &&
-                  state?.series.map((series) => (
-                    <option key={series.id} value={series.id}>
-                      {series.name}
-                    </option>
-                  ))}
+                  {formik.values.selection === "series" &&
+                    state?.series.map((series) => (
+                      <option key={series.id} value={series.id}>
+                        {series.name}
+                      </option>
+                    ))}
 
-                {formik.values.selection === "studio" &&
-                  state?.studios.map((studio) => (
-                    <option key={studio.id} value={studio.id}>
-                      {studio.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
+                  {formik.values.selection === "studio" &&
+                    state?.studios.map((studio) => (
+                      <option key={studio.id} value={studio.id}>
+                        {studio.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
 
-            <div className="my-3">
-              <Field
-                className="border border-black focus:bg-gray-100 px-3 rounded-xl w-full"
-                type="text"
-                name="name"
-                required
-              />
-            </div>
+            {formik.values.action !== "remove" && (
+              <div className="my-3">
+                <Field
+                  className="border border-black focus:bg-gray-100 px-3 rounded-xl w-full"
+                  type="text"
+                  name="name"
+                  required
+                />
+              </div>
+            )}
 
             <div className="grid my-3 mx-8">
               <button

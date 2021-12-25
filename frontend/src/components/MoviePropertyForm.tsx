@@ -45,27 +45,23 @@ const NameSelectorChanged = () => {
           break;
       }
 
-      const nameFilter = names.filter((name) => id === name.id);
-
-      if (nameFilter.length > 0) {
-        setFieldValue("name", nameFilter[0].name);
-      }
+      setFieldValue("name", names.filter((name) => id === name.id)[0]?.name);
     }
   }, [nameSelection, selection, setFieldValue, state]);
 
   return null;
 };
 
-const PropertySelectionChanged = () => {
+const RadioSelectionChanged = () => {
   const {
     setFieldValue,
-    values: { selection },
+    values: { action, selection },
   } = useFormikContext<AdminFormValuesType>();
 
   useEffect(() => {
     setFieldValue("name", "");
     setFieldValue("nameSelection", "");
-  }, [selection, setFieldValue]);
+  }, [action, selection, setFieldValue]);
 
   return null;
 };
@@ -84,27 +80,52 @@ const MoviePropertyForm = () => {
     { action, name, nameSelection, selection }: AdminFormValuesType,
     helpers: FormikHelpers<AdminFormValuesType>
   ) => {
-    const addHelper = async (endpoint: string) => {
+    const helper = async (endpoint: string) => {
       const selectionTitle =
         selection.charAt(0).toUpperCase() + selection.slice(1);
 
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/${endpoint}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-          }),
-        }
-      );
+      const baseURL = `${process.env.REACT_APP_BACKEND}/${endpoint}`;
+      let url = `${baseURL}/${nameSelection}`;
+      let method: "POST" | "DELETE" | "PUT";
+      let headers = {
+        "Content-Type": "application/json",
+      };
+      let body: string | undefined = JSON.stringify({ name });
+      let verb: "added" | "removed" | "updated";
+
+      switch (action) {
+        case "add":
+          url = baseURL;
+          method = "POST";
+          verb = "added";
+          break;
+
+        case "remove":
+          method = "DELETE";
+          body = undefined;
+          verb = "removed";
+          break;
+
+        case "update":
+          method = "PUT";
+          verb = "updated";
+          break;
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers,
+        body,
+      });
       await response.json();
 
       switch (response.status) {
         case 200:
-          helpers.setStatus(`${selectionTitle} ${name} added`);
+          helpers.setStatus(`${selectionTitle} ${name} ${verb}`);
+          break;
+
+        case 404:
+          helpers.setStatus(`Server cannot find ${selectionTitle} ${name}`);
           break;
 
         case 409:
@@ -112,93 +133,10 @@ const MoviePropertyForm = () => {
           break;
 
         default:
-          helpers.setStatus("Unknown response from backend");
+          helpers.setStatus(`Server returned HTTP ${response.status}`);
           break;
       }
     };
-
-    const removeHelper = async (endpoint: string) => {
-      const selectionTitle =
-        selection.charAt(0).toUpperCase() + selection.slice(1);
-
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/${endpoint}/${nameSelection}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      await response.json();
-
-      switch (response.status) {
-        case 200:
-          helpers.setStatus(`${selectionTitle} ${name} deleted`);
-          break;
-
-        case 404:
-          helpers.setStatus(`${selectionTitle} ${name} not found on server`);
-          break;
-
-        default:
-          helpers.setStatus("Unknown response from backend");
-          break;
-      }
-    };
-
-    const updateHelper = async (endpoint: string) => {
-      const selectionTitle =
-        selection.charAt(0).toUpperCase() + selection.slice(1);
-
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/${endpoint}/${nameSelection}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-          }),
-        }
-      );
-      await response.json();
-
-      switch (response.status) {
-        case 200:
-          helpers.setStatus(`${selectionTitle} ${name} updated`);
-          break;
-
-        case 404:
-          helpers.setStatus(`${selectionTitle} ${name} not found on server`);
-          break;
-
-        case 409:
-          helpers.setStatus(`${selectionTitle} ${name} already exists`);
-          break;
-
-        default:
-          helpers.setStatus("Unknown response from backend");
-          break;
-      }
-    };
-
-    let helper;
-
-    switch (action) {
-      case "add":
-        helper = addHelper;
-        break;
-
-      case "remove":
-        helper = removeHelper;
-        break;
-
-      case "update":
-        helper = updateHelper;
-        break;
-    }
 
     switch (selection) {
       case "actor":
@@ -227,7 +165,7 @@ const MoviePropertyForm = () => {
         {(formik) => (
           <form onSubmit={formik.handleSubmit}>
             <NameSelectorChanged />
-            <PropertySelectionChanged />
+            <RadioSelectionChanged />
 
             <div className="flex justify-center mb-3">
               <MoviePropertyFormSelector title="Action">
@@ -310,6 +248,7 @@ const MoviePropertyForm = () => {
                 <select
                   className="p-1 rounded-lg w-full"
                   name="nameSelection"
+                  value={formik.values.nameSelection}
                   onChange={formik.handleChange}
                 >
                   <option value="">None</option>
@@ -366,7 +305,7 @@ const MoviePropertyForm = () => {
             </div>
 
             {formik.status && (
-              <div className="my-6 text-center">
+              <div className="font-semibold mt-5 text-center">
                 <p>{formik.status}</p>
               </div>
             )}

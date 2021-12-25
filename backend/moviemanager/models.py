@@ -25,6 +25,9 @@ movie_categories = Table(
 
 
 class Actor(Base):
+    # Thanks to The Aelfinn for passive_deletes='all'
+    # https://stackoverflow.com/a/42982117/1730980
+
     __tablename__ = 'actors'
 
     id = Column(Integer, primary_key=True)
@@ -35,10 +38,14 @@ class Actor(Base):
         secondary=movie_actors,
         back_populates='actors',
         order_by='Movie.name',
+        passive_deletes='all',
     )
 
 
 class Category(Base):
+    # Thanks to The Aelfinn for passive_deletes='all'
+    # https://stackoverflow.com/a/42982117/1730980
+
     __tablename__ = 'categories'
 
     id = Column(Integer, primary_key=True)
@@ -49,6 +56,7 @@ class Category(Base):
         secondary=movie_categories,
         back_populates='categories',
         order_by='Movie.name',
+        passive_deletes='all',
     )
 
 
@@ -92,6 +100,9 @@ class Movie(Base):
 
 
 class Series(Base):
+    # Thanks to The Aelfinn for passive_deletes='all'
+    # https://stackoverflow.com/a/42982117/1730980
+
     __tablename__ = 'series'
 
     id = Column(Integer, primary_key=True)
@@ -102,10 +113,14 @@ class Series(Base):
         'Movie',
         back_populates='series',
         order_by='Movie.name',
+        passive_deletes='all',
     )
 
 
 class Studio(Base):
+    # Thanks to The Aelfinn for passive_deletes='all'
+    # https://stackoverflow.com/a/42982117/1730980
+
     __tablename__ = 'studios'
 
     id = Column(Integer, primary_key=True)
@@ -116,4 +131,5 @@ class Studio(Base):
         'Movie',
         back_populates='studio',
         order_by='Movie.name',
+        passive_deletes='all',
     )

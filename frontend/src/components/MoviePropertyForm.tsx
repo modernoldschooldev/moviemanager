@@ -81,6 +81,12 @@ const MoviePropertyForm = () => {
     helpers: FormikHelpers<AdminFormValuesType>
   ) => {
     const helper = async (endpoint: string) => {
+      // avoid trying to remove the None element
+      if (action === "remove" && nameSelection === "") {
+        helpers.setStatus("Please make a selection first");
+        return;
+      }
+
       const selectionTitle =
         selection.charAt(0).toUpperCase() + selection.slice(1);
 
@@ -125,11 +131,17 @@ const MoviePropertyForm = () => {
           break;
 
         case 404:
-          helpers.setStatus(`Server cannot find ${selectionTitle} ${name}`);
+          helpers.setStatus(`${selectionTitle} ${name} not found`);
           break;
 
         case 409:
           helpers.setStatus(`${selectionTitle} ${name} already exists`);
+          break;
+
+        case 412:
+          helpers.setStatus(
+            `${selectionTitle} ${name} is on a movie and cannot be removed`
+          );
           break;
 
         default:

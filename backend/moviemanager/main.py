@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from . import crud, schemas
 from .config import get_config
 from .database import SessionLocal, engine
-from .exceptions import (DuplicateEntryException, InvalidIDException,
+from .exceptions import (DuplicateEntryException, IntegrityConstraintException, InvalidIDException,
                          ListFilesException, PathException)
 from .models import Base
 from .util import list_files, parse_filename
@@ -61,7 +61,7 @@ def get_all_actors(db: Session = Depends(get_db)):
     responses={
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Actor'
+            'description': 'Duplicate Actor',
         },
     },
 )
@@ -86,11 +86,11 @@ def add_actor(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Actor'
+            'description': 'Duplicate Actor',
         },
     }
 )
@@ -120,7 +120,11 @@ def update_actor(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
         },
     }
 )
@@ -130,6 +134,11 @@ def delete_actor(
 ):
     try:
         crud.delete_actor(db, id)
+    except IntegrityConstraintException as e:
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -158,7 +167,7 @@ def get_all_categories(db: Session = Depends(get_db)):
     responses={
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Category'
+            'description': 'Duplicate Category',
         },
     },
 )
@@ -183,7 +192,7 @@ def add_category(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
@@ -217,7 +226,11 @@ def update_category(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
         },
     }
 )
@@ -227,6 +240,11 @@ def delete_category(
 ):
     try:
         crud.delete_category(db, id)
+    except IntegrityConstraintException as e:
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -247,15 +265,15 @@ def delete_category(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Actor'
+            'description': 'Duplicate Actor',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -291,11 +309,11 @@ def add_movie_actor(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -329,15 +347,15 @@ def delete_movie_actor(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Category'
+            'description': 'Duplicate Category',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -373,11 +391,11 @@ def add_movie_category(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -419,7 +437,7 @@ def get_all_movies(db: Session = Depends(get_db)):
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
     },
 )
@@ -441,11 +459,11 @@ def get_movie(id: int, db: Session = Depends(get_db)):
     responses={
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Movie'
+            'description': 'Duplicate Movie',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     }
 )
@@ -489,11 +507,11 @@ def import_movies(db: Session = Depends(get_db)):
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -523,11 +541,11 @@ def update_movie_data(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         500: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Path Error'
+            'description': 'Path Error',
         },
     },
 )
@@ -570,7 +588,7 @@ def get_all_series(db: Session = Depends(get_db)):
     responses={
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Series'
+            'description': 'Duplicate Series',
         },
     },
 )
@@ -595,11 +613,11 @@ def add_series(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Series'
+            'description': 'Duplicate Series',
         },
     }
 )
@@ -629,7 +647,11 @@ def update_series(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
         },
     }
 )
@@ -639,6 +661,11 @@ def delete_series(
 ):
     try:
         crud.delete_series(db, id)
+    except IntegrityConstraintException as e:
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -668,7 +695,7 @@ def get_all_studios(db: Session = Depends(get_db)):
     responses={
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Studio'
+            'description': 'Duplicate Studio',
         },
     },
 )
@@ -693,11 +720,11 @@ def add_studio(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
         },
         409: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Duplicate Studio'
+            'description': 'Duplicate Studio',
         },
     }
 )
@@ -727,7 +754,11 @@ def update_studio(
     responses={
         404: {
             'model': schemas.HTTPExceptionSchema,
-            'description': 'Invalid ID'
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
         },
     }
 )
@@ -737,6 +768,11 @@ def delete_studio(
 ):
     try:
         crud.delete_studio(db, id)
+    except IntegrityConstraintException as e:
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,

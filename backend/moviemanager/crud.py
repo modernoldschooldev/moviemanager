@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, schemas, util
-from .exceptions import DuplicateEntryException, InvalidIDException
+from .exceptions import DuplicateEntryException, IntegrityConstraintException, InvalidIDException
 
 
 def add_actor(
@@ -204,8 +204,14 @@ def delete_actor(
     if actor is None:
         raise InvalidIDException(f'Actor ID {id} does not exist')
 
-    db.delete(actor)
-    db.commit()
+    try:
+        db.delete(actor)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise IntegrityConstraintException(
+            f'Movie exists with actor {actor.name}')
 
 
 def delete_category(
@@ -217,8 +223,14 @@ def delete_category(
     if category is None:
         raise InvalidIDException(f'Category ID {id} does not exist')
 
-    db.delete(category)
-    db.commit()
+    try:
+        db.delete(category)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise IntegrityConstraintException(
+            f'Movie exists with category {category.name}')
 
 
 def delete_movie(
@@ -294,8 +306,14 @@ def delete_series(
     if series is None:
         raise InvalidIDException(f'Series ID {id} does not exist')
 
-    db.delete(series)
-    db.commit()
+    try:
+        db.delete(series)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise IntegrityConstraintException(
+            f'Movie exists with series {series.name}')
 
 
 def delete_studio(
@@ -307,8 +325,14 @@ def delete_studio(
     if studio is None:
         raise InvalidIDException(f'Studio ID {id} does not exist')
 
-    db.delete(studio)
-    db.commit()
+    try:
+        db.delete(studio)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise IntegrityConstraintException(
+            f'Movie exists with studio {studio.name}')
 
 
 def get_all_actors(db: Session) -> List[models.Actor]:

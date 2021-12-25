@@ -31,6 +31,12 @@ const MovieData = ({ formik }: MovieSectionProps) => {
 
         if (response.ok) {
           formik.setStatus(`Successfully removed ${filename}`);
+          formik.resetForm();
+
+          dispatch({
+            type: Actions.SetActorsSelected,
+            payload: [],
+          });
         } else {
           formik.setStatus(`Error removing ${filename}`);
         }

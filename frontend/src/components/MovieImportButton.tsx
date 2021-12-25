@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const AdminImportMovies = () => {
+const MovieImportButton = () => {
   const [importStatus, setImportStatus] = useState("");
 
   const onImportMovies = async () => {
@@ -41,4 +41,4 @@ const AdminImportMovies = () => {
   );
 };
 
-export default AdminImportMovies;
+export default MovieImportButton;

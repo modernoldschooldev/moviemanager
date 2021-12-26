@@ -368,6 +368,7 @@ def get_all_movies(db: Session) -> List[models.Movie]:
             models.Movie.processed,
             models.Studio.sort_name,
             models.Series.sort_name,
+            models.Movie.series_number,
             models.Movie.sort_name,
         )
         .all()

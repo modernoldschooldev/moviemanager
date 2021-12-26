@@ -8,7 +8,6 @@ Demo Movie Manager App with React and FastAPI
 
 - API logging
 - fix too many state change issues causing unlimited reloads
-- update movie filename on property update
 
 ### Version 2.0
 

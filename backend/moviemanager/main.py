@@ -5,13 +5,12 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import crud, schemas
+from . import crud, schemas, util
 from .config import get_config
 from .database import SessionLocal, engine
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
 from .models import Base
-from .util import list_files, migrate_file, parse_file_info
 
 config = get_config()
 
@@ -92,6 +91,10 @@ def add_actor(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Actor',
         },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error',
+        },
     }
 )
 def update_actor(
@@ -100,7 +103,12 @@ def update_actor(
     db: Session = Depends(get_db)
 ):
     try:
+        actor_name = crud.get_actor(db, id).name
         actor = crud.update_actor(db, id, data.name.strip())
+
+        for movie in actor.movies:
+            util.rename_movie_file(movie, actor_current=actor_name)
+            db.commit()
     except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -109,6 +117,11 @@ def update_actor(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -198,6 +211,10 @@ def add_category(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Category'
         },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error',
+        },
     }
 )
 def update_category(
@@ -206,7 +223,12 @@ def update_category(
     db: Session = Depends(get_db)
 ):
     try:
+        category_name = crud.get_category(db, id).name
         category = crud.update_category(db, id, data.name.strip())
+
+        for movie in category.movies:
+            util.rename_movie_file(movie, category_current=category_name)
+            db.commit()
     except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -215,6 +237,11 @@ def update_category(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -469,7 +496,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
 )
 def import_movies(db: Session = Depends(get_db)):
     try:
-        files = list_files(config['imports'])
+        files = util.list_files(config['imports'])
     except ListFilesException as e:
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -485,12 +512,12 @@ def import_movies(db: Session = Depends(get_db)):
             series_id,
             series_number,
             actors
-        ) = parse_file_info(db, file)
+        ) = util.parse_file_info(db, file)
 
         try:
             # attempt to migrate the file before adding to the DB
             # if this fails, we don't want a DB entry
-            migrate_file(file)
+            util.migrate_file(file)
 
             movie = crud.add_movie(
                 db, file, name, studio_id, series_id, series_number, actors
@@ -628,6 +655,10 @@ def add_series(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Series',
         },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error',
+        },
     }
 )
 def update_series(
@@ -636,7 +667,12 @@ def update_series(
     db: Session = Depends(get_db)
 ):
     try:
+        series_name = crud.get_series(db, id).name
         series = crud.update_series(db, id, data.name.strip())
+
+        for movie in series.movies:
+            util.rename_movie_file(movie, series_current=series_name)
+            db.commit()
     except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -645,6 +681,11 @@ def update_series(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
@@ -735,6 +776,10 @@ def add_studio(
             'model': schemas.HTTPExceptionSchema,
             'description': 'Duplicate Studio',
         },
+        500: {
+            'model': schemas.HTTPExceptionSchema,
+            'description': 'Path Error',
+        },
     }
 )
 def update_studio(
@@ -743,7 +788,12 @@ def update_studio(
     db: Session = Depends(get_db)
 ):
     try:
+        studio_name = crud.get_studio(db, id).name
         studio = crud.update_studio(db, id, data.name.strip())
+
+        for movie in studio.movies:
+            util.rename_movie_file(movie, studio_current=studio_name)
+            db.commit()
     except DuplicateEntryException as e:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -752,6 +802,11 @@ def update_studio(
     except InvalidIDException as e:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 

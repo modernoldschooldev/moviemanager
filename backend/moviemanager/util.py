@@ -194,7 +194,13 @@ def remove_movie(movie: models.Movie) -> None:
         update_studio_link(movie.filename, movie.studio.name, False)
 
 
-def rename_movie_file(movie: models.Movie) -> None:
+def rename_movie_file(
+    movie: models.Movie,
+    actor_current: Optional[str] = None,
+    category_current: Optional[str] = None,
+    series_current: Optional[str] = None,
+    studio_current: Optional[str] = None,
+) -> None:
     filename_current = movie.filename
     filename_new = generate_movie_filename(movie)
 
@@ -202,7 +208,9 @@ def rename_movie_file(movie: models.Movie) -> None:
     path_current = f'{path_base}/{filename_current}'
     path_new = f'{path_base}/{filename_new}'
 
-    if path_current != path_new:
+    path_changed = path_current != path_new
+
+    if path_changed:
         if os.path.exists(path_new):
             raise PathException(
                 f'Unable to rename {movie.filename} '
@@ -214,21 +222,34 @@ def rename_movie_file(movie: models.Movie) -> None:
 
         actor: models.Actor
         for actor in movie.actors:
-            update_actor_link(filename_current, actor.name, False)
+            if actor_current is None:
+                actor_current = actor.name
+
+            update_actor_link(filename_current, actor_current, False)
             update_actor_link(filename_new, actor.name, True)
 
-        category: models.Category
-        for category in movie.categories:
-            update_category_link(filename_current, category.name, False)
-            update_category_link(filename_new, category.name, True)
-
         if movie.series is not None:
-            update_series_link(filename_current, movie.series.name, False)
+            if series_current is None:
+                series_current = movie.series.name
+
+            update_series_link(filename_current, series_current, False)
             update_series_link(filename_new, movie.series.name, True)
 
         if movie.studio is not None:
-            update_studio_link(filename_current, movie.studio.name, False)
+            if studio_current is None:
+                studio_current = movie.studio.name
+
+            update_studio_link(filename_current, studio_current, False)
             update_studio_link(filename_new, movie.studio.name, True)
+
+    if path_changed or category_current is not None:
+        category: models.Category
+        for category in movie.categories:
+            if category_current is None:
+                category_current = category.name
+
+            update_category_link(filename_current, category_current, False)
+            update_category_link(filename_new, category.name, True)
 
 
 def update_link(

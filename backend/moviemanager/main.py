@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 from . import crud, schemas
 from .config import get_config
 from .database import SessionLocal, engine
-from .exceptions import (DuplicateEntryException, IntegrityConstraintException, InvalidIDException,
-                         ListFilesException, PathException)
+from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
+                         InvalidIDException, ListFilesException, PathException)
 from .models import Base
-from .util import list_files, parse_filename
+from .util import list_files, migrate_file, parse_file_info
 
 config = get_config()
 
@@ -479,10 +479,19 @@ def import_movies(db: Session = Depends(get_db)):
     movies = []
 
     for file in files:
-        name, studio_id, series_id, series_number, actors = \
-            parse_filename(db, file)
+        (
+            name,
+            studio_id,
+            series_id,
+            series_number,
+            actors
+        ) = parse_file_info(db, file)
 
         try:
+            # attempt to migrate the file before adding to the DB
+            # if this fails, we don't want a DB entry
+            migrate_file(file)
+
             movie = crud.add_movie(
                 db, file, name, studio_id, series_id, series_number, actors
             )

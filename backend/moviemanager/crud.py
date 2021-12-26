@@ -4,7 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, schemas, util
-from .exceptions import DuplicateEntryException, IntegrityConstraintException, InvalidIDException
+from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
+                         InvalidIDException)
 
 
 def add_actor(
@@ -83,8 +84,6 @@ def add_movie(
 
         raise DuplicateEntryException(f'Movie {filename} already exists')
 
-    util.migrate_file(movie)
-
     return movie
 
 
@@ -107,7 +106,8 @@ def add_movie_actor(
     for movie_actor in movie.actors:
         if actor_id == movie_actor.id:
             raise DuplicateEntryException(
-                f'Actor ID {actor_id} is already on Movie ID {movie_id}')
+                f'Actor ID {actor_id} is already on Movie ID {movie_id}'
+            )
 
     movie.actors.append(actor)
     db.commit()
@@ -140,7 +140,8 @@ def add_movie_category(
     for movie_category in movie.categories:
         if category_id == movie_category.id:
             raise DuplicateEntryException(
-                f'Category ID {category_id} is already on Movie ID {movie_id}')
+                f'Category ID {category_id} is already on Movie ID {movie_id}'
+            )
 
     movie.categories.append(category)
     db.commit()

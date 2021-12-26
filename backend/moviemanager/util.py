@@ -76,82 +76,110 @@ def list_files(path: str) -> List[str]:
     return files
 
 
-def migrate_file(movie: models.Movie, adding: bool = True):
+def migrate_file(filename: str, adding: bool = True):
     base_current = config['imports'] if adding else config['movies']
     base_new = config['movies'] if adding else config['imports']
 
-    path_current = f'{base_current}/{movie.filename}'
-    path_new = f'{base_new}/{movie.filename}'
+    path_current = f'{base_current}/{filename}'
+    path_new = f'{base_new}/{filename}'
 
     if os.path.exists(path_new):
         raise PathException(
-            f'Unable to migrate {movie.filename} as {path_new} already exists')
+            f'Unable to migrate {filename} as {path_new} already exists'
+        )
 
-    os.rename(path_current, path_new)
+    try:
+        os.rename(path_current, path_new)
+    except:
+        raise PathException(
+            f'Unable to move {path_current} -> {path_new}'
+        )
 
 
-def parse_filename(
-    db: Session, filename: str
-) -> Tuple[
+def parse_filename(filename: str) -> Tuple[
+    str, Optional[str], Optional[str], Optional[str], Optional[str]
+]:
+    name, _ = os.path.splitext(filename)
+
+    # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
+    regex = (
+        r'^'                                           # Start of line
+        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'               # Optional studio
+        r' ?'                                          # Optional space
+        r'(?:{([A-Za-z0-9 .,\'-]+?)(?: ([0-9]+))?})?'  # Optional series name/#
+        r' ?'                                          # Optional space
+        r'([A-Za-z0-9 .,\'-]+?)?'                      # Optional novie Name
+        r' ?'                                          # Optional space
+        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'               # Optional actor list
+        r'$'                                           # End of line
+    )
+
+    studio_name = None
+    series_name = None
+    series_number = None
+    actor_names = None
+
+    matches = re.search(regex, name)
+
+    if matches is not None:
+        (
+            studio_name,
+            series_name,
+            series_number,
+            name,
+            actor_names
+        ) = matches.groups()
+
+    return (name, studio_name, series_name, series_number, actor_names)
+
+
+def parse_file_info(db: Session, filename: str) -> Tuple[
     str,
     Optional[int],
     Optional[int],
     Optional[int],
     List[models.Actor],
 ]:
-    name, _ = os.path.splitext(filename)
-
-    # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
-    regex = (
-        r'^'                                            # Start of line
-        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'                # Optional studio
-        r' ?'                                           # Optional space
-        # Optional series name/number
-        r'(?:{([A-Za-z0-9 .,\'-]+?)(?: ([0-9]+))?})?'
-        r' ?'                                           # Optional space
-        r'([A-Za-z0-9 .,\'-]+?)?'                       # Optional novie Name
-        r' ?'                                           # Optional space
-        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'                # Optional actor list
-        r'$'                                            # End of line
-    )
-
     studio_id = None
     series_id = None
     series_number = None
     actors = None
 
-    matches = re.search(regex, name)
+    (
+        name,
+        studio_name,
+        series_name,
+        series_number,
+        actor_names
+    ) = parse_filename(filename)
 
-    if matches is not None:
-        studio_name, series_name, series_number, name, actor_names = matches.groups()
+    if studio_name is not None:
+        studio = crud.get_studio_by_name(db, studio_name)
 
-        if studio_name is not None:
-            studio = crud.get_studio_by_name(db, studio_name)
+        if studio is not None:
+            studio_id = studio.id
 
-            if studio is not None:
-                studio_id = studio.id
+    if series_name is not None:
+        series = crud.get_series_by_name(db, series_name)
 
-        if series_name is not None:
-            series = crud.get_series_by_name(db, series_name)
+        if series is not None:
+            series_id = series.id
 
-            if series is not None:
-                series_id = series.id
-
-        if actor_names is not None:
-            actors = [
-                actor for actor in
-                (
-                    crud.get_actor_by_name(db, actor_name)
-                    for actor_name in actor_names.split(', ')
-                )
-                if actor is not None
-            ]
+    if actor_names is not None:
+        actors = [
+            actor for actor in
+            (
+                crud.get_actor_by_name(db, actor_name)
+                for actor_name in actor_names.split(', ')
+            )
+            if actor is not None
+        ]
 
     return (name, studio_id, series_id, series_number, actors)
 
 
 def remove_movie(movie: models.Movie) -> None:
-    migrate_file(movie, False)
+    migrate_file(movie.filename, False)
 
     for actor in movie.actors:
         update_actor_link(movie.filename, actor.name, False)
@@ -177,7 +205,9 @@ def rename_movie_file(movie: models.Movie) -> None:
     if path_current != path_new:
         if os.path.exists(path_new):
             raise PathException(
-                f'Unable to rename {movie.filename} as {filename_new} already exists')
+                f'Unable to rename {movie.filename} '
+                f'as {filename_new} already exists'
+            )
 
         os.rename(path_current, path_new)
         movie.filename = filename_new
@@ -220,21 +250,24 @@ def update_link(
                 path.mkdir(parents=True, exist_ok=True)
             except:
                 raise PathException(
-                    f'Link directory {path_base} could not be created')
+                    f'Link directory {path_base} could not be created'
+                )
 
         if not os.path.lexists(path_link):
             try:
                 os.symlink(path_file, path_link)
             except:
                 raise PathException(
-                    f'Unable to create link {path_file} -> {path_link}')
+                    f'Unable to create link {path_file} -> {path_link}'
+                )
     else:
         if os.path.lexists(path_link):
             try:
                 os.remove(path_link)
             except:
                 raise PathException(
-                    f'Unable to delete link {path_file} -> {path_link}')
+                    f'Unable to delete link {path_file} -> {path_link}'
+                )
 
             try:
                 os.rmdir(path_base)

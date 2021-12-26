@@ -103,15 +103,32 @@ def parse_filename(filename: str) -> Tuple[
 
     # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
     regex = (
-        r'^'                                           # Start of line
-        r'(?:\[([A-Za-z0-9 .,\'-]+)\])?'               # Optional studio
-        r' ?'                                          # Optional space
-        r'(?:{([A-Za-z0-9 .,\'-]+?)(?: ([0-9]+))?})?'  # Optional series name/#
-        r' ?'                                          # Optional space
-        r'([A-Za-z0-9 .,\'-]+?)?'                      # Optional novie Name
-        r' ?'                                          # Optional space
-        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'               # Optional actor list
-        r'$'                                           # End of line
+        # Start of line
+        r'^'
+
+        # Optional studio
+        r'(?:\[([A-Za-z0-9 :.,\'-]+)\])?'
+
+        # Optional space
+        r' ?'
+
+        # Optional series name/number
+        r'(?:{([A-Za-z0-9 :.,\'-]+?)(?: ([0-9]+))?})?'
+
+        # Optional space
+        r' ?'
+
+        # Optional movie Name
+        r'([A-Za-z0-9 :.,\'-]+?)?'
+
+        # Optional space
+        r' ?'
+
+        # Optional actor list
+        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'
+
+        # End of line
+        r'$'
     )
 
     studio_name = None

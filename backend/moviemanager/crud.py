@@ -607,6 +607,7 @@ def update_series(
         raise InvalidIDException(f'Series ID {id} does not exist')
 
     series.name = name
+    series.sort_name = util.generate_sort_name(name)
 
     try:
         db.commit()
@@ -630,6 +631,7 @@ def update_studio(
         raise InvalidIDException(f'Studio ID {id} does not exist')
 
     studio.name = name
+    studio.sort_name = util.generate_sort_name(name)
 
     try:
         db.commit()

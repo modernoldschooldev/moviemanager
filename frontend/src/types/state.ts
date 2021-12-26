@@ -1,3 +1,11 @@
+import {
+  ActorType,
+  CategoryType,
+  MovieFileType,
+  SeriesType,
+  StudioType,
+} from "./api";
+
 // Reducer State
 export interface StateType {
   actorsAvailable: ActorType[];
@@ -6,21 +14,6 @@ export interface StateType {
   series: SeriesType[];
   studios: StudioType[];
   movies: MovieFileType[];
-}
-
-export interface BaseMovieProperty {
-  id: number;
-  name: string;
-}
-
-export interface ActorType extends BaseMovieProperty {}
-export interface CategoryType extends BaseMovieProperty {}
-export interface SeriesType extends BaseMovieProperty {}
-export interface StudioType extends BaseMovieProperty {}
-
-export interface MovieFileType {
-  id: number;
-  filename: string;
 }
 
 // Reducer Actions

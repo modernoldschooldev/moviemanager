@@ -5,27 +5,30 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
-import { MovieInfoResponseType } from "../types/api";
+import { MovieFileType, MovieInfoResponseType } from "../types/api";
 import { MovieSectionProps } from "../types/form";
 import { Actions } from "../types/state";
 
 const MovieList = ({ formik }: MovieSectionProps) => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
+  const { setFieldValue } = formik;
 
   useEffect(() => {
     (async () => {
       const response = await fetch(`${process.env.REACT_APP_BACKEND}/movies`);
-      const data = await response.json();
+      const data: MovieFileType[] = await response.json();
 
       dispatch({
         type: Actions.SetMovies,
         payload: data,
       });
 
+      data.length > 0 && setFieldValue("movieId", data[0].id);
+
       setLoading(false);
     })();
-  }, [dispatch]);
+  }, [dispatch, setFieldValue]);
 
   useEffect(() => {
     (async () => {
@@ -75,8 +78,8 @@ const MovieList = ({ formik }: MovieSectionProps) => {
           name="movieId"
           onChange={formik.handleChange}
         >
-          {state?.movies.map((movie) => (
-            <option key={movie.id} value={movie.id}>
+          {state?.movies.map((movie, index) => (
+            <option key={movie.id} value={movie.id} selected={index === 0}>
               {movie.filename}
             </option>
           ))}

@@ -4,12 +4,7 @@ import { Field, Formik, FormikHelpers, useFormikContext } from "formik";
 import StateContext from "../state/StateContext";
 
 import { AdminFormValuesType } from "../types/form";
-import {
-  ActorType,
-  CategoryType,
-  SeriesType,
-  StudioType,
-} from "../types/state";
+import { ActorType, CategoryType, SeriesType, StudioType } from "../types/api";
 import MoviePropertyFormSelector from "./MoviePropertyFormSelector";
 
 const NameSelectorChanged = () => {

@@ -7,7 +7,6 @@ Demo Movie Manager App with React and FastAPI
 ### Version 1.0
 
 - API logging
-- fix too many state change issues causing unlimited reloads
 
 ### Version 2.0
 

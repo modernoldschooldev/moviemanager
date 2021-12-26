@@ -12,7 +12,11 @@ import { Actions } from "../types/state";
 const MovieList = ({ formik }: MovieSectionProps) => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
-  const { setFieldValue } = formik;
+  const {
+    setFieldValue,
+    setStatus,
+    values: { movieId },
+  } = formik;
 
   useEffect(() => {
     (async () => {
@@ -32,8 +36,8 @@ const MovieList = ({ formik }: MovieSectionProps) => {
 
   useEffect(() => {
     (async () => {
-      if (formik.values.movieId) {
-        const id = +formik.values.movieId;
+      if (movieId) {
+        const id = +movieId;
 
         const response = await fetch(
           `${process.env.REACT_APP_BACKEND}/movies/${id}`
@@ -41,29 +45,34 @@ const MovieList = ({ formik }: MovieSectionProps) => {
         const data: MovieInfoResponseType = await response.json();
 
         if (response.ok) {
-          formik.setValues({
-            ...formik.values,
-            movieName: data.name ?? "",
-            movieSeriesId: data.series ? data.series.id.toString() : "",
-            movieSeriesNumber: data.series_number
-              ? data.series_number.toString()
-              : "",
-            movieStudioId: data.studio ? data.studio.id.toString() : "",
-            movieCategories: data.categories.map((category) =>
-              category.id.toString()
-            ),
-          });
+          setFieldValue("movieName", data.name ?? "");
+          setFieldValue(
+            "movieSeriesId",
+            data.series ? data.series.id.toString() : ""
+          );
+          setFieldValue(
+            "movieSeriesNumber",
+            data.series_number ? data.series_number.toString() : ""
+          );
+          setFieldValue(
+            "movieStudioId",
+            data.studio ? data.studio.id.toString() : ""
+          );
+          setFieldValue(
+            "movieCategories",
+            data.categories.map((category) => category.id.toString())
+          );
 
           dispatch({
             type: Actions.SetActorsSelected,
             payload: data.actors,
           });
 
-          formik.setStatus("");
+          setStatus("");
         }
       }
     })();
-  }, [dispatch, formik.values.movieId]);
+  }, [dispatch, movieId, setStatus, setFieldValue]);
 
   return (
     <MovieSection title="Movie List">

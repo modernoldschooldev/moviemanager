@@ -87,10 +87,11 @@ const MovieList = () => {
           className="h-64 w-full"
           size={10}
           name="movieId"
+          defaultValue={state?.movies[0]?.id}
           onChange={handleChange}
         >
-          {state?.movies.map((movie, index) => (
-            <option key={movie.id} value={movie.id} selected={index === 0}>
+          {state?.movies.map((movie) => (
+            <option key={movie.id} value={movie.id}>
               {movie.filename}
             </option>
           ))}

@@ -271,7 +271,13 @@ def delete_movie_actor(
     if actor is None:
         raise InvalidIDException(f'Actor ID {actor_id} does not exist')
 
-    movie.actors.remove(actor)
+    try:
+        movie.actors.remove(actor)
+    except ValueError:
+        raise InvalidIDException(
+            f'Actor {actor.name} (ID {actor.id}) '
+            f'is not on movie {movie.filename} (ID {movie.id})'
+        )
 
     # rename_movie_file will not have this actor to remove the link
     # so we need to do it here
@@ -299,7 +305,14 @@ def delete_movie_category(
     if category is None:
         raise InvalidIDException(f'Category ID {category_id} does not exist')
 
-    movie.categories.remove(category)
+    try:
+        movie.categories.remove(category)
+    except ValueError:
+        raise InvalidIDException(
+            f'Category {category.name} (ID {category.id}) '
+            f'is not on movie {movie.filename} (ID {movie.id})'
+        )
+
     util.update_category_link(movie.filename, category.name, False)
 
     db.commit()

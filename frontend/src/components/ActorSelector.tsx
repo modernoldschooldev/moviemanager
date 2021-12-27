@@ -7,7 +7,7 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
-import { MovieInfoResponseType } from "../types/api";
+import { MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
@@ -42,7 +42,7 @@ const ActorSelector = () => {
           method: selected ? "POST" : "DELETE",
         }
       );
-      const data: MovieInfoResponseType = await response.json();
+      const data: MovieType = await response.json();
 
       const actorName = state?.actorsAvailable.filter(
         (actor) => actor.id === +id

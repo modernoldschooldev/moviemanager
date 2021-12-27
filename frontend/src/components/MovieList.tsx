@@ -6,7 +6,7 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
-import { MovieFileType, MovieInfoResponseType } from "../types/api";
+import { MovieFileType, MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
@@ -44,7 +44,7 @@ const MovieList = () => {
         const response = await fetch(
           `${process.env.REACT_APP_BACKEND}/movies/${id}`
         );
-        const data: MovieInfoResponseType = await response.json();
+        const data: MovieType = await response.json();
 
         if (response.ok) {
           setFieldValue("movieName", data.name ?? "");

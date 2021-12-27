@@ -5,7 +5,7 @@ export interface BaseMovieProperty {
 
 export interface ActorType extends BaseMovieProperty {}
 export interface CategoryType extends BaseMovieProperty {}
-export interface MovieInfoResponseType {
+export interface MovieType {
   id: number;
   filename: string;
   name: string | null;

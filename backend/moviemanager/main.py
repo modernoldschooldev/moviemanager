@@ -16,8 +16,23 @@ from .schemas import *
 # setup logging and get app configuration
 logger, config = init()
 
+description = '''# Movie Manager Backend
+
+Backend API for the Modern Old School Developer's Movie Manager Application
+
+[GitHub Link](https://github.com/modernoldschooldev/moviemanager)
+'''
+
 # create FastAPI application
-app = FastAPI()
+app = FastAPI(
+    title='Movie Manager Backend',
+    description=description,
+    version='1.0.0',
+    license_info={
+        'name': 'GPLv3',
+        'url': 'https://www.gnu.org/licenses/gpl-3.0.en.html',
+    }
+)
 
 # add CORS middleware
 app.add_middleware(
@@ -47,7 +62,10 @@ def hello():
 
 @app.get(
     '/actors',
-    response_model=List[ActorSchema]
+    response_model=List[ActorSchema],
+    response_description='A list of actors',
+    summary='Get all actors',
+    tags=['actors'],
 )
 def actors_get_all(db: Session = Depends(get_db)):
     return crud.get_all_actors(db)
@@ -56,12 +74,15 @@ def actors_get_all(db: Session = Depends(get_db)):
 @app.post(
     '/actors',
     response_model=ActorSchema,
+    response_description='The created actor',
     responses={
         409: {
             'model': HTTPExceptionSchema,
             'description': 'Duplicate Actor',
         },
     },
+    summary='Add actor',
+    tags=['actors'],
 )
 def actors_add(
     body: MoviePropertySchema,
@@ -87,6 +108,7 @@ def actors_add(
 @app.put(
     '/actors/{id}',
     response_model=ActorSchema,
+    response_description='The updated actor',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -100,7 +122,9 @@ def actors_add(
             'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
-    }
+    },
+    summary='Rename actor',
+    tags=['actors'],
 )
 def actors_update(
     id: int,
@@ -156,6 +180,8 @@ def actors_update(
             'description': 'Integrity Constraint Failed',
         },
     },
+    summary='Delete actor',
+    tags=['actors'],
 )
 def actors_delete(
     id: int,
@@ -189,7 +215,10 @@ def actors_delete(
 
 @app.get(
     '/categories',
-    response_model=List[CategorySchema]
+    response_model=List[CategorySchema],
+    response_description='A list of categories',
+    summary='Get all categories',
+    tags=['categories'],
 )
 def categories_get_all(db: Session = Depends(get_db)):
     return crud.get_all_categories(db)
@@ -198,12 +227,15 @@ def categories_get_all(db: Session = Depends(get_db)):
 @app.post(
     '/categories',
     response_model=CategorySchema,
+    response_description='The created category',
     responses={
         409: {
             'model': HTTPExceptionSchema,
             'description': 'Duplicate Category',
         },
     },
+    summary='Add category',
+    tags=['categories'],
 )
 def categories_add(
     body: MoviePropertySchema,
@@ -228,6 +260,7 @@ def categories_add(
 @app.put(
     '/categories/{id}',
     response_model=CategorySchema,
+    response_description='The updated category',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -241,7 +274,9 @@ def categories_add(
             'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
-    }
+    },
+    summary='Rename category',
+    tags=['categories'],
 )
 def categories_update(
     id: int,
@@ -296,7 +331,9 @@ def categories_update(
             'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
-    }
+    },
+    summary='Delete category',
+    tags=['categories'],
 )
 def categories_delete(
     id: int,
@@ -331,6 +368,7 @@ def categories_delete(
 @app.post(
     '/movie_actor',
     response_model=MovieSchema,
+    response_description='The updated movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -345,6 +383,8 @@ def categories_delete(
             'description': 'Path Error',
         },
     },
+    summary='Add actor to movie',
+    tags=['movie_actor'],
 )
 def movie_actor_add(
     movie_id: int,
@@ -382,6 +422,7 @@ def movie_actor_add(
 @app.delete(
     '/movie_actor',
     response_model=MovieSchema,
+    response_description='The updated movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -392,6 +433,8 @@ def movie_actor_add(
             'description': 'Path Error',
         },
     },
+    summary='Delete actor from movie',
+    tags=['movie_actor'],
 )
 def movie_actor_delete(
     movie_id: int,
@@ -427,6 +470,7 @@ def movie_actor_delete(
 @app.post(
     '/movie_category',
     response_model=MovieSchema,
+    response_description='The updated movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -441,6 +485,8 @@ def movie_actor_delete(
             'description': 'Path Error',
         },
     },
+    summary='Add category to movie',
+    tags=['movie_category'],
 )
 def movie_category_add(
     movie_id: int,
@@ -480,6 +526,7 @@ def movie_category_add(
 @app.delete(
     '/movie_category',
     response_model=MovieSchema,
+    response_description='The updated movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -490,6 +537,8 @@ def movie_category_add(
             'description': 'Path Error',
         },
     },
+    summary='Delete category from movie',
+    tags=['movie_category'],
 )
 def movie_category_delete(
     movie_id: int,
@@ -524,7 +573,10 @@ def movie_category_delete(
 
 @app.get(
     '/movies',
-    response_model=List[MovieFileSchema]
+    response_model=List[MovieFileSchema],
+    response_description='A list of movie IDs and filenames',
+    summary='Get all movies',
+    tags=['movies'],
 )
 def movies_get_all(db: Session = Depends(get_db)):
     return crud.get_all_movies(db)
@@ -533,12 +585,15 @@ def movies_get_all(db: Session = Depends(get_db)):
 @app.get(
     '/movies/{id}',
     response_model=MovieSchema,
+    response_description='The requested movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
     },
+    summary='Get movie information',
+    tags=['movies'],
 )
 def movies_get_one(id: int, db: Session = Depends(get_db)):
     movie = crud.get_movie(db, id)
@@ -554,7 +609,8 @@ def movies_get_one(id: int, db: Session = Depends(get_db)):
 
 @app.post(
     '/movies',
-    response_model=List[MovieSchema],
+    response_model=List[MovieFileSchema],
+    response_description='A list of the imported movie filenames and IDs',
     responses={
         409: {
             'model': HTTPExceptionSchema,
@@ -564,7 +620,9 @@ def movies_get_one(id: int, db: Session = Depends(get_db)):
             'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
-    }
+    },
+    summary='Add movies from imports folder',
+    tags=['movies'],
 )
 def movies_import(db: Session = Depends(get_db)):
     try:
@@ -620,6 +678,7 @@ def movies_import(db: Session = Depends(get_db)):
 @app.put(
     '/movies/{id}',
     response_model=MovieSchema,
+    response_description='The updated movie information',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -630,6 +689,8 @@ def movies_import(db: Session = Depends(get_db)):
             'description': 'Path Error',
         },
     },
+    summary='Update movie information',
+    tags=['movies'],
 )
 def movies_update(
     id: int,
@@ -670,6 +731,8 @@ def movies_update(
             'description': 'Path Error',
         },
     },
+    summary='Delete movie and move file back to imports folder',
+    tags=['movies'],
 )
 def movies_delete(
     id: int,
@@ -703,7 +766,10 @@ def movies_delete(
 
 @app.get(
     '/series',
-    response_model=List[SeriesSchema]
+    response_model=List[SeriesSchema],
+    response_description='A list of series',
+    summary='Get all series',
+    tags=['series'],
 )
 def series_get_all(db: Session = Depends(get_db)):
     return crud.get_all_series(db)
@@ -712,12 +778,15 @@ def series_get_all(db: Session = Depends(get_db)):
 @app.post(
     '/series',
     response_model=SeriesSchema,
+    response_description='The created series',
     responses={
         409: {
             'model': HTTPExceptionSchema,
             'description': 'Duplicate Series',
         },
     },
+    summary='Add series',
+    tags=['series'],
 )
 def series_add(
     body: MoviePropertySchema,
@@ -742,6 +811,7 @@ def series_add(
 @app.put(
     '/series/{id}',
     response_model=SeriesSchema,
+    response_description='The updated series',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -755,7 +825,9 @@ def series_add(
             'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
-    }
+    },
+    summary='Rename series',
+    tags=['series'],
 )
 def series_update(
     id: int,
@@ -810,7 +882,9 @@ def series_update(
             'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
-    }
+    },
+    summary='Delete series',
+    tags=['series'],
 )
 def series_delete(
     id: int,
@@ -845,7 +919,10 @@ def series_delete(
 
 @app.get(
     '/studios',
-    response_model=List[StudioSchema]
+    response_model=List[StudioSchema],
+    response_description='A list of studios',
+    summary='Get all studios',
+    tags=['studios'],
 )
 def studios_get_all(db: Session = Depends(get_db)):
     return crud.get_all_studios(db)
@@ -854,12 +931,15 @@ def studios_get_all(db: Session = Depends(get_db)):
 @app.post(
     '/studios',
     response_model=StudioSchema,
+    response_description='The created studio',
     responses={
         409: {
             'model': HTTPExceptionSchema,
             'description': 'Duplicate Studio',
         },
     },
+    summary='Add studio',
+    tags=['studios'],
 )
 def studios_add(
     body: MoviePropertySchema,
@@ -884,6 +964,7 @@ def studios_add(
 @app.put(
     '/studios/{id}',
     response_model=StudioSchema,
+    response_description='The updated studio',
     responses={
         404: {
             'model': HTTPExceptionSchema,
@@ -897,7 +978,9 @@ def studios_add(
             'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
-    }
+    },
+    summary='Rename studio',
+    tags=['studios'],
 )
 def studios_update(
     id: int,
@@ -951,7 +1034,9 @@ def studios_update(
             'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
-    }
+    },
+    summary='Delete studio',
+    tags=['studios'],
 )
 def studios_delete(
     id: int,

@@ -52,34 +52,30 @@ const onSubmit = async (
   }
 };
 
-const MainPage = () => {
-  return (
-    <Formik initialValues={initialValues} onSubmit={onSubmit}>
-      {(formik) => {
-        return (
-          <>
-            <div className="lg:flex">
-              <div className="m-2 lg:w-3/5">
-                <MovieList formik={formik} />
-              </div>
-              <div className="m-2 lg:w-2/5">
-                <MovieDataForm formik={formik} />
-              </div>
-            </div>
+const MainPage = () => (
+  <Formik initialValues={initialValues} onSubmit={onSubmit}>
+    {() => (
+      <>
+        <div className="lg:flex">
+          <div className="m-2 lg:w-3/5">
+            <MovieList />
+          </div>
+          <div className="m-2 lg:w-2/5">
+            <MovieDataForm />
+          </div>
+        </div>
 
-            <div className="lg:flex">
-              <div className="m-2 lg:w-1/2">
-                <ActorSelector formik={formik} />
-              </div>
-              <div className="m-2 lg:w-1/2">
-                <CategorySelector formik={formik} />
-              </div>
-            </div>
-          </>
-        );
-      }}
-    </Formik>
-  );
-};
+        <div className="lg:flex">
+          <div className="m-2 lg:w-1/2">
+            <ActorSelector />
+          </div>
+          <div className="m-2 lg:w-1/2">
+            <CategorySelector />
+          </div>
+        </div>
+      </>
+    )}
+  </Formik>
+);
 
 export default MainPage;

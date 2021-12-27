@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Field } from "formik";
+import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieDataFormRow from "./MovieDataFormRow";
@@ -7,12 +7,13 @@ import MovieSection from "./MovieSection";
 
 import StateContext from "../state/StateContext";
 
-import { MovieSectionProps } from "../types/form";
+import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
-const MovieDataForm = ({ formik }: MovieSectionProps) => {
+const MovieDataForm = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
+  const formik = useFormikContext<MainPageFormValuesType>();
 
   const onRemoveMovie = async () => {
     if (formik.values.movieId) {

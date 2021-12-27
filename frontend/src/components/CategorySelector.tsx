@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Field } from "formik";
+import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
@@ -7,12 +7,13 @@ import MovieSection from "./MovieSection";
 import StateContext from "../state/StateContext";
 
 import { MovieInfoResponseType } from "../types/api";
-import { MovieSectionProps } from "../types/form";
+import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
-const CategorySelector = ({ formik }: MovieSectionProps) => {
+const CategorySelector = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
+  const formik = useFormikContext<MainPageFormValuesType>();
 
   const onUpdateCategory = async (id: string, selected: boolean) => {
     if (formik.values.movieId) {

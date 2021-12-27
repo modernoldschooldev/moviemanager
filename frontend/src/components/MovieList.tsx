@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
@@ -6,17 +7,18 @@ import MovieSection from "./MovieSection";
 import StateContext from "../state/StateContext";
 
 import { MovieFileType, MovieInfoResponseType } from "../types/api";
-import { MovieSectionProps } from "../types/form";
+import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
-const MovieList = ({ formik }: MovieSectionProps) => {
+const MovieList = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
   const {
+    handleChange,
     setFieldValue,
     setStatus,
     values: { movieId },
-  } = formik;
+  } = useFormikContext<MainPageFormValuesType>();
 
   useEffect(() => {
     (async () => {
@@ -85,7 +87,7 @@ const MovieList = ({ formik }: MovieSectionProps) => {
           className="h-64 w-full"
           size={10}
           name="movieId"
-          onChange={formik.handleChange}
+          onChange={handleChange}
         >
           {state?.movies.map((movie, index) => (
             <option key={movie.id} value={movie.id} selected={index === 0}>

@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useFormikContext } from "formik";
 
 import ActorSelectorList from "./ActorSelectorList";
 import Loading from "./Loading";
@@ -7,12 +8,13 @@ import MovieSection from "./MovieSection";
 import StateContext from "../state/StateContext";
 
 import { MovieInfoResponseType } from "../types/api";
-import { MovieSectionProps } from "../types/form";
+import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
-const ActorSelector = ({ formik }: MovieSectionProps) => {
+const ActorSelector = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
+  const formik = useFormikContext<MainPageFormValuesType>();
 
   useEffect(() => {
     (async () => {

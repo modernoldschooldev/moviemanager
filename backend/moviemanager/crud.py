@@ -3,9 +3,10 @@ from typing import List, Optional, Tuple
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from . import models, schemas, util
+from . import models, util
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException)
+from .schemas import MovieUpdateSchema
 
 
 def add_actor(
@@ -559,7 +560,7 @@ def update_category(
 def update_movie(
     db: Session,
     id: int,
-    data: schemas.MovieUpdateSchema
+    data: MovieUpdateSchema
 ) -> models.Movie:
     movie = get_movie(db, id)
 

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 # Extensible Base Types
 
 
-class BaseMovie(BaseModel):
+class BaseMovieSchema(BaseModel):
     id: int
     filename: str
 
@@ -14,7 +14,7 @@ class BaseMovie(BaseModel):
         orm_mode = True
 
 
-class BaseMovieProperty(BaseModel):
+class BasePropertySchema(BaseModel):
     id: int
     name: str
 
@@ -25,33 +25,37 @@ class BaseMovieProperty(BaseModel):
 # Database Models
 
 
-class Actor(BaseMovieProperty):
+class ActorSchema(BasePropertySchema):
     pass
 
 
-class Category(BaseMovieProperty):
+class CategorySchema(BasePropertySchema):
     pass
 
 
-class MovieFile(BaseMovie):
+class MovieFileSchema(BaseMovieSchema):
     pass
 
 
-class Series(BaseMovieProperty):
+class SeriesSchema(BasePropertySchema):
     pass
 
 
-class Studio(BaseMovieProperty):
+class StudioSchema(BasePropertySchema):
     pass
 
 
-class Movie(BaseMovie):
+class MovieSchema(BaseMovieSchema):
+    ############################################################################
+    # this class must defined after the property schemas
+    # because it uses on their definitions
+
     name: Optional[str] = None
-    actors: Optional[List[Actor]] = None
-    categories: Optional[List[Category]] = None
-    series: Optional[Series] = None
+    actors: Optional[List[ActorSchema]] = None
+    categories: Optional[List[CategorySchema]] = None
+    series: Optional[SeriesSchema] = None
     series_number: Optional[int] = None
-    studio: Optional[Studio] = None
+    studio: Optional[StudioSchema] = None
 
     class Config:
         orm_mode = True
@@ -74,9 +78,9 @@ class MovieUpdateSchema(BaseModel):
 # Exception Models
 
 
-class HTTPExceptionMessage(BaseModel):
+class MessageSchema(BaseModel):
     message: str
 
 
 class HTTPExceptionSchema(BaseModel):
-    detail: HTTPExceptionMessage
+    detail: MessageSchema

@@ -5,12 +5,13 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import crud, schemas, util
+from . import crud, util
 from .config import init
 from .database import SessionLocal, engine
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
 from .models import Base
+from .schemas import *
 
 # setup logging and get app configuration
 logger, config = init()
@@ -26,8 +27,11 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# create Sqlite database schema
+# create sqlite database table schemas
 Base.metadata.create_all(bind=engine)
+
+################################################################################
+# Database Session Fetcher
 
 
 def get_db():
@@ -42,9 +46,12 @@ def get_db():
 # Root Endpoint
 
 
-@app.get('/')
+@app.get(
+    '/',
+    response_model=MessageSchema,
+)
 def hello():
-    return "Hello from FastAPI"
+    return {'message': "Hello from FastAPI"}
 
 ################################################################################
 # /actors endpoints
@@ -52,7 +59,7 @@ def hello():
 
 @app.get(
     '/actors',
-    response_model=List[schemas.Actor]
+    response_model=List[ActorSchema]
 )
 def get_all_actors(db: Session = Depends(get_db)):
     return crud.get_all_actors(db)
@@ -60,21 +67,21 @@ def get_all_actors(db: Session = Depends(get_db)):
 
 @app.post(
     '/actors',
-    response_model=schemas.Actor,
+    response_model=ActorSchema,
     responses={
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Actor',
         },
     },
 )
 def add_actor(
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
 
     try:
-        name = data.name.strip()
+        name = body.name.strip()
 
         actor = crud.add_actor(db, name)
         logger.debug('Added new actor %s', name)
@@ -91,31 +98,31 @@ def add_actor(
 
 @app.put(
     '/actors/{id}',
-    response_model=schemas.Actor,
+    response_model=ActorSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Actor',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     }
 )
 def update_actor(
     id: int,
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
         actor_name = crud.get_actor(db, id).name
 
-        name = data.name.strip()
+        name = body.name.strip()
         actor = crud.update_actor(db, id, name)
 
         for movie in actor.movies:
@@ -150,20 +157,21 @@ def update_actor(
 
 @app.delete(
     '/actors/{id}',
+    response_model=MessageSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         412: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
-    }
+    },
 )
 def delete_actor(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         name = crud.delete_actor(db, id)
@@ -193,7 +201,7 @@ def delete_actor(
 
 @app.get(
     '/categories',
-    response_model=List[schemas.Category]
+    response_model=List[CategorySchema]
 )
 def get_all_categories(db: Session = Depends(get_db)):
     return crud.get_all_categories(db)
@@ -201,20 +209,20 @@ def get_all_categories(db: Session = Depends(get_db)):
 
 @app.post(
     '/categories',
-    response_model=schemas.Category,
+    response_model=CategorySchema,
     responses={
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Category',
         },
     },
 )
 def add_category(
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
-        name = data.name.strip()
+        name = body.name.strip()
         category = crud.add_category(db, name)
 
         logger.debug('Added category %s', name)
@@ -231,31 +239,31 @@ def add_category(
 
 @app.put(
     '/categories/{id}',
-    response_model=schemas.Category,
+    response_model=CategorySchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Category'
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     }
 )
 def update_category(
     id: int,
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
         category_name = crud.get_category(db, id).name
 
-        name = data.name.strip()
+        name = body.name.strip()
         category = crud.update_category(db, id, name)
 
         for movie in category.movies:
@@ -290,20 +298,21 @@ def update_category(
 
 @app.delete(
     '/categories/{id}',
+    response_model=MessageSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         412: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
     }
 )
 def delete_category(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         name = crud.delete_category(db, id)
@@ -333,18 +342,18 @@ def delete_category(
 
 @app.post(
     '/movie_actor',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Actor',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
@@ -352,7 +361,7 @@ def delete_category(
 def add_movie_actor(
     movie_id: int,
     actor_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         movie, actor = crud.add_movie_actor(db, movie_id, actor_id)
@@ -384,14 +393,14 @@ def add_movie_actor(
 
 @app.delete(
     '/movie_actor',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
@@ -399,7 +408,7 @@ def add_movie_actor(
 def delete_movie_actor(
     movie_id: int,
     actor_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         movie, actor = crud.delete_movie_actor(db, movie_id, actor_id)
@@ -429,18 +438,18 @@ def delete_movie_actor(
 
 @app.post(
     '/movie_category',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Category',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
@@ -448,7 +457,7 @@ def delete_movie_actor(
 def add_movie_category(
     movie_id: int,
     category_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         movie, category = crud.add_movie_category(db, movie_id, category_id)
@@ -482,14 +491,14 @@ def add_movie_category(
 
 @app.delete(
     '/movie_category',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
@@ -497,7 +506,7 @@ def add_movie_category(
 def delete_movie_category(
     movie_id: int,
     category_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         movie, category = crud.delete_movie_category(db, movie_id, category_id)
@@ -527,7 +536,7 @@ def delete_movie_category(
 
 @app.get(
     '/movies',
-    response_model=List[schemas.MovieFile]
+    response_model=List[MovieFileSchema]
 )
 def get_all_movies(db: Session = Depends(get_db)):
     return crud.get_all_movies(db)
@@ -535,10 +544,10 @@ def get_all_movies(db: Session = Depends(get_db)):
 
 @app.get(
     '/movies/{id}',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
     },
@@ -557,14 +566,14 @@ def get_movie(id: int, db: Session = Depends(get_db)):
 
 @app.post(
     '/movies',
-    response_model=List[schemas.Movie],
+    response_model=List[MovieSchema],
     responses={
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Movie',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     }
@@ -622,25 +631,25 @@ def import_movies(db: Session = Depends(get_db)):
 
 @app.put(
     '/movies/{id}',
-    response_model=schemas.Movie,
+    response_model=MovieSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
 )
 def update_movie_data(
     id: int,
-    data: schemas.MovieUpdateSchema,
-    db: Session = Depends(get_db)
+    body: MovieUpdateSchema,
+    db: Session = Depends(get_db),
 ):
     try:
-        movie = crud.update_movie(db, id, data)
+        movie = crud.update_movie(db, id, body)
         logger.debug('Successfully updated movie %s', movie.filename)
     except InvalidIDException as e:
         logger.warn(str(e))
@@ -662,20 +671,21 @@ def update_movie_data(
 
 @app.delete(
     '/movies/{id}',
+    response_model=MessageSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     },
 )
 def delete_movie(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         name = crud.delete_movie(db, id)
@@ -705,7 +715,7 @@ def delete_movie(
 
 @app.get(
     '/series',
-    response_model=List[schemas.Series]
+    response_model=List[SeriesSchema]
 )
 def get_all_series(db: Session = Depends(get_db)):
     return crud.get_all_series(db)
@@ -713,20 +723,20 @@ def get_all_series(db: Session = Depends(get_db)):
 
 @app.post(
     '/series',
-    response_model=schemas.Series,
+    response_model=SeriesSchema,
     responses={
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Series',
         },
     },
 )
 def add_series(
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
-        name = data.name.strip()
+        name = body.name.strip()
         series = crud.add_series(db, name)
 
         logger.debug('Added series %s', name)
@@ -743,31 +753,31 @@ def add_series(
 
 @app.put(
     '/series/{id}',
-    response_model=schemas.Series,
+    response_model=SeriesSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Series',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     }
 )
 def update_series(
     id: int,
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
         series_name = crud.get_series(db, id).name
 
-        name = data.name.strip()
+        name = body.name.strip()
         series = crud.update_series(db, id, name)
 
         for movie in series.movies:
@@ -802,20 +812,21 @@ def update_series(
 
 @app.delete(
     '/series/{id}',
+    response_model=MessageSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         412: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
     }
 )
 def delete_series(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         name = crud.delete_series(db, id)
@@ -846,7 +857,7 @@ def delete_series(
 
 @app.get(
     '/studios',
-    response_model=List[schemas.Studio]
+    response_model=List[StudioSchema]
 )
 def get_all_studios(db: Session = Depends(get_db)):
     return crud.get_all_studios(db)
@@ -854,20 +865,20 @@ def get_all_studios(db: Session = Depends(get_db)):
 
 @app.post(
     '/studios',
-    response_model=schemas.Studio,
+    response_model=StudioSchema,
     responses={
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Studio',
         },
     },
 )
 def add_studio(
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
-        name = data.name.strip()
+        name = body.name.strip()
         studio = crud.add_studio(db, name)
 
         logger.debug('Added studio %s', name)
@@ -884,31 +895,31 @@ def add_studio(
 
 @app.put(
     '/studios/{id}',
-    response_model=schemas.Studio,
+    response_model=StudioSchema,
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         409: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Duplicate Studio',
         },
         500: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Path Error',
         },
     }
 )
 def update_studio(
     id: int,
-    data: schemas.MoviePropertySchema,
-    db: Session = Depends(get_db)
+    body: MoviePropertySchema,
+    db: Session = Depends(get_db),
 ):
     try:
         studio_name = crud.get_studio(db, id).name
 
-        name = data.name.strip()
+        name = body.name.strip()
         studio = crud.update_studio(db, id, name)
 
         for movie in studio.movies:
@@ -945,18 +956,18 @@ def update_studio(
     '/studios/{id}',
     responses={
         404: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Invalid ID',
         },
         412: {
-            'model': schemas.HTTPExceptionSchema,
+            'model': HTTPExceptionSchema,
             'description': 'Integrity Constraint Failed',
         },
     }
 )
 def delete_studio(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     try:
         name = crud.delete_studio(db, id)

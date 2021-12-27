@@ -37,7 +37,7 @@ class Actor(Base):
         'Movie',
         secondary=movie_actors,
         back_populates='actors',
-        order_by='Movie.name',
+        order_by='Movie.sort_name',
         passive_deletes='all',
     )
 
@@ -55,7 +55,7 @@ class Category(Base):
         'Movie',
         secondary=movie_categories,
         back_populates='categories',
-        order_by='Movie.name',
+        order_by='Movie.sort_name',
         passive_deletes='all',
     )
 
@@ -112,7 +112,7 @@ class Series(Base):
     movies = relationship(
         'Movie',
         back_populates='series',
-        order_by='Movie.name',
+        order_by='Movie.sort_name',
         passive_deletes='all',
     )
 
@@ -130,6 +130,6 @@ class Studio(Base):
     movies = relationship(
         'Movie',
         back_populates='studio',
-        order_by='Movie.name',
+        order_by='Movie.sort_name',
         passive_deletes='all',
     )

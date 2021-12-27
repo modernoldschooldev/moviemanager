@@ -61,7 +61,7 @@ def hello():
     '/actors',
     response_model=List[ActorSchema]
 )
-def get_all_actors(db: Session = Depends(get_db)):
+def actors_get_all(db: Session = Depends(get_db)):
     return crud.get_all_actors(db)
 
 
@@ -75,7 +75,7 @@ def get_all_actors(db: Session = Depends(get_db)):
         },
     },
 )
-def add_actor(
+def actors_add(
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
 ):
@@ -114,7 +114,7 @@ def add_actor(
         },
     }
 )
-def update_actor(
+def actors_update(
     id: int,
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
@@ -169,7 +169,7 @@ def update_actor(
         },
     },
 )
-def delete_actor(
+def actors_delete(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -203,7 +203,7 @@ def delete_actor(
     '/categories',
     response_model=List[CategorySchema]
 )
-def get_all_categories(db: Session = Depends(get_db)):
+def categories_get_all(db: Session = Depends(get_db)):
     return crud.get_all_categories(db)
 
 
@@ -217,7 +217,7 @@ def get_all_categories(db: Session = Depends(get_db)):
         },
     },
 )
-def add_category(
+def categories_add(
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
 ):
@@ -255,7 +255,7 @@ def add_category(
         },
     }
 )
-def update_category(
+def categories_update(
     id: int,
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
@@ -310,7 +310,7 @@ def update_category(
         },
     }
 )
-def delete_category(
+def categories_delete(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -358,7 +358,7 @@ def delete_category(
         },
     },
 )
-def add_movie_actor(
+def movie_actor_add(
     movie_id: int,
     actor_id: int,
     db: Session = Depends(get_db),
@@ -405,7 +405,7 @@ def add_movie_actor(
         },
     },
 )
-def delete_movie_actor(
+def movie_actor_delete(
     movie_id: int,
     actor_id: int,
     db: Session = Depends(get_db),
@@ -454,7 +454,7 @@ def delete_movie_actor(
         },
     },
 )
-def add_movie_category(
+def movie_category_add(
     movie_id: int,
     category_id: int,
     db: Session = Depends(get_db),
@@ -503,7 +503,7 @@ def add_movie_category(
         },
     },
 )
-def delete_movie_category(
+def movie_category_delete(
     movie_id: int,
     category_id: int,
     db: Session = Depends(get_db),
@@ -538,7 +538,7 @@ def delete_movie_category(
     '/movies',
     response_model=List[MovieFileSchema]
 )
-def get_all_movies(db: Session = Depends(get_db)):
+def movies_get_all(db: Session = Depends(get_db)):
     return crud.get_all_movies(db)
 
 
@@ -552,7 +552,7 @@ def get_all_movies(db: Session = Depends(get_db)):
         },
     },
 )
-def get_movie(id: int, db: Session = Depends(get_db)):
+def movies_get_one(id: int, db: Session = Depends(get_db)):
     movie = crud.get_movie(db, id)
 
     if movie is None:
@@ -578,7 +578,7 @@ def get_movie(id: int, db: Session = Depends(get_db)):
         },
     }
 )
-def import_movies(db: Session = Depends(get_db)):
+def movies_import(db: Session = Depends(get_db)):
     try:
         files = util.list_files(config['imports'])
     except ListFilesException as e:
@@ -643,7 +643,7 @@ def import_movies(db: Session = Depends(get_db)):
         },
     },
 )
-def update_movie_data(
+def movies_update(
     id: int,
     body: MovieUpdateSchema,
     db: Session = Depends(get_db),
@@ -683,7 +683,7 @@ def update_movie_data(
         },
     },
 )
-def delete_movie(
+def movies_delete(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -717,7 +717,7 @@ def delete_movie(
     '/series',
     response_model=List[SeriesSchema]
 )
-def get_all_series(db: Session = Depends(get_db)):
+def series_get_all(db: Session = Depends(get_db)):
     return crud.get_all_series(db)
 
 
@@ -731,7 +731,7 @@ def get_all_series(db: Session = Depends(get_db)):
         },
     },
 )
-def add_series(
+def series_add(
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
 ):
@@ -769,7 +769,7 @@ def add_series(
         },
     }
 )
-def update_series(
+def series_update(
     id: int,
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
@@ -824,7 +824,7 @@ def update_series(
         },
     }
 )
-def delete_series(
+def series_delete(
     id: int,
     db: Session = Depends(get_db),
 ):
@@ -859,7 +859,7 @@ def delete_series(
     '/studios',
     response_model=List[StudioSchema]
 )
-def get_all_studios(db: Session = Depends(get_db)):
+def studios_get_all(db: Session = Depends(get_db)):
     return crud.get_all_studios(db)
 
 
@@ -873,7 +873,7 @@ def get_all_studios(db: Session = Depends(get_db)):
         },
     },
 )
-def add_studio(
+def studios_add(
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
 ):
@@ -911,7 +911,7 @@ def add_studio(
         },
     }
 )
-def update_studio(
+def studios_update(
     id: int,
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
@@ -965,7 +965,7 @@ def update_studio(
         },
     }
 )
-def delete_studio(
+def studios_delete(
     id: int,
     db: Session = Depends(get_db),
 ):

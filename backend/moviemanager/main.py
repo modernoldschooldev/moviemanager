@@ -6,16 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import crud, schemas, util
-from .config import get_config
+from .config import init
 from .database import SessionLocal, engine
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
 from .models import Base
 
-config = get_config()
+# setup logging and get app configuration
+logger, config = init()
 
+# create FastAPI application
 app = FastAPI()
 
+# add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r'https?://(?:127\.0\.0\.1|localhost):300[0-9]',
@@ -23,6 +26,7 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
+# create Sqlite database schema
 Base.metadata.create_all(bind=engine)
 
 
@@ -68,9 +72,15 @@ def add_actor(
     data: schemas.MoviePropertySchema,
     db: Session = Depends(get_db)
 ):
+
     try:
-        actor = crud.add_actor(db, data.name.strip())
+        name = data.name.strip()
+
+        actor = crud.add_actor(db, name)
+        logger.debug('Added new actor %s', name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
@@ -104,22 +114,32 @@ def update_actor(
 ):
     try:
         actor_name = crud.get_actor(db, id).name
-        actor = crud.update_actor(db, id, data.name.strip())
+
+        name = data.name.strip()
+        actor = crud.update_actor(db, id, name)
 
         for movie in actor.movies:
             util.rename_movie_file(movie, actor_current=actor_name)
             db.commit()
+
+        logger.debug('Renamed actor %s -> %s', actor_name, name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -146,20 +166,25 @@ def delete_actor(
     db: Session = Depends(get_db)
 ):
     try:
-        crud.delete_actor(db, id)
+        name = crud.delete_actor(db, id)
+        logger.debug('Deleted actor %s', name)
     except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_412_PRECONDITION_FAILED,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
 
     return {
-        'message': f'Deleted actor ID {id}'
+        'message': f'Deleted actor "{name}" (ID {id})'
     }
 
 ################################################################################
@@ -189,8 +214,13 @@ def add_category(
     db: Session = Depends(get_db)
 ):
     try:
-        category = crud.add_category(db, data.name.strip())
+        name = data.name.strip()
+        category = crud.add_category(db, name)
+
+        logger.debug('Added category %s', name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
@@ -224,22 +254,32 @@ def update_category(
 ):
     try:
         category_name = crud.get_category(db, id).name
-        category = crud.update_category(db, id, data.name.strip())
+
+        name = data.name.strip()
+        category = crud.update_category(db, id, name)
 
         for movie in category.movies:
             util.rename_movie_file(movie, category_current=category_name)
             db.commit()
+
+        logger.debug('Renamed category %s -> %s', category_name, name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -266,20 +306,25 @@ def delete_category(
     db: Session = Depends(get_db)
 ):
     try:
-        crud.delete_category(db, id)
+        name = crud.delete_category(db, id)
+        logger.debug('Deleted category %s', name)
     except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_412_PRECONDITION_FAILED,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
 
     return {
-        'message': f'Deleted category ID {id}'
+        'message': f'Deleted category "{name}" (ID {id})'
     }
 
 ################################################################################
@@ -310,18 +355,25 @@ def add_movie_actor(
     db: Session = Depends(get_db)
 ):
     try:
-        movie = crud.add_movie_actor(db, movie_id, actor_id)
+        movie, actor = crud.add_movie_actor(db, movie_id, actor_id)
+        logger.debug('Added actor %s to movie %s', actor.name, movie.filename)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -350,13 +402,20 @@ def delete_movie_actor(
     db: Session = Depends(get_db)
 ):
     try:
-        movie = crud.delete_movie_actor(db, movie_id, actor_id)
+        movie, actor = crud.delete_movie_actor(db, movie_id, actor_id)
+        logger.debug(
+            'Deleted actor %s from movie %s', actor.name, movie.filename
+        )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -392,18 +451,27 @@ def add_movie_category(
     db: Session = Depends(get_db)
 ):
     try:
-        movie = crud.add_movie_category(db, movie_id, category_id)
+        movie, category = crud.add_movie_category(db, movie_id, category_id)
+        logger.debug(
+            'Added category %s to movie %s', category.name, movie.filename
+        )
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -432,13 +500,20 @@ def delete_movie_category(
     db: Session = Depends(get_db)
 ):
     try:
-        movie = crud.delete_movie_category(db, movie_id, category_id)
+        movie, category = crud.delete_movie_category(db, movie_id, category_id)
+        logger.debug(
+            'Deleted category %s from movie %s', category.name, movie.filename
+        )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -498,6 +573,8 @@ def import_movies(db: Session = Depends(get_db)):
     try:
         files = util.list_files(config['imports'])
     except ListFilesException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -523,12 +600,18 @@ def import_movies(db: Session = Depends(get_db)):
                 db, file, name, studio_id, series_id, series_number, actors
             )
             movies.append(movie)
+
+            logger.debug('Imported movie %s', movie.filename)
         except DuplicateEntryException as e:
+            logger.warn(str(e))
+
             raise HTTPException(
                 status.HTTP_409_CONFLICT,
                 detail={'message': str(e)}
             )
         except PathException as e:
+            logger.error(str(e))
+
             raise HTTPException(
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail={'message': str(e)}
@@ -558,12 +641,17 @@ def update_movie_data(
 ):
     try:
         movie = crud.update_movie(db, id, data)
+        logger.debug('Successfully updated movie %s', movie.filename)
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -590,20 +678,25 @@ def delete_movie(
     db: Session = Depends(get_db)
 ):
     try:
-        crud.delete_movie(db, id)
+        name = crud.delete_movie(db, id)
+        logger.debug('Deleted movie %s', name)
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
         )
 
     return {
-        'message': f'Deleted movie ID {id}'
+        'message': f'Deleted movie "{name}" (ID {id})'
     }
 
 ################################################################################
@@ -633,8 +726,13 @@ def add_series(
     db: Session = Depends(get_db)
 ):
     try:
-        series = crud.add_series(db, data.name.strip())
+        name = data.name.strip()
+        series = crud.add_series(db, name)
+
+        logger.debug('Added series %s', name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
@@ -668,22 +766,32 @@ def update_series(
 ):
     try:
         series_name = crud.get_series(db, id).name
-        series = crud.update_series(db, id, data.name.strip())
+
+        name = data.name.strip()
+        series = crud.update_series(db, id, name)
 
         for movie in series.movies:
             util.rename_movie_file(movie, series_current=series_name)
             db.commit()
+
+        logger.debug('Renamed series %s -> %s', series_name, name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -710,20 +818,25 @@ def delete_series(
     db: Session = Depends(get_db)
 ):
     try:
-        crud.delete_series(db, id)
+        name = crud.delete_series(db, id)
+        logger.debug('Deleted series %s', name)
     except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_412_PRECONDITION_FAILED,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
 
     return {
-        'message': f'Deleted series ID {id}'
+        'message': f'Deleted series "{name}" (ID {id})'
     }
 
 
@@ -754,8 +867,13 @@ def add_studio(
     db: Session = Depends(get_db)
 ):
     try:
-        studio = crud.add_studio(db, data.name.strip())
+        name = data.name.strip()
+        studio = crud.add_studio(db, name)
+
+        logger.debug('Added studio %s', name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
@@ -789,22 +907,32 @@ def update_studio(
 ):
     try:
         studio_name = crud.get_studio(db, id).name
-        studio = crud.update_studio(db, id, data.name.strip())
+
+        name = data.name.strip()
+        studio = crud.update_studio(db, id, name)
 
         for movie in studio.movies:
             util.rename_movie_file(movie, studio_current=studio_name)
             db.commit()
+
+        logger.debug('Renamed studio %s -> %s', studio_name, name)
     except DuplicateEntryException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
     except PathException as e:
+        logger.error(str(e))
+
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={'message': str(e)}
@@ -831,18 +959,23 @@ def delete_studio(
     db: Session = Depends(get_db)
 ):
     try:
-        crud.delete_studio(db, id)
+        name = crud.delete_studio(db, id)
+        logger.debug('Deleted studio %s', name)
     except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_412_PRECONDITION_FAILED,
             detail={'message': str(e)}
         )
     except InvalidIDException as e:
+        logger.warn(str(e))
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail={'message': str(e)}
         )
 
     return {
-        'message': f'Deleted studio ID {id}'
+        'message': f'Deleted studio "{name}" (ID {id})'
     }

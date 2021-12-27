@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -91,7 +91,7 @@ def add_movie_actor(
     db: Session,
     movie_id: int,
     actor_id: int
-) -> models.Movie:
+) -> Tuple[models.Movie, models.Actor]:
     movie = get_movie(db, movie_id)
 
     if movie is None:
@@ -117,14 +117,14 @@ def add_movie_actor(
     db.commit()
     db.refresh(movie)
 
-    return movie
+    return (movie, actor)
 
 
 def add_movie_category(
     db: Session,
     movie_id: int,
     category_id: int
-) -> models.Movie:
+) -> Tuple[models.Movie, models.Category]:
     movie = get_movie(db, movie_id)
 
     if movie is None:
@@ -150,7 +150,7 @@ def add_movie_category(
     db.commit()
     db.refresh(movie)
 
-    return movie
+    return (movie, category)
 
 
 def add_series(
@@ -198,7 +198,7 @@ def add_studio(
 def delete_actor(
     db: Session,
     id: int,
-) -> None:
+) -> str:
     actor = get_actor(db, id)
 
     if actor is None:
@@ -211,13 +211,16 @@ def delete_actor(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with actor {actor.name}')
+            f'Movie exists with actor {actor.name}'
+        )
+
+    return actor.name
 
 
 def delete_category(
     db: Session,
     id: int,
-) -> None:
+) -> str:
     category = get_category(db, id)
 
     if category is None:
@@ -230,13 +233,16 @@ def delete_category(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with category {category.name}')
+            f'Movie exists with category {category.name}'
+        )
+
+    return category.name
 
 
 def delete_movie(
     db: Session,
     id: int,
-) -> None:
+) -> str:
     movie = get_movie(db, id)
 
     if movie is None:
@@ -247,12 +253,14 @@ def delete_movie(
     db.delete(movie)
     db.commit()
 
+    return movie.filename
+
 
 def delete_movie_actor(
     db: Session,
     movie_id: int,
     actor_id: int
-) -> models.Movie:
+) -> Tuple[models.Movie, models.Actor]:
     movie = get_movie(db, movie_id)
 
     if movie is None:
@@ -273,14 +281,14 @@ def delete_movie_actor(
     db.commit()
     db.refresh(movie)
 
-    return movie
+    return (movie, actor)
 
 
 def delete_movie_category(
     db: Session,
     movie_id: int,
     category_id: int
-) -> models.Movie:
+) -> Tuple[models.Movie, models.Category]:
     movie = get_movie(db, movie_id)
 
     if movie is None:
@@ -297,13 +305,13 @@ def delete_movie_category(
     db.commit()
     db.refresh(movie)
 
-    return movie
+    return (movie, category)
 
 
 def delete_series(
     db: Session,
     id: int,
-) -> None:
+) -> str:
     series = get_series(db, id)
 
     if series is None:
@@ -316,13 +324,16 @@ def delete_series(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with series {series.name}')
+            f'Movie exists with series {series.name}'
+        )
+
+    return series.name
 
 
 def delete_studio(
     db: Session,
     id: int,
-) -> None:
+) -> str:
     studio = get_studio(db, id)
 
     if studio is None:
@@ -335,7 +346,10 @@ def delete_studio(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with studio {studio.name}')
+            f'Movie exists with studio {studio.name}'
+        )
+
+    return studio.name
 
 
 def get_all_actors(db: Session) -> List[models.Actor]:
@@ -490,6 +504,7 @@ def update_actor(
     if actor is None:
         raise InvalidIDException(f'Actor ID {id} does not exist')
 
+    name_old = actor.name
     actor.name = name
 
     try:
@@ -498,7 +513,9 @@ def update_actor(
     except IntegrityError:
         db.rollback()
 
-        raise DuplicateEntryException(f'Actor {name} already exists')
+        raise DuplicateEntryException(
+            f'Updating actor {name_old} conflicts with existing actor {name}'
+        )
 
     return actor
 

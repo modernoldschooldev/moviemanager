@@ -113,7 +113,6 @@ def add_movie_actor(
     db.commit()
 
     util.rename_movie_file(movie)
-    util.update_actor_link(movie.filename, actor.name, True)
 
     db.commit()
     db.refresh(movie)
@@ -265,6 +264,9 @@ def delete_movie_actor(
         raise InvalidIDException(f'Actor ID {actor_id} does not exist')
 
     movie.actors.remove(actor)
+
+    # rename_movie_file will not have this actor to remove the link
+    # so we need to do it here
     util.update_actor_link(movie.filename, actor.name, False)
     util.rename_movie_file(movie)
 

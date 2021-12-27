@@ -239,33 +239,37 @@ def rename_movie_file(
 
         actor: models.Actor
         for actor in movie.actors:
-            if actor_current is None:
-                actor_current = actor.name
-
-            update_actor_link(filename_current, actor_current, False)
+            update_actor_link(
+                filename_current,
+                actor.name if actor_current is None else actor_current,
+                False
+            )
             update_actor_link(filename_new, actor.name, True)
 
         if movie.series is not None:
-            if series_current is None:
-                series_current = movie.series.name
-
-            update_series_link(filename_current, series_current, False)
+            update_series_link(
+                filename_current,
+                movie.series.name if series_current is None else series_current,
+                False
+            )
             update_series_link(filename_new, movie.series.name, True)
 
         if movie.studio is not None:
-            if studio_current is None:
-                studio_current = movie.studio.name
-
-            update_studio_link(filename_current, studio_current, False)
+            update_studio_link(
+                filename_current,
+                movie.studio.name if studio_current is None else studio_current,
+                False
+            )
             update_studio_link(filename_new, movie.studio.name, True)
 
     if path_changed or category_current is not None:
         category: models.Category
         for category in movie.categories:
-            if category_current is None:
-                category_current = category.name
-
-            update_category_link(filename_current, category_current, False)
+            update_category_link(
+                filename_current,
+                category.name if category_current is None else category_current,
+                False
+            )
             update_category_link(filename_new, category.name, True)
 
 

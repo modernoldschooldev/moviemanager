@@ -10,7 +10,7 @@ import StateContext from "../state/StateContext";
 import { MovieSectionProps } from "../types/form";
 import { Actions } from "../types/state";
 
-const MovieData = ({ formik }: MovieSectionProps) => {
+const MovieDataForm = ({ formik }: MovieSectionProps) => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
 
@@ -153,4 +153,4 @@ const MovieData = ({ formik }: MovieSectionProps) => {
   );
 };
 
-export default MovieData;
+export default MovieDataForm;

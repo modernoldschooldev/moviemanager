@@ -1,8 +1,10 @@
 import { Formik, FormikHelpers } from "formik";
+
 import ActorSelector from "../components/ActorSelector";
 import CategorySelector from "../components/CategorySelector";
-import MovieData from "../components/MovieData";
+import MovieDataForm from "../components/MovieDataForm";
 import MovieList from "../components/MovieList";
+
 import { MainPageFormValuesType } from "../types/form";
 
 const initialValues: MainPageFormValuesType = {
@@ -61,7 +63,7 @@ const MainPage = () => {
                 <MovieList formik={formik} />
               </div>
               <div className="m-2 lg:w-2/5">
-                <MovieData formik={formik} />
+                <MovieDataForm formik={formik} />
               </div>
             </div>
 

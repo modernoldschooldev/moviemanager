@@ -319,9 +319,7 @@ def rename_movie_file(
     path_current = f'{path_base}/{filename_current}'
     path_new = f'{path_base}/{filename_new}'
 
-    path_changed = path_current != path_new
-
-    if path_changed:
+    if path_current != path_new:
         if os.path.exists(path_new):
             raise PathException(
                 f'Unable to rename {movie.filename} '
@@ -340,6 +338,15 @@ def rename_movie_file(
             )
             update_actor_link(filename_new, actor.name, True)
 
+        category: models.Category
+        for category in movie.categories:
+            update_category_link(
+                filename_current,
+                category.name if category_current is None else category_current,
+                False
+            )
+            update_category_link(filename_new, category.name, True)
+
         if movie.series is not None:
             update_series_link(
                 filename_current,
@@ -355,17 +362,6 @@ def rename_movie_file(
                 False
             )
             update_studio_link(filename_new, movie.studio.name, True)
-
-    # category links must be updated even if path did not change
-    if path_changed or category_current is not None:
-        category: models.Category
-        for category in movie.categories:
-            update_category_link(
-                filename_current,
-                category.name if category_current is None else category_current,
-                False
-            )
-            update_category_link(filename_new, category.name, True)
 
 
 def update_link(

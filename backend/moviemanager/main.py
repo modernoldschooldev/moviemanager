@@ -5,12 +5,11 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import crud, util
+from . import crud, models, util
 from .config import init
 from .database import engine, get_db
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
-from .models import Base
 from .schemas import *
 
 # setup logging and get app configuration
@@ -43,7 +42,7 @@ app.add_middleware(
 )
 
 # create sqlite database table schemas
-Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 ################################################################################
 # Root Endpoint
@@ -332,9 +331,10 @@ def categories_update(
         name = body.name.strip()
         category = crud.update_category(db, id, name)
 
+        movie: models.Movie
         for movie in category.movies:
-            util.rename_movie_file(movie, category_current=category_name)
-            db.commit()
+            util.update_category_link(movie.filename, category_name, False)
+            util.update_category_link(movie.filename, name, True)
 
         logger.debug('Renamed category %s -> %s', category_name, name)
     except DuplicateEntryException as e:

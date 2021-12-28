@@ -923,46 +923,30 @@ def update_movie(
     if movie.name != data.name:
         movie.sort_name = util.generate_sort_name(data.name)
 
-    if movie.series_id != data.series_id:
-        series_current = get_series(db, movie.series_id).name \
-            if movie.series_id is not None else None
-        series_new = get_series(db, data.series_id).name \
-            if data.series_id is not None else None
+    # preserve current series + studio names for link updates later
+    series_current = get_series(db, movie.series_id).name \
+        if movie.series_id is not None else None
+    studio_current = get_studio(db, movie.studio_id).name \
+        if movie.studio_id is not None else None
 
-        if data.series_id is None:
-            # remove series
-            util.update_series_link(movie.filename, series_current, False)
-        elif movie.series_id is None:
-            # add series
-            util.update_series_link(movie.filename, series_new, True)
-        else:
-            # change series
-            util.update_series_link(movie.filename, series_current, False)
-            util.update_series_link(movie.filename, series_new, True)
+    if movie.series_id != data.series_id and data.series_id is None:
+        # remove series link here as rename_movie_file won't have it
+        util.update_series_link(movie.filename, series_current, False)
 
-    if movie.studio_id != data.studio_id:
-        studio_current = get_studio(db, movie.studio_id).name \
-            if movie.studio_id is not None else None
-        studio_new = get_studio(db, data.studio_id).name \
-            if data.studio_id is not None else None
-
-        if data.studio_id is None:
-            # remove studio
-            util.update_studio_link(movie.filename, studio_current, False)
-        elif movie.studio_id is None:
-            # add studio
-            util.update_studio_link(movie.filename, studio_new, True)
-        else:
-            # change studio
-            util.update_studio_link(movie.filename, studio_current, False)
-            util.update_studio_link(movie.filename, studio_new, True)
+    if movie.studio_id != data.studio_id and data.studio_id is None:
+        # remove studio link here as rename_movie_file won't have it
+        util.update_studio_link(movie.filename, studio_current, False)
 
     movie.name = data.name
     movie.series_id = data.series_id
     movie.series_number = data.series_number
     movie.studio_id = data.studio_id
 
-    util.rename_movie_file(movie)
+    util.rename_movie_file(
+        movie,
+        series_current=series_current,
+        studio_current=studio_current,
+    )
 
     db.commit()
 

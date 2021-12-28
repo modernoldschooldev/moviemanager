@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from . import crud, util
 from .config import init
-from .database import SessionLocal, engine
+from .database import engine, get_db
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
 from .models import Base
@@ -29,18 +29,6 @@ app.add_middleware(
 
 # create sqlite database table schemas
 Base.metadata.create_all(bind=engine)
-
-################################################################################
-# Database Session Fetcher
-
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
 
 ################################################################################
 # Root Endpoint

@@ -5,3 +5,5 @@ imports: ./../db/imports
 movies: ./../db/movies
 series: ./../db/series
 studios: ./../db/studios
+
+sqlite_db: ./sqlite.db

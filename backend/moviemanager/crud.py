@@ -33,7 +33,6 @@ def add_actor(
     try:
         db.add(actor)
         db.commit()
-        db.refresh(actor)
     except IntegrityError:
         db.rollback()
 
@@ -66,7 +65,6 @@ def add_category(
     try:
         db.add(category)
         db.commit()
-        db.refresh(category)
     except IntegrityError:
         db.rollback()
 
@@ -125,7 +123,6 @@ def add_movie(
     try:
         db.add(movie)
         db.commit()
-        db.refresh(movie)
     except IntegrityError:
         db.rollback()
 
@@ -176,9 +173,7 @@ def add_movie_actor(
     db.commit()
 
     util.rename_movie_file(movie)
-
     db.commit()
-    db.refresh(movie)
 
     return (movie, actor)
 
@@ -225,9 +220,7 @@ def add_movie_category(
     db.commit()
 
     util.update_category_link(movie.filename, category.name, True)
-
     db.commit()
-    db.refresh(movie)
 
     return (movie, category)
 
@@ -257,7 +250,6 @@ def add_series(
     try:
         db.add(series)
         db.commit()
-        db.refresh(series)
     except IntegrityError:
         db.rollback()
 
@@ -291,7 +283,6 @@ def add_studio(
     try:
         db.add(studio)
         db.commit()
-        db.refresh(studio)
     except IntegrityError:
         db.rollback()
 
@@ -449,7 +440,6 @@ def delete_movie_actor(
     util.rename_movie_file(movie)
 
     db.commit()
-    db.refresh(movie)
 
     return (movie, actor)
 
@@ -496,7 +486,6 @@ def delete_movie_category(
     util.update_category_link(movie.filename, category.name, False)
 
     db.commit()
-    db.refresh(movie)
 
     return (movie, category)
 
@@ -845,7 +834,6 @@ def update_actor(
 
     try:
         db.commit()
-        db.refresh(actor)
     except IntegrityError:
         db.rollback()
 
@@ -885,7 +873,6 @@ def update_category(
 
     try:
         db.commit()
-        db.refresh(category)
     except IntegrityError:
         db.rollback()
 
@@ -978,7 +965,6 @@ def update_movie(
     util.rename_movie_file(movie)
 
     db.commit()
-    db.refresh(movie)
 
     return movie
 
@@ -1013,7 +999,6 @@ def update_series(
 
     try:
         db.commit()
-        db.refresh(series)
     except IntegrityError:
         db.rollback()
 
@@ -1052,7 +1037,6 @@ def update_studio(
 
     try:
         db.commit()
-        db.refresh(studio)
     except IntegrityError:
         db.rollback()
 

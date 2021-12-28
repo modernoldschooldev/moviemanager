@@ -60,17 +60,6 @@ def hello():
 # /actors endpoints
 
 
-@app.get(
-    '/actors',
-    response_model=List[ActorSchema],
-    response_description='A list of actors',
-    summary='Get all actors',
-    tags=['actors'],
-)
-def actors_get_all(db: Session = Depends(get_db)):
-    return crud.get_all_actors(db)
-
-
 @app.post(
     '/actors',
     response_model=ActorSchema,
@@ -88,7 +77,6 @@ def actors_add(
     body: MoviePropertySchema,
     db: Session = Depends(get_db),
 ):
-
     try:
         name = body.name.strip()
 
@@ -103,6 +91,60 @@ def actors_add(
         )
 
     return actor
+
+
+@app.delete(
+    '/actors/{id}',
+    response_model=MessageSchema,
+    responses={
+        404: {
+            'model': HTTPExceptionSchema,
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
+        },
+    },
+    summary='Delete actor',
+    tags=['actors'],
+)
+def actors_delete(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        name = crud.delete_actor(db, id)
+        logger.debug('Deleted actor %s', name)
+    except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted actor "{name}" (ID {id})'
+    }
+
+
+@app.get(
+    '/actors',
+    response_model=List[ActorSchema],
+    response_description='A list of actors',
+    summary='Get all actors',
+    tags=['actors'],
+)
+def actors_get_all(db: Session = Depends(get_db)):
+    return crud.get_all_actors(db)
 
 
 @app.put(
@@ -167,61 +209,8 @@ def actors_update(
     return actor
 
 
-@app.delete(
-    '/actors/{id}',
-    response_model=MessageSchema,
-    responses={
-        404: {
-            'model': HTTPExceptionSchema,
-            'description': 'Invalid ID',
-        },
-        412: {
-            'model': HTTPExceptionSchema,
-            'description': 'Integrity Constraint Failed',
-        },
-    },
-    summary='Delete actor',
-    tags=['actors'],
-)
-def actors_delete(
-    id: int,
-    db: Session = Depends(get_db),
-):
-    try:
-        name = crud.delete_actor(db, id)
-        logger.debug('Deleted actor %s', name)
-    except IntegrityConstraintException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_412_PRECONDITION_FAILED,
-            detail={'message': str(e)}
-        )
-    except InvalidIDException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={'message': str(e)}
-        )
-
-    return {
-        'message': f'Deleted actor "{name}" (ID {id})'
-    }
-
 ################################################################################
 # /categories endpoints
-
-
-@app.get(
-    '/categories',
-    response_model=List[CategorySchema],
-    response_description='A list of categories',
-    summary='Get all categories',
-    tags=['categories'],
-)
-def categories_get_all(db: Session = Depends(get_db)):
-    return crud.get_all_categories(db)
 
 
 @app.post(
@@ -255,6 +244,60 @@ def categories_add(
         )
 
     return category
+
+
+@app.delete(
+    '/categories/{id}',
+    response_model=MessageSchema,
+    responses={
+        404: {
+            'model': HTTPExceptionSchema,
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
+        },
+    },
+    summary='Delete category',
+    tags=['categories'],
+)
+def categories_delete(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        name = crud.delete_category(db, id)
+        logger.debug('Deleted category %s', name)
+    except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted category "{name}" (ID {id})'
+    }
+
+
+@app.get(
+    '/categories',
+    response_model=List[CategorySchema],
+    response_description='A list of categories',
+    summary='Get all categories',
+    tags=['categories'],
+)
+def categories_get_all(db: Session = Depends(get_db)):
+    return crud.get_all_categories(db)
 
 
 @app.put(
@@ -318,48 +361,6 @@ def categories_update(
 
     return category
 
-
-@app.delete(
-    '/categories/{id}',
-    response_model=MessageSchema,
-    responses={
-        404: {
-            'model': HTTPExceptionSchema,
-            'description': 'Invalid ID',
-        },
-        412: {
-            'model': HTTPExceptionSchema,
-            'description': 'Integrity Constraint Failed',
-        },
-    },
-    summary='Delete category',
-    tags=['categories'],
-)
-def categories_delete(
-    id: int,
-    db: Session = Depends(get_db),
-):
-    try:
-        name = crud.delete_category(db, id)
-        logger.debug('Deleted category %s', name)
-    except IntegrityConstraintException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_412_PRECONDITION_FAILED,
-            detail={'message': str(e)}
-        )
-    except InvalidIDException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={'message': str(e)}
-        )
-
-    return {
-        'message': f'Deleted category "{name}" (ID {id})'
-    }
 
 ################################################################################
 # /movie_actor endpoints
@@ -571,6 +572,49 @@ def movie_category_delete(
 # /movies endpoints
 
 
+@app.delete(
+    '/movies/{id}',
+    response_model=MessageSchema,
+    responses={
+        404: {
+            'model': HTTPExceptionSchema,
+            'description': 'Invalid ID',
+        },
+        500: {
+            'model': HTTPExceptionSchema,
+            'description': 'Path Error',
+        },
+    },
+    summary='Delete movie and move file back to imports folder',
+    tags=['movies'],
+)
+def movies_delete(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        name = crud.delete_movie(db, id)
+        logger.debug('Deleted movie %s', name)
+    except InvalidIDException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+    except PathException as e:
+        logger.error(str(e))
+
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted movie "{name}" (ID {id})'
+    }
+
+
 @app.get(
     '/movies',
     response_model=List[MovieFileSchema],
@@ -718,61 +762,8 @@ def movies_update(
     return movie
 
 
-@app.delete(
-    '/movies/{id}',
-    response_model=MessageSchema,
-    responses={
-        404: {
-            'model': HTTPExceptionSchema,
-            'description': 'Invalid ID',
-        },
-        500: {
-            'model': HTTPExceptionSchema,
-            'description': 'Path Error',
-        },
-    },
-    summary='Delete movie and move file back to imports folder',
-    tags=['movies'],
-)
-def movies_delete(
-    id: int,
-    db: Session = Depends(get_db),
-):
-    try:
-        name = crud.delete_movie(db, id)
-        logger.debug('Deleted movie %s', name)
-    except InvalidIDException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={'message': str(e)}
-        )
-    except PathException as e:
-        logger.error(str(e))
-
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={'message': str(e)}
-        )
-
-    return {
-        'message': f'Deleted movie "{name}" (ID {id})'
-    }
-
 ################################################################################
 # /series endpoints
-
-
-@app.get(
-    '/series',
-    response_model=List[SeriesSchema],
-    response_description='A list of series',
-    summary='Get all series',
-    tags=['series'],
-)
-def series_get_all(db: Session = Depends(get_db)):
-    return crud.get_all_series(db)
 
 
 @app.post(
@@ -806,6 +797,60 @@ def series_add(
         )
 
     return series
+
+
+@app.delete(
+    '/series/{id}',
+    response_model=MessageSchema,
+    responses={
+        404: {
+            'model': HTTPExceptionSchema,
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
+        },
+    },
+    summary='Delete series',
+    tags=['series'],
+)
+def series_delete(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        name = crud.delete_series(db, id)
+        logger.debug('Deleted series %s', name)
+    except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted series "{name}" (ID {id})'
+    }
+
+
+@app.get(
+    '/series',
+    response_model=List[SeriesSchema],
+    response_description='A list of series',
+    summary='Get all series',
+    tags=['series'],
+)
+def series_get_all(db: Session = Depends(get_db)):
+    return crud.get_all_series(db)
 
 
 @app.put(
@@ -870,62 +915,8 @@ def series_update(
     return series
 
 
-@app.delete(
-    '/series/{id}',
-    response_model=MessageSchema,
-    responses={
-        404: {
-            'model': HTTPExceptionSchema,
-            'description': 'Invalid ID',
-        },
-        412: {
-            'model': HTTPExceptionSchema,
-            'description': 'Integrity Constraint Failed',
-        },
-    },
-    summary='Delete series',
-    tags=['series'],
-)
-def series_delete(
-    id: int,
-    db: Session = Depends(get_db),
-):
-    try:
-        name = crud.delete_series(db, id)
-        logger.debug('Deleted series %s', name)
-    except IntegrityConstraintException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_412_PRECONDITION_FAILED,
-            detail={'message': str(e)}
-        )
-    except InvalidIDException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={'message': str(e)}
-        )
-
-    return {
-        'message': f'Deleted series "{name}" (ID {id})'
-    }
-
-
 ################################################################################
 # /studios endpoints
-
-
-@app.get(
-    '/studios',
-    response_model=List[StudioSchema],
-    response_description='A list of studios',
-    summary='Get all studios',
-    tags=['studios'],
-)
-def studios_get_all(db: Session = Depends(get_db)):
-    return crud.get_all_studios(db)
 
 
 @app.post(
@@ -959,6 +950,59 @@ def studios_add(
         )
 
     return studio
+
+
+@app.delete(
+    '/studios/{id}',
+    responses={
+        404: {
+            'model': HTTPExceptionSchema,
+            'description': 'Invalid ID',
+        },
+        412: {
+            'model': HTTPExceptionSchema,
+            'description': 'Integrity Constraint Failed',
+        },
+    },
+    summary='Delete studio',
+    tags=['studios'],
+)
+def studios_delete(
+    id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        name = crud.delete_studio(db, id)
+        logger.debug('Deleted studio %s', name)
+    except IntegrityConstraintException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_412_PRECONDITION_FAILED,
+            detail={'message': str(e)}
+        )
+    except InvalidIDException as e:
+        logger.warn(str(e))
+
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail={'message': str(e)}
+        )
+
+    return {
+        'message': f'Deleted studio "{name}" (ID {id})'
+    }
+
+
+@app.get(
+    '/studios',
+    response_model=List[StudioSchema],
+    response_description='A list of studios',
+    summary='Get all studios',
+    tags=['studios'],
+)
+def studios_get_all(db: Session = Depends(get_db)):
+    return crud.get_all_studios(db)
 
 
 @app.put(
@@ -1021,45 +1065,3 @@ def studios_update(
         )
 
     return studio
-
-
-@app.delete(
-    '/studios/{id}',
-    responses={
-        404: {
-            'model': HTTPExceptionSchema,
-            'description': 'Invalid ID',
-        },
-        412: {
-            'model': HTTPExceptionSchema,
-            'description': 'Integrity Constraint Failed',
-        },
-    },
-    summary='Delete studio',
-    tags=['studios'],
-)
-def studios_delete(
-    id: int,
-    db: Session = Depends(get_db),
-):
-    try:
-        name = crud.delete_studio(db, id)
-        logger.debug('Deleted studio %s', name)
-    except IntegrityConstraintException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_412_PRECONDITION_FAILED,
-            detail={'message': str(e)}
-        )
-    except InvalidIDException as e:
-        logger.warn(str(e))
-
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND,
-            detail={'message': str(e)}
-        )
-
-    return {
-        'message': f'Deleted studio "{name}" (ID {id})'
-    }

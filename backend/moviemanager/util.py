@@ -14,12 +14,26 @@ config = get_config()
 
 
 def generate_movie_filename(movie: models.Movie) -> str:
+    """Generates a filename based on the movie information.
+
+    Args:
+        movie: The movie.
+
+    Returns:
+        filename: The generated filename.
+    """
+
+    # start with a blank filename
     filename = ''
+
+    # save the file extension for later
     _, ext = os.path.splitext(movie.filename)
 
+    # add the studio name in [] brackets
     if movie.studio is not None:
         filename += f'[{movie.studio.name}]'
 
+    # add the series name and number in {} braces
     if movie.series is not None:
         if len(filename) > 0:
             filename += ' '
@@ -31,24 +45,30 @@ def generate_movie_filename(movie: models.Movie) -> str:
 
         filename += '}'
 
+    # add the movie name
     if movie.name is not None:
         if len(filename) > 0:
             filename += ' '
 
         filename += f'{movie.name}'
 
+    # add the actors as a comma separated list inside () parentheses
     if len(movie.actors) > 0:
         actor_names = [actor.name for actor in movie.actors]
         actors = f'({", ".join(actor_names)})'
 
+        # drop the actors if the filename length will exceed 255 characters
         if len(filename) + len(actors) < 250:
             if len(filename) > 0:
                 filename += ' '
 
             filename += actors
 
+    # append the extension
     filename += ext
 
+    # if all we end up with is the file extension, we must not have had any
+    # movie properties. just use the existing filename in that case.
     if (filename == ext):
         filename = movie.filename
 
@@ -56,18 +76,39 @@ def generate_movie_filename(movie: models.Movie) -> str:
 
 
 def generate_sort_name(name: str) -> str:
+    """Generate a name ignoring articles, case, and special characters.
+
+    Args:
+        name: The name to convert.
+
+    Returns:
+        sort_name: The converted name.
+    """
+
     return re.sub(
-        r'^(?:a|an|the) ',
+        r'^(?:a|an|the) ',  # replace articles at the start of the line
         '',
         re.sub(
-            r'[^a-z0-9 ]',
+            r'[^a-z0-9 ]',  # replace non alphanumerics anywhere in the name
             '',
-            name.lower(),
+            name.lower(),   # convert to lowercase
         ),
     )
 
 
 def list_files(path: str) -> List[str]:
+    """List all files in a directory in alphabetical order.
+
+    Args:
+        path: Path to list.
+
+    Returns:
+        files: List of files in the path.
+
+    Raises:
+        ListFilesException: If the path cannot be read for any reason.
+    """
+
     try:
         files = sorted(os.listdir(path))
     except:
@@ -76,7 +117,14 @@ def list_files(path: str) -> List[str]:
     return files
 
 
-def migrate_file(filename: str, adding: bool = True):
+def migrate_file(filename: str, adding: bool = True) -> None:
+    """Migrates a file between the imports and movies directory.
+
+    Args:
+        filename: The filename to migrate.
+        adding: True when moving to movies folder; False for the imports.
+    """
+
     base_current = config['imports'] if adding else config['movies']
     base_new = config['movies'] if adding else config['imports']
 
@@ -99,6 +147,19 @@ def migrate_file(filename: str, adding: bool = True):
 def parse_filename(filename: str) -> Tuple[
     str, Optional[str], Optional[str], Optional[str], Optional[str]
 ]:
+    """Parses a filename for movie properties.
+
+    Args:
+        filename: The filename to parse.
+
+    Returns:
+        name: The name of the movie.
+        studio: The name of the studio, or None if not found.
+        series: The name of the series, or None if not found.
+        series_number: The number of the series, or None if not found.
+        actors: Comma delimited actor names, or None if not found.
+    """
+
     name, _ = os.path.splitext(filename)
 
     # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
@@ -157,6 +218,20 @@ def parse_file_info(db: Session, filename: str) -> Tuple[
     Optional[int],
     List[models.Actor],
 ]:
+    """Parses file information from a filename.
+
+    Args:
+        db: The database session.
+        filename: The filename to parse.
+
+    Returns:
+        name: The movie name.
+        studio_id: The ID of the studio, or None if not found.
+        series_id: The ID of the series, or None if not found.
+        series_number: The series number, or None if not found.
+        actors: List of actors on the movie, or None if not found.
+    """
+
     studio_id = None
     series_id = None
     series_number = None
@@ -196,6 +271,12 @@ def parse_file_info(db: Session, filename: str) -> Tuple[
 
 
 def remove_movie(movie: models.Movie) -> None:
+    """Removes a movie file from the movies folder and all propery links.
+
+    Args:
+        movie: The movie to be removed.
+    """
+
     migrate_file(movie.filename, False)
 
     for actor in movie.actors:
@@ -218,6 +299,19 @@ def rename_movie_file(
     series_current: Optional[str] = None,
     studio_current: Optional[str] = None,
 ) -> None:
+    """Renames a movie, and updates its filename and all property links.
+
+    Args:
+        movie: The movie to be renamed.
+        actor_current: The current actor name if updating that, too.
+        category_current: The current category name if updating that, too.
+        series_current: The current series name if updating that, too.
+        studio_current: The current studio name if updating that, too.
+
+    Raises:
+        PathException: A renaming, removing, or symlink file operation failed.
+    """
+
     filename_current = movie.filename
     filename_new = generate_movie_filename(movie)
 
@@ -262,6 +356,7 @@ def rename_movie_file(
             )
             update_studio_link(filename_new, movie.studio.name, True)
 
+    # category links must be updated even if path did not change
     if path_changed or category_current is not None:
         category: models.Category
         for category in movie.categories:
@@ -279,6 +374,18 @@ def update_link(
     name: str,
     selected: bool
 ) -> None:
+    """Updates a property link to a movie file.
+
+    Args:
+        filename: The filename of the movie.
+        path_link_base: The base directory for the links.
+        name: The directory within path_link_base.
+        selected: True to add the link; False to remove it.
+
+    Raises:
+        PathError: If any file operation fails.
+    """
+
     path_movies = os.path.abspath(config['movies'])
     path_file = f'{path_movies}/{filename}'
 
@@ -286,6 +393,7 @@ def update_link(
     path_link = f'{path_base}/{filename}'
 
     if selected:
+        # create the link directory if it doesn't already exist
         if not os.path.isdir(path_base):
             try:
                 path = Path(path_base)
@@ -295,6 +403,7 @@ def update_link(
                     f'Link directory {path_base} could not be created'
                 )
 
+        # add the symlink to the link directory
         if not os.path.lexists(path_link):
             try:
                 os.symlink(path_file, path_link)
@@ -303,6 +412,7 @@ def update_link(
                     f'Unable to create link {path_file} -> {path_link}'
                 )
     else:
+        # remove the symlink if it exists
         if os.path.lexists(path_link):
             try:
                 os.remove(path_link)
@@ -318,16 +428,24 @@ def update_link(
 
 
 def update_actor_link(filename: str, name: str, selected: bool) -> None:
+    """Updates an actor property link; update_link has more info."""
+
     update_link(filename, config['actors'], name, selected)
 
 
 def update_category_link(filename: str, name: str, selected: bool) -> None:
+    """Updates a category property link; update_link has more info.."""
+
     update_link(filename, config['categories'], name, selected)
 
 
 def update_series_link(filename: str, name: str, selected: bool) -> None:
+    """Updates a series property link; update_link has more info.."""
+
     update_link(filename, config['series'], name, selected)
 
 
 def update_studio_link(filename: str, name: str, selected: bool) -> None:
+    """Updates a studio property link; update_link has more info.."""
+
     update_link(filename, config['studios'], name, selected)

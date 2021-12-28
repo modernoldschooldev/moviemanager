@@ -14,6 +14,9 @@ DEFAULT_LOGGING_PATH = './logging.yaml'
 
 
 def run_once(f):
+    # Thanks to aaronasterling for this idea
+    # https://stackoverflow.com/a/4104188/1730980
+
     def helper(*args, **kwargs):
         if not helper.has_run:
             helper.has_run = True
@@ -29,6 +32,13 @@ def run_once(f):
 
 
 def init() -> Tuple[Logger, Dict[str, str]]:
+    """Setup application logging and global configuration.
+
+    Returns:
+        logger: The application logger.
+        config: The configuration dictionary.
+    """
+
     setup_logging()
 
     logger = get_logger()
@@ -39,6 +49,12 @@ def init() -> Tuple[Logger, Dict[str, str]]:
 
 @run_once
 def get_config() -> Dict[str, str]:
+    """Reads the global configuration dictionary from the yaml config file.
+
+    Returns:
+        config: The configuration dictionary.
+    """
+
     path = os.getenv('MM_CONFIG_PATH', DEFAULT_CONFIG_PATH)
 
     try:
@@ -54,10 +70,14 @@ def get_config() -> Dict[str, str]:
 
 
 def get_logger() -> Logger:
+    """Returns the application logger."""
+
     return getLogger('moviemanager')
 
 
 def setup_logging() -> None:
+    """Configures logging for the application using the yaml config file."""
+
     path = os.getenv('MM_LOGGING_PATH', DEFAULT_LOGGING_PATH)
 
     try:

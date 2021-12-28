@@ -8,6 +8,8 @@ from .exceptions import ListFilesException
 
 
 def _main():
+    """Recreates the sqlite database from information on the file system."""
+
     # setup logging and get app configuration
     logger, config = init()
 

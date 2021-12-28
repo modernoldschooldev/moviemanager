@@ -1,1 +1,1 @@
-# movie manager python module
+# movie manager python package

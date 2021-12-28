@@ -16,20 +16,6 @@ const ActorSelector = () => {
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
 
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND}/actors`);
-      const data = await response.json();
-
-      dispatch({
-        type: Actions.SetActorsAvailable,
-        payload: data,
-      });
-
-      setLoading(false);
-    })();
-  }, [dispatch]);
-
   const onUpdateActor = async (id: string, selected: boolean) => {
     if (formik.values.movieId) {
       const queryString = new URLSearchParams({
@@ -76,6 +62,20 @@ const ActorSelector = () => {
       }
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND}/actors`);
+      const data = await response.json();
+
+      dispatch({
+        type: Actions.SetActorsAvailable,
+        payload: data,
+      });
+
+      setLoading(false);
+    })();
+  }, [dispatch]);
 
   return (
     <MovieSection title="Actors">

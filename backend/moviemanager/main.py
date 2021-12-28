@@ -643,9 +643,12 @@ def movies_get_one(id: int, db: Session = Depends(get_db)):
     movie = crud.get_movie(db, id)
 
     if movie is None:
+        message = f'Movie ID {id} does not exist'
+        logger.warn(message)
+
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail={'message': f'Movie ID {id} does not exist'}
+            detail={'message': message}
         )
 
     return movie

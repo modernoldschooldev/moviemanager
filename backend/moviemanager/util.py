@@ -112,7 +112,7 @@ def list_files(path: str) -> List[str]:
     try:
         files = sorted(os.listdir(path))
     except:
-        raise ListFilesException(f'Unable to read path {path}')
+        raise ListFilesException(f'Failed to read path {path}')
 
     return files
 
@@ -133,14 +133,14 @@ def migrate_file(filename: str, adding: bool = True) -> None:
 
     if os.path.exists(path_new):
         raise PathException(
-            f'Unable to migrate {filename} as {path_new} already exists'
+            f'Moving {filename} to {base_new} conflicts with existing'
         )
 
     try:
         os.rename(path_current, path_new)
     except:
         raise PathException(
-            f'Unable to move {path_current} -> {path_new}'
+            f'Failed to move {path_current} -> {path_new}'
         )
 
 
@@ -322,8 +322,8 @@ def rename_movie_file(
     if path_current != path_new:
         if os.path.exists(path_new):
             raise PathException(
-                f'Unable to rename {movie.filename} '
-                f'as {filename_new} already exists'
+                f'Renaming {movie.filename} -> {filename_new} '
+                f'conflicts with existing'
             )
 
         os.rename(path_current, path_new)
@@ -405,7 +405,7 @@ def update_link(
                 os.symlink(path_file, path_link)
             except:
                 raise PathException(
-                    f'Unable to create link {path_file} -> {path_link}'
+                    f'Failed to create link {path_file} -> {path_link}'
                 )
     else:
         # remove the symlink if it exists
@@ -414,7 +414,7 @@ def update_link(
                 os.remove(path_link)
             except:
                 raise PathException(
-                    f'Unable to delete link {path_file} -> {path_link}'
+                    f'Failed to delete link {path_file} -> {path_link}'
                 )
 
             try:

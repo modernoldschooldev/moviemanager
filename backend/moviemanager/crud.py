@@ -166,7 +166,8 @@ def add_movie_actor(
     for movie_actor in movie.actors:
         if actor_id == movie_actor.id:
             raise DuplicateEntryException(
-                f'Actor ID {actor_id} is already on Movie ID {movie_id}'
+                f'Actor {actor.name} (ID {actor.id}) '
+                f'is already on Movie {movie.filename} (ID {movie.id})'
             )
 
     movie.actors.append(actor)
@@ -213,7 +214,8 @@ def add_movie_category(
     for movie_category in movie.categories:
         if category_id == movie_category.id:
             raise DuplicateEntryException(
-                f'Category ID {category_id} is already on Movie ID {movie_id}'
+                f'Category {category.name} (ID {category.id}) '
+                f'is already on Movie {movie.filename} (ID {movie.id})'
             )
 
     movie.categories.append(category)
@@ -322,7 +324,7 @@ def delete_actor(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with actor {actor.name}'
+            f'Movie exists with actor {actor.name} (ID {actor.id})'
         )
 
     return actor.name
@@ -359,7 +361,7 @@ def delete_category(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with category {category.name}'
+            f'Movie exists with category {category.name} (ID {category.id})'
         )
 
     return category.name
@@ -521,7 +523,7 @@ def delete_series(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with series {series.name}'
+            f'Movie exists with series {series.name} (ID {series.id})'
         )
 
     return series.name
@@ -558,7 +560,7 @@ def delete_studio(
         db.rollback()
 
         raise IntegrityConstraintException(
-            f'Movie exists with studio {studio.name}'
+            f'Movie exists with studio {studio.name} (ID {studio.id})'
         )
 
     return studio.name
@@ -838,7 +840,7 @@ def update_actor(
         db.rollback()
 
         raise DuplicateEntryException(
-            f'Updating actor {name_old} conflicts with existing actor {name}'
+            f'Renaming actor {name_old} -> {name} conflicts with existing'
         )
 
     return actor
@@ -869,6 +871,7 @@ def update_category(
     if category is None:
         raise InvalidIDException(f'Category ID {id} does not exist')
 
+    name_old = category.name
     category.name = name
 
     try:
@@ -876,7 +879,9 @@ def update_category(
     except IntegrityError:
         db.rollback()
 
-        raise DuplicateEntryException(f'Category {name} already exists')
+        raise DuplicateEntryException(
+            f'Renaming ategory {name_old} -> {name} conflicts with existing'
+        )
 
     return category
 
@@ -978,6 +983,7 @@ def update_series(
     if series is None:
         raise InvalidIDException(f'Series ID {id} does not exist')
 
+    old_name = series.name
     series.name = name
     series.sort_name = util.generate_sort_name(name)
 
@@ -986,7 +992,9 @@ def update_series(
     except IntegrityError:
         db.rollback()
 
-        raise DuplicateEntryException(f'Series {name} already exists')
+        raise DuplicateEntryException(
+            f'Renaming series {old_name} -> {name} conflicts with existing'
+        )
 
     return series
 
@@ -1016,6 +1024,7 @@ def update_studio(
     if studio is None:
         raise InvalidIDException(f'Studio ID {id} does not exist')
 
+    old_name = studio.name
     studio.name = name
     studio.sort_name = util.generate_sort_name(name)
 
@@ -1024,6 +1033,8 @@ def update_studio(
     except IntegrityError:
         db.rollback()
 
-        raise DuplicateEntryException(f'Studio {name} already exists')
+        raise DuplicateEntryException(
+            f'Renaming studio {old_name} -> {name} conflicts with existing'
+        )
 
     return studio

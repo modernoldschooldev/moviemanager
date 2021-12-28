@@ -15,7 +15,7 @@ const MovieImportButton = () => {
       if (count === 0) {
         setImportStatus("No movies were available for import");
       } else {
-        setImportStatus(`Imported ${count} movie files`);
+        setImportStatus(`Imported ${count} movie file${count > 1 ? "s" : ""}`);
       }
     } else {
       setImportStatus(data.detail.message);

@@ -1,5 +1,3 @@
-import { FormikProps } from "formik";
-
 export interface AdminFormValuesType {
   name: string;
   action: "add" | "remove" | "update";
@@ -13,8 +11,4 @@ export interface MainPageFormValuesType {
   movieSeriesId: string;
   movieSeriesNumber: string;
   movieCategories: string[];
-}
-
-export interface MovieSectionProps {
-  formik: FormikProps<MainPageFormValuesType>;
 }

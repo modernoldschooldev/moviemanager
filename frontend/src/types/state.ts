@@ -62,3 +62,9 @@ export interface SetStudiosAction {
   type: Actions.SetStudios;
   payload: StudioType[];
 }
+
+// Redux types
+export interface ActorSelectorSliceType {
+  availableId: string;
+  selectedId: string;
+}

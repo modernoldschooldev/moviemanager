@@ -12,8 +12,6 @@ export interface MainPageFormValuesType {
   movieStudioId: string;
   movieSeriesId: string;
   movieSeriesNumber: string;
-  movieActorAvailableId: string | undefined;
-  movieActorSelectedId: string | undefined;
   movieCategories: string[];
 }
 

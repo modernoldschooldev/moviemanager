@@ -5,6 +5,8 @@ import ActorSelectorList from "./ActorSelectorList";
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { setAvailableId, setSelectedId } from "../state/ActorSelectorSlice";
 import StateContext from "../state/StateContext";
 
 import { MovieType } from "../types/api";
@@ -16,12 +18,20 @@ const ActorSelector = () => {
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
 
-  const onUpdateActor = async (id: string, selected: boolean) => {
+  const { availableId, selectedId } = useAppSelector(
+    (state) => state.actorSelector
+  );
+  const reduxDispatch = useAppDispatch();
+
+  const onUpdateActor = async (selected: boolean) => {
     if (formik.values.movieId) {
+      const id = selected ? availableId : selectedId;
+
       const queryString = new URLSearchParams({
         movie_id: formik.values.movieId,
         actor_id: id,
       });
+
       const response = await fetch(
         `${process.env.REACT_APP_BACKEND}/movie_actor?${queryString}`,
         {
@@ -87,16 +97,10 @@ const ActorSelector = () => {
             <select
               className="border border-green-500 w-full"
               size={10}
-              name="movieActorAvailableId"
-              onChange={formik.handleChange}
-              onDoubleClick={() =>
-                formik.values.movieActorAvailableId &&
-                onUpdateActor(formik.values.movieActorAvailableId, true)
-              }
+              onChange={(e) => reduxDispatch(setAvailableId(e.target.value))}
+              onDoubleClick={() => onUpdateActor(true)}
               onKeyPress={(e) => {
-                e.key === "Enter" &&
-                  formik.values.movieActorAvailableId &&
-                  onUpdateActor(formik.values.movieActorAvailableId, true);
+                e.key === "Enter" && onUpdateActor(true);
               }}
             >
               {state?.actorsAvailable.map((actor) => (
@@ -113,16 +117,10 @@ const ActorSelector = () => {
             <select
               className="border border-green-500 w-full"
               size={10}
-              name="movieActorSelectedId"
-              onChange={formik.handleChange}
-              onDoubleClick={() =>
-                formik.values.movieActorSelectedId &&
-                onUpdateActor(formik.values.movieActorSelectedId, false)
-              }
+              onChange={(e) => reduxDispatch(setSelectedId(e.target.value))}
+              onDoubleClick={() => onUpdateActor(false)}
               onKeyPress={(e) => {
-                e.key === "Enter" &&
-                  formik.values.movieActorSelectedId &&
-                  onUpdateActor(formik.values.movieActorSelectedId, false);
+                e.key === "Enter" && onUpdateActor(false);
               }}
             >
               {state?.actorsSelected.map((actor) => (

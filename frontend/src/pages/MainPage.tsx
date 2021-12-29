@@ -13,8 +13,6 @@ const initialValues: MainPageFormValuesType = {
   movieStudioId: "",
   movieSeriesId: "",
   movieSeriesNumber: "",
-  movieActorAvailableId: undefined,
-  movieActorSelectedId: undefined,
   movieCategories: [],
 };
 

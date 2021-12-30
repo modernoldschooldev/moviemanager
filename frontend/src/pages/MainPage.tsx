@@ -1,3 +1,4 @@
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Formik, FormikHelpers } from "formik";
 
 import ActorSelector from "../components/ActorSelector";
@@ -6,7 +7,9 @@ import MovieDataForm from "../components/MovieDataForm";
 import MovieList from "../components/MovieList";
 
 import { useAppSelector } from "../state/hooks";
+import { useMovieUpdateMutation } from "../state/MovieManagerApi";
 
+import { HTTPExceptionType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 
 const initialValues: MainPageFormValuesType = {
@@ -19,13 +22,15 @@ const initialValues: MainPageFormValuesType = {
 
 const MainPage = () => {
   const movieId = useAppSelector((state) => state.selectBox.movieId);
+  const [trigger] = useMovieUpdateMutation();
 
   const onSubmit = async (
     values: MainPageFormValuesType,
     helpers: FormikHelpers<MainPageFormValuesType>
   ) => {
     if (movieId) {
-      const body = {
+      const params = {
+        id: movieId,
         name: values.movieName ? values.movieName : null,
         series_id: values.movieSeriesId ? +values.movieSeriesId : null,
         series_number: values.movieSeriesNumber
@@ -34,22 +39,19 @@ const MainPage = () => {
         studio_id: values.movieStudioId ? +values.movieStudioId : null,
       };
 
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/movies/${movieId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        }
-      );
-      await response.json();
-
-      if (response.ok) {
+      try {
+        await trigger(params).unwrap();
         helpers.setStatus(`Successfully updated movie ${values.movieName}`);
-      } else {
-        helpers.setStatus("Error updating movie.");
+      } catch (error) {
+        const { status, data } = error as FetchBaseQueryError;
+
+        if (status !== 422) {
+          const {
+            detail: { message },
+          } = data as HTTPExceptionType;
+
+          helpers.setStatus(message ? message : "Unknown server error");
+        }
       }
     }
   };

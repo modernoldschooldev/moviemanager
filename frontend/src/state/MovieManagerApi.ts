@@ -11,6 +11,7 @@ import {
 import {
   MovieActorAssociationType,
   MovieCategoryAssociationType,
+  MovieUpdateType,
 } from "../types/state";
 
 const api = createApi({
@@ -89,6 +90,16 @@ const api = createApi({
       invalidatesTags: ["movie"],
     }),
 
+    // updates a movie's information in the database
+    movieUpdate: builder.mutation<MovieType, MovieUpdateType>({
+      query: ({ id, ...body }) => ({
+        url: `/movies/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["movie", "movies"],
+    }),
+
     // fetch movies from backend
     movies: builder.query<MovieFileType[], void>({
       query: () => "/movies",
@@ -127,6 +138,7 @@ export const {
   useMovieActorDeleteMutation,
   useMovieCategoryAddMutation,
   useMovieCategoryDeleteMutation,
+  useMovieUpdateMutation,
   useMoviesQuery,
   useMoviesImportMutation,
   useSeriesQuery,

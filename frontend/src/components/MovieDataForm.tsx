@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
@@ -6,18 +6,25 @@ import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
 
 import { useAppSelector } from "../state/hooks";
-import { useMoviesQuery } from "../state/MovieManagerApi";
+import {
+  useMoviesQuery,
+  useSeriesQuery,
+  useStudiosQuery,
+} from "../state/MovieManagerApi";
 import StateContext from "../state/StateContext";
 
 import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
 const MovieDataForm = () => {
-  const [loading, setLoading] = useState(true);
-  const { state, dispatch } = useContext(StateContext);
+  const { dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
+
   const movieId = useAppSelector((state) => state.selectBox.movieId);
+
   const { data: movies } = useMoviesQuery();
+  const { data: series, isLoading: isSeriesLoading } = useSeriesQuery();
+  const { data: studios, isLoading: isStudiosLoading } = useStudiosQuery();
 
   const onRemoveMovie = async () => {
     if (movieId) {
@@ -48,27 +55,6 @@ const MovieDataForm = () => {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      const helper = async (endpoint: string, type: Actions) => {
-        const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/${endpoint}`
-        );
-        const payload = await response.json();
-
-        dispatch({
-          type,
-          payload,
-        });
-      };
-
-      await helper("series", Actions.SetSeries);
-      await helper("studios", Actions.SetStudios);
-
-      setLoading(false);
-    })();
-  }, [dispatch]);
-
   return (
     <MovieSection title="Movie Data">
       <div className="h-64">
@@ -84,7 +70,7 @@ const MovieDataForm = () => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Studio">
-                {loading ? (
+                {isStudiosLoading ? (
                   <Loading />
                 ) : (
                   <select
@@ -92,7 +78,7 @@ const MovieDataForm = () => {
                     {...formik.getFieldProps("movieStudioId")}
                   >
                     <option value="">None</option>
-                    {state?.studios.map((studio) => (
+                    {studios?.map((studio) => (
                       <option key={studio.id} value={studio.id}>
                         {studio.name}
                       </option>
@@ -102,7 +88,7 @@ const MovieDataForm = () => {
               </MovieDataFormRow>
 
               <MovieDataFormRow title="Series">
-                {loading ? (
+                {isSeriesLoading ? (
                   <Loading />
                 ) : (
                   <select
@@ -110,7 +96,7 @@ const MovieDataForm = () => {
                     {...formik.getFieldProps("movieSeriesId")}
                   >
                     <option value="">None</option>
-                    {state?.series.map((series) => (
+                    {series?.map((series) => (
                       <option key={series.id} value={series.id}>
                         {series.name}
                       </option>

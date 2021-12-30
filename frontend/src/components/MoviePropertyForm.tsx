@@ -1,48 +1,67 @@
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { Field, Formik, FormikHelpers, useFormikContext } from "formik";
 
-import StateContext from "../state/StateContext";
+import MoviePropertyFormSelector from "./MoviePropertyFormSelector";
+
+import {
+  useActorsQuery,
+  useCategoriesQuery,
+  useSeriesQuery,
+  useStudiosQuery,
+} from "../state/MovieManagerApi";
 
 import { AdminFormValuesType } from "../types/form";
 import { ActorType, CategoryType, SeriesType, StudioType } from "../types/api";
-import MoviePropertyFormSelector from "./MoviePropertyFormSelector";
 
 const NameSelectorChanged = () => {
   const {
     setFieldValue,
     values: { nameSelection, selection },
   } = useFormikContext<AdminFormValuesType>();
-  const { state } = useContext(StateContext);
+
+  const { data: actorsAvailable } = useActorsQuery();
+  const { data: categories } = useCategoriesQuery();
+  const { data: series } = useSeriesQuery();
+  const { data: studios } = useStudiosQuery();
 
   useEffect(() => {
-    const id = +nameSelection;
-
-    if (id === 0) {
+    if (nameSelection === "") {
       setFieldValue("name", "");
     } else {
       let names: ActorType[] | CategoryType[] | SeriesType[] | StudioType[];
 
       switch (selection) {
         case "actor":
-          names = state!.actorsAvailable;
+          names = actorsAvailable ?? [];
           break;
 
         case "category":
-          names = state!.categories;
+          names = categories ?? [];
           break;
 
         case "series":
-          names = state!.series;
+          names = series ?? [];
           break;
 
         case "studio":
-          names = state!.studios;
+          names = studios ?? [];
           break;
       }
 
-      setFieldValue("name", names.filter((name) => id === name.id)[0]?.name);
+      setFieldValue(
+        "name",
+        names.filter((name) => +nameSelection === name.id)[0]?.name
+      );
     }
-  }, [nameSelection, selection, setFieldValue, state]);
+  }, [
+    actorsAvailable,
+    categories,
+    nameSelection,
+    selection,
+    series,
+    setFieldValue,
+    studios,
+  ]);
 
   return null;
 };
@@ -62,7 +81,10 @@ const RadioSelectionChanged = () => {
 };
 
 const MoviePropertyForm = () => {
-  const { state } = useContext(StateContext);
+  const { data: actorsAvailable } = useActorsQuery();
+  const { data: categories } = useCategoriesQuery();
+  const { data: series } = useSeriesQuery();
+  const { data: studios } = useStudiosQuery();
 
   const initialValues: AdminFormValuesType = {
     action: "add",
@@ -261,28 +283,28 @@ const MoviePropertyForm = () => {
                   <option value="">None</option>
 
                   {formik.values.selection === "actor" &&
-                    state?.actorsAvailable.map((actor) => (
+                    actorsAvailable?.map((actor) => (
                       <option key={actor.id} value={actor.id}>
                         {actor.name}
                       </option>
                     ))}
 
                   {formik.values.selection === "category" &&
-                    state?.categories.map((category) => (
+                    categories?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
                     ))}
 
                   {formik.values.selection === "series" &&
-                    state?.series.map((series) => (
+                    series?.map((series) => (
                       <option key={series.id} value={series.id}>
                         {series.name}
                       </option>
                     ))}
 
                   {formik.values.selection === "studio" &&
-                    state?.studios.map((studio) => (
+                    studios?.map((studio) => (
                       <option key={studio.id} value={studio.id}>
                         {studio.name}
                       </option>

@@ -1,21 +1,19 @@
-import { useContext, useEffect, useState } from "react";
 import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
 import { useAppSelector } from "../state/hooks";
-import StateContext from "../state/StateContext";
+import { useCategoriesQuery } from "../state/MovieManagerApi";
 
 import { MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
-import { Actions } from "../types/state";
 
 const CategorySelector = () => {
-  const [loading, setLoading] = useState(true);
-  const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
+
+  const { data: categories, isLoading } = useCategoriesQuery();
 
   const onUpdateCategory = async (id: string, selected: boolean) => {
     if (movieId) {
@@ -31,7 +29,7 @@ const CategorySelector = () => {
       );
       const data: MovieType = await response.json();
 
-      const categoryName = state?.categories.filter(
+      const categoryName = categories?.filter(
         (category) => category.id === +id
       )[0].name;
 
@@ -59,30 +57,14 @@ const CategorySelector = () => {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/categories`
-      );
-      const data = await response.json();
-
-      dispatch({
-        type: Actions.SetCategories,
-        payload: data,
-      });
-
-      setLoading(false);
-    })();
-  }, [dispatch]);
-
   return (
     <MovieSection title="Categories">
       <div className="h-72">
-        {loading ? (
+        {isLoading ? (
           <Loading />
         ) : (
           <div className="gap-1 grid grid-cols-3 overflow-y-auto">
-            {state?.categories.map((category) => (
+            {categories?.map((category) => (
               <div key={category.id}>
                 <label>
                   <Field

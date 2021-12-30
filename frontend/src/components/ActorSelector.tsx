@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { useFormikContext } from "formik";
 
 import ActorSelectorList from "./ActorSelectorList";
@@ -6,6 +6,7 @@ import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
 import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { useActorsQuery } from "../state/MovieManagerApi";
 import { setAvailableId, setSelectedId } from "../state/SelectBoxSlice";
 import StateContext from "../state/StateContext";
 
@@ -14,14 +15,14 @@ import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
 const ActorSelector = () => {
-  const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
 
+  const reduxDispatch = useAppDispatch();
   const { availableId, movieId, selectedId } = useAppSelector(
     (state) => state.selectBox
   );
-  const reduxDispatch = useAppDispatch();
+  const { data: actorsAvailable, isLoading } = useActorsQuery();
 
   const onUpdateActor = async (selected: boolean) => {
     if (movieId) {
@@ -40,9 +41,8 @@ const ActorSelector = () => {
       );
       const data: MovieType = await response.json();
 
-      const actorName = state?.actorsAvailable.filter(
-        (actor) => actor.id === +id
-      )[0].name;
+      const actorName = actorsAvailable?.filter((actor) => actor.id === +id)[0]
+        .name;
 
       switch (response.status) {
         case 200:
@@ -73,24 +73,10 @@ const ActorSelector = () => {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND}/actors`);
-      const data = await response.json();
-
-      dispatch({
-        type: Actions.SetActorsAvailable,
-        payload: data,
-      });
-
-      setLoading(false);
-    })();
-  }, [dispatch]);
-
   return (
     <MovieSection title="Actors">
       <div className="flex h-72">
-        {loading ? (
+        {isLoading ? (
           <Loading />
         ) : (
           <ActorSelectorList title="Available">
@@ -103,7 +89,7 @@ const ActorSelector = () => {
                 e.key === "Enter" && onUpdateActor(true);
               }}
             >
-              {state?.actorsAvailable.map((actor) => (
+              {actorsAvailable?.map((actor) => (
                 <option key={actor.id} value={actor.id}>
                   {actor.name}
                 </option>

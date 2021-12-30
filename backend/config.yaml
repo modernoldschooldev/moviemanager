@@ -1,0 +1,4 @@
+---
+categories: ./../db/categories
+files: ./../db/movies
+imports: ./../db/imports

@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-300;
+  }
+
+  h1 {
+    @apply text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+}
+
+@layer components {
+  .clip-input {
+    @apply w-full pl-1 border border-black focus:bg-blue-300 focus:text-gray-800 focus:border-blue-500 focus:border focus:border-solid outline-none rounded;
+  }
+
+  .clip-button {
+    @apply w-full py-1 text-white text-lg uppercase disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-default tracking-wider rounded;
+  }
+}

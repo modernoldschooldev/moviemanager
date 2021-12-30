@@ -26,6 +26,7 @@ const MovieDataForm = () => {
   const { data: movies } = useMoviesQuery();
   const { data: series, isLoading: isSeriesLoading } = useSeriesQuery();
   const { data: studios, isLoading: isStudiosLoading } = useStudiosQuery();
+
   const [trigger] = useMovieDeleteMutation();
 
   const onRemoveMovie = async () => {
@@ -133,7 +134,9 @@ const MovieDataForm = () => {
 
               {formik.status && (
                 <div>
-                  <p className="font-semibold text-center">{formik.status}</p>
+                  <p className="font-semibold text-center text-sm">
+                    {formik.status}
+                  </p>
                 </div>
               )}
             </div>

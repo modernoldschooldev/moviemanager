@@ -25,6 +25,7 @@ const ActorSelector = () => {
   const { availableId, movieId, selectedId } = useAppSelector(
     (state) => state.selectBox
   );
+
   const { data: actorsAvailable, isLoading } = useActorsQuery();
   const { data: movie } = useMovieQuery(movieId ?? skipToken);
 

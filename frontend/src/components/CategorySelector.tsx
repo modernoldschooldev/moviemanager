@@ -17,6 +17,7 @@ import { MainPageFormValuesType } from "../types/form";
 
 const CategorySelector = () => {
   const formik = useFormikContext<MainPageFormValuesType>();
+
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
   const { data: movie } = useMovieQuery(movieId ?? skipToken);

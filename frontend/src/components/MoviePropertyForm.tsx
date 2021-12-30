@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Field, Formik, FormikHelpers, useFormikContext } from "formik";
 
 import MoviePropertyFormSelector from "./MoviePropertyFormSelector";
@@ -22,7 +23,7 @@ import {
   useStudioUpdateMutation,
 } from "../state/MovieManagerApi";
 
-import { AdminFormValuesType } from "../types/form";
+import { MoviePropertyFormValuesType } from "../types/form";
 import {
   ActorType,
   CategoryType,
@@ -30,13 +31,12 @@ import {
   SeriesType,
   StudioType,
 } from "../types/api";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 
 const NameSelectorChanged = () => {
   const {
     setFieldValue,
     values: { nameSelection, selection },
-  } = useFormikContext<AdminFormValuesType>();
+  } = useFormikContext<MoviePropertyFormValuesType>();
 
   const { data: actorsAvailable } = useActorsQuery();
   const { data: categories } = useCategoriesQuery();
@@ -89,7 +89,7 @@ const RadioSelectionChanged = () => {
   const {
     setFieldValue,
     values: { action, selection },
-  } = useFormikContext<AdminFormValuesType>();
+  } = useFormikContext<MoviePropertyFormValuesType>();
 
   useEffect(() => {
     setFieldValue("name", "");
@@ -121,7 +121,7 @@ const MoviePropertyForm = () => {
   const [studioDeleteTrigger] = useStudioDeleteMutation();
   const [studioUpdateTrigger] = useStudioUpdateMutation();
 
-  const initialValues: AdminFormValuesType = {
+  const initialValues: MoviePropertyFormValuesType = {
     action: "add",
     name: "",
     nameSelection: "",
@@ -129,8 +129,8 @@ const MoviePropertyForm = () => {
   };
 
   const onSubmit = async (
-    { action, name, nameSelection, selection }: AdminFormValuesType,
-    helpers: FormikHelpers<AdminFormValuesType>
+    { action, name, nameSelection, selection }: MoviePropertyFormValuesType,
+    helpers: FormikHelpers<MoviePropertyFormValuesType>
   ) => {
     // avoid trying to remove the None element
     if (action === "remove" && nameSelection === "") {

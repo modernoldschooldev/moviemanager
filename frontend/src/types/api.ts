@@ -12,16 +12,6 @@ export interface HTTPExceptionType {
   };
 }
 
-export interface HTTPValidationErrorType {
-  detail: [
-    {
-      loc: string[];
-      msg: string;
-      type: string;
-    }
-  ];
-}
-
 export interface MovieType {
   id: number;
   filename: string;

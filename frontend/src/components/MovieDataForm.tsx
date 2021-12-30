@@ -12,7 +12,7 @@ import {
   useSeriesQuery,
   useStudiosQuery,
 } from "../state/MovieManagerApi";
-import { setMovieId } from "../state/SelectBoxSlice";
+import { reset } from "../state/SelectBoxSlice";
 
 import { HTTPExceptionType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
@@ -39,7 +39,8 @@ const MovieDataForm = () => {
 
           formik.setStatus(`Successfully removed ${filename}`);
           formik.resetForm();
-          dispatch(setMovieId(""));
+
+          dispatch(reset());
         } catch (error) {
           const { status, data } = error as FetchBaseQueryError;
 
@@ -59,7 +60,7 @@ const MovieDataForm = () => {
     <MovieSection title="Movie Data">
       <div className="h-64">
         <form onSubmit={formik.handleSubmit}>
-          <fieldset disabled={movieId === ""}>
+          <fieldset disabled={!movieId}>
             <div>
               <MovieDataFormRow title="Name">
                 <Field

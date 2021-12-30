@@ -18,7 +18,7 @@ const MovieList = () => {
   const dispatch = useAppDispatch();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
-  const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
+  const { data: movie } = useMovieQuery(movieId ?? skipToken);
   const { data: movies, isLoading } = useMoviesQuery();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const MovieList = () => {
 
         setFieldValue(
           "movieCategories",
-          movie.categories.map((category) => category.id.toString())
+          movie.categories?.map((category) => category.id.toString())
         );
       }
     })();
@@ -59,7 +59,7 @@ const MovieList = () => {
         <select
           className="h-64 w-full"
           size={10}
-          defaultValue={movieId ? movieId : undefined}
+          defaultValue={movieId}
           onChange={(e) => {
             dispatch(setMovieId(e.target.value));
             setStatus("");

@@ -19,7 +19,7 @@ const CategorySelector = () => {
   const formik = useFormikContext<MainPageFormValuesType>();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
-  const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
+  const { data: movie } = useMovieQuery(movieId ?? skipToken);
   const { data: categories, isLoading } = useCategoriesQuery();
 
   const [movieCategoryAddTrigger] = useMovieCategoryAddMutation();
@@ -71,7 +71,7 @@ const CategorySelector = () => {
         {isLoading ? (
           <Loading />
         ) : (
-          <fieldset disabled={movieId === ""}>
+          <fieldset disabled={!movieId}>
             <div className="gap-1 grid grid-cols-3 overflow-y-auto">
               {categories?.map((category) => (
                 <div key={category.id}>

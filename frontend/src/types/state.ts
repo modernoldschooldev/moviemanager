@@ -10,7 +10,7 @@ export interface MovieCategoryAssociationType {
 }
 
 export interface SelectBoxSliceType {
-  availableId: string;
-  movieId: string;
-  selectedId: string;
+  availableId: string | undefined;
+  movieId: string | undefined;
+  selectedId: string | undefined;
 }

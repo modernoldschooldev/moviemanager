@@ -26,16 +26,16 @@ const ActorSelector = () => {
     (state) => state.selectBox
   );
   const { data: actorsAvailable, isLoading } = useActorsQuery();
-  const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
+  const { data: movie } = useMovieQuery(movieId ?? skipToken);
 
   const [movieActorAddTrigger] = useMovieActorAddMutation();
   const [movieActorDeleteTrigger] = useMovieActorDeleteMutation();
 
   const onUpdateActor = async (selected: boolean) => {
-    if (movieId) {
-      const id = selected ? availableId : selectedId;
-      const trigger = selected ? movieActorAddTrigger : movieActorDeleteTrigger;
+    const id = selected ? availableId : selectedId;
+    const trigger = selected ? movieActorAddTrigger : movieActorDeleteTrigger;
 
+    if (movieId && id) {
       const actorName = actorsAvailable?.filter((actor) => actor.id === +id)[0]
         .name;
 
@@ -66,55 +66,57 @@ const ActorSelector = () => {
 
   return (
     <MovieSection title="Actors">
-      <div className="flex h-72">
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <ActorSelectorList title="Available">
-            <select
-              className="border border-green-500 w-full"
-              size={10}
-              disabled={movieId === ""}
-              onChange={(e) => dispatch(setAvailableId(e.target.value))}
-              onDoubleClick={() => onUpdateActor(true)}
-              onKeyPress={(e) => {
-                e.key === "Enter" && onUpdateActor(true);
-              }}
-            >
-              {actorsAvailable?.map((actor) => (
-                <option key={actor.id} value={actor.id}>
-                  {actor.name}
-                </option>
-              ))}
-            </select>
-          </ActorSelectorList>
-        )}
-
-        <ActorSelectorList title="Selected">
-          {movieId && movie && movie.actors.length > 0 ? (
-            <select
-              className="border border-green-500 w-full"
-              size={10}
-              disabled={movieId === ""}
-              onChange={(e) => dispatch(setSelectedId(e.target.value))}
-              onDoubleClick={() => onUpdateActor(false)}
-              onKeyPress={(e) => {
-                e.key === "Enter" && onUpdateActor(false);
-              }}
-            >
-              {movie?.actors.map((actor) => (
-                <option key={actor.id} value={actor.id}>
-                  {actor.name}
-                </option>
-              ))}
-            </select>
+      <fieldset disabled={!movieId}>
+        <div className="flex h-72">
+          {isLoading ? (
+            <Loading />
           ) : (
-            <div className="border border-green-500">
-              <h3 className="font-bold text-center text-lg">None</h3>
-            </div>
+            <ActorSelectorList title="Available">
+              <select
+                className="border border-green-500 w-full"
+                size={10}
+                defaultValue={availableId}
+                onChange={(e) => dispatch(setAvailableId(e.target.value))}
+                onDoubleClick={() => onUpdateActor(true)}
+                onKeyPress={(e) => {
+                  e.key === "Enter" && onUpdateActor(true);
+                }}
+              >
+                {actorsAvailable?.map((actor) => (
+                  <option key={actor.id} value={actor.id}>
+                    {actor.name}
+                  </option>
+                ))}
+              </select>
+            </ActorSelectorList>
           )}
-        </ActorSelectorList>
-      </div>
+
+          <ActorSelectorList title="Selected">
+            {movieId && movie && movie.actors && movie.actors.length > 0 ? (
+              <select
+                className="border border-green-500 w-full"
+                size={10}
+                defaultValue={selectedId}
+                onChange={(e) => dispatch(setSelectedId(e.target.value))}
+                onDoubleClick={() => onUpdateActor(false)}
+                onKeyPress={(e) => {
+                  e.key === "Enter" && onUpdateActor(false);
+                }}
+              >
+                {movie?.actors.map((actor) => (
+                  <option key={actor.id} value={actor.id}>
+                    {actor.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="border border-green-500">
+                <h3 className="font-bold text-center text-lg">None</h3>
+              </div>
+            )}
+          </ActorSelectorList>
+        </div>
+      </fieldset>
     </MovieSection>
   );
 };

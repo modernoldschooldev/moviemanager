@@ -4,6 +4,7 @@ import { Field, useFormikContext } from "formik";
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
+import { useAppSelector } from "../state/hooks";
 import StateContext from "../state/StateContext";
 
 import { MovieType } from "../types/api";
@@ -14,11 +15,12 @@ const CategorySelector = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
+  const movieId = useAppSelector((state) => state.selectBox.movieId);
 
   const onUpdateCategory = async (id: string, selected: boolean) => {
-    if (formik.values.movieId) {
+    if (movieId) {
       const queryString = new URLSearchParams({
-        movie_id: formik.values.movieId,
+        movie_id: movieId,
         category_id: id,
       });
       const response = await fetch(

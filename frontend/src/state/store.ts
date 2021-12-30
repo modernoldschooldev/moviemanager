@@ -1,11 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import ActorSelectorSlice from "./ActorSelectorSlice";
+import MovieManagerApi from "./MovieManagerApi";
+import SelectBoxSlice from "./SelectBoxSlice";
 
 export const store = configureStore({
   reducer: {
-    actorSelector: ActorSelectorSlice,
+    [MovieManagerApi.reducerPath]: MovieManagerApi.reducer,
+    selectBox: SelectBoxSlice,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(MovieManagerApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -1,48 +1,38 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
+import { useAppDispatch, useAppSelector } from "../state/hooks";
+import { useMoviesQuery } from "../state/MovieManagerApi";
+import { setMovieId } from "../state/SelectBoxSlice";
 import StateContext from "../state/StateContext";
 
-import { MovieFileType, MovieType } from "../types/api";
+import { MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 import { Actions } from "../types/state";
 
 const MovieList = () => {
-  const [loading, setLoading] = useState(true);
-  const { state, dispatch } = useContext(StateContext);
-  const {
-    handleChange,
-    setFieldValue,
-    setStatus,
-    values: { movieId },
-  } = useFormikContext<MainPageFormValuesType>();
+  const { dispatch } = useContext(StateContext);
+  const { setFieldValue, setStatus } =
+    useFormikContext<MainPageFormValuesType>();
+
+  const movieId = useAppSelector((state) => state.selectBox.movieId);
+  const reduxDispatch = useAppDispatch();
+  const { data: movies, isLoading } = useMoviesQuery();
 
   useEffect(() => {
-    (async () => {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND}/movies`);
-      const data: MovieFileType[] = await response.json();
-
-      dispatch({
-        type: Actions.SetMovies,
-        payload: data,
-      });
-
-      data.length > 0 && setFieldValue("movieId", data[0].id);
-
-      setLoading(false);
-    })();
-  }, [dispatch, setFieldValue]);
+    if (movies) {
+      movies.length > 0 && reduxDispatch(setMovieId(movies[0].id.toString()));
+    }
+  }, [movies, reduxDispatch]);
 
   useEffect(() => {
     (async () => {
       if (movieId) {
-        const id = +movieId;
-
         const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/movies/${id}`
+          `${process.env.REACT_APP_BACKEND}/movies/${movieId}`
         );
         const data: MovieType = await response.json();
 
@@ -78,7 +68,7 @@ const MovieList = () => {
 
   return (
     <MovieSection title="Movie List">
-      {loading ? (
+      {isLoading ? (
         <div className="h-64">
           <Loading />
         </div>
@@ -86,11 +76,10 @@ const MovieList = () => {
         <select
           className="h-64 w-full"
           size={10}
-          name="movieId"
-          defaultValue={state?.movies[0]?.id}
-          onChange={handleChange}
+          defaultValue={movies && movies[0]?.id}
+          onChange={(e) => reduxDispatch(setMovieId(e.target.value))}
         >
-          {state?.movies.map((movie) => (
+          {movies?.map((movie) => (
             <option key={movie.id} value={movie.id}>
               {movie.filename}
             </option>

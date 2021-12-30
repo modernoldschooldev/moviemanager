@@ -5,6 +5,8 @@ import Loading from "./Loading";
 import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
 
+import { useAppSelector } from "../state/hooks";
+import { useMoviesQuery } from "../state/MovieManagerApi";
 import StateContext from "../state/StateContext";
 
 import { MainPageFormValuesType } from "../types/form";
@@ -14,16 +16,17 @@ const MovieDataForm = () => {
   const [loading, setLoading] = useState(true);
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
+  const movieId = useAppSelector((state) => state.selectBox.movieId);
+  const { data: movies } = useMoviesQuery();
 
   const onRemoveMovie = async () => {
-    if (formik.values.movieId) {
-      const id = +formik.values.movieId;
-      const filename = state?.movies.filter((movie) => movie.id === id)[0]
+    if (movieId) {
+      const filename = movies?.filter((movie) => movie.id === +movieId)[0]
         .filename;
 
       if (window.confirm(`Really remove ${filename}?`)) {
         const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/movies/${id}`,
+          `${process.env.REACT_APP_BACKEND}/movies/${movieId}`,
           {
             method: "DELETE",
           }

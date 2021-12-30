@@ -6,7 +6,7 @@ import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
 import { useAppDispatch, useAppSelector } from "../state/hooks";
-import { setAvailableId, setSelectedId } from "../state/ActorSelectorSlice";
+import { setAvailableId, setSelectedId } from "../state/SelectBoxSlice";
 import StateContext from "../state/StateContext";
 
 import { MovieType } from "../types/api";
@@ -18,17 +18,17 @@ const ActorSelector = () => {
   const { state, dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
 
-  const { availableId, selectedId } = useAppSelector(
-    (state) => state.actorSelector
+  const { availableId, movieId, selectedId } = useAppSelector(
+    (state) => state.selectBox
   );
   const reduxDispatch = useAppDispatch();
 
   const onUpdateActor = async (selected: boolean) => {
-    if (formik.values.movieId) {
+    if (movieId) {
       const id = selected ? availableId : selectedId;
 
       const queryString = new URLSearchParams({
-        movie_id: formik.values.movieId,
+        movie_id: movieId,
         actor_id: id,
       });
 

@@ -1,19 +1,23 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { ActorSelectorSliceType } from "../types/state";
+import { SelectBoxSliceType } from "../types/state";
 
-const initialState: ActorSelectorSliceType = {
+const initialState: SelectBoxSliceType = {
   availableId: "",
+  movieId: "",
   selectedId: "",
 };
 
 const slice = createSlice({
-  name: "actorSelector",
+  name: "selectBox",
   initialState,
   reducers: {
     reset: () => initialState,
     setAvailableId: (state, action: PayloadAction<string>) => {
       state.availableId = action.payload;
+    },
+    setMovieId: (state, action: PayloadAction<string>) => {
+      state.movieId = action.payload;
     },
     setSelectedId: (state, action: PayloadAction<string>) => {
       state.selectedId = action.payload;
@@ -21,5 +25,6 @@ const slice = createSlice({
   },
 });
 
-export const { reset, setAvailableId, setSelectedId } = slice.actions;
+export const { reset, setAvailableId, setMovieId, setSelectedId } =
+  slice.actions;
 export default slice.reducer;

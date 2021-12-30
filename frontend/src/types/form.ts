@@ -5,7 +5,6 @@ export interface AdminFormValuesType {
   selection: "actor" | "category" | "series" | "studio";
 }
 export interface MainPageFormValuesType {
-  movieId: string | undefined;
   movieName: string;
   movieStudioId: string;
   movieSeriesId: string;

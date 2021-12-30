@@ -20,12 +20,6 @@ export const reducer = (state: StateType, action: ActionType) => {
         categories: action.payload,
       };
 
-    case Actions.SetMovies:
-      return {
-        ...state,
-        movies: action.payload,
-      };
-
     case Actions.SetSeries:
       return {
         ...state,

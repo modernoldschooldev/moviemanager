@@ -21,7 +21,7 @@ import { MainPageFormValuesType } from "../types/form";
 const ActorSelector = () => {
   const formik = useFormikContext<MainPageFormValuesType>();
 
-  const reduxDispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const { availableId, movieId, selectedId } = useAppSelector(
     (state) => state.selectBox
   );
@@ -74,7 +74,8 @@ const ActorSelector = () => {
             <select
               className="border border-green-500 w-full"
               size={10}
-              onChange={(e) => reduxDispatch(setAvailableId(e.target.value))}
+              disabled={movieId === ""}
+              onChange={(e) => dispatch(setAvailableId(e.target.value))}
               onDoubleClick={() => onUpdateActor(true)}
               onKeyPress={(e) => {
                 e.key === "Enter" && onUpdateActor(true);
@@ -90,11 +91,12 @@ const ActorSelector = () => {
         )}
 
         <ActorSelectorList title="Selected">
-          {movie && movie.actors.length > 0 ? (
+          {movieId && movie && movie.actors.length > 0 ? (
             <select
               className="border border-green-500 w-full"
               size={10}
-              onChange={(e) => reduxDispatch(setSelectedId(e.target.value))}
+              disabled={movieId === ""}
+              onChange={(e) => dispatch(setSelectedId(e.target.value))}
               onDoubleClick={() => onUpdateActor(false)}
               onKeyPress={(e) => {
                 e.key === "Enter" && onUpdateActor(false);

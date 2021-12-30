@@ -39,6 +39,15 @@ const api = createApi({
       providesTags: ["movie"],
     }),
 
+    // removes a movie from the backend
+    movieDelete: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/movies/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["movies"],
+    }),
+
     // add an actor to a movie
     movieActorAdd: builder.mutation<MovieType, MovieActorAssociationType>({
       query: ({ actorId, movieId }) => ({
@@ -113,6 +122,7 @@ export const {
   useActorsQuery,
   useCategoriesQuery,
   useMovieQuery,
+  useMovieDeleteMutation,
   useMovieActorAddMutation,
   useMovieActorDeleteMutation,
   useMovieCategoryAddMutation,

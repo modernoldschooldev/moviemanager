@@ -1,26 +1,32 @@
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieDataFormRow from "./MovieDataFormRow";
 import MovieSection from "./MovieSection";
 
-import { useAppSelector } from "../state/hooks";
+import { useAppDispatch, useAppSelector } from "../state/hooks";
 import {
+  useMovieDeleteMutation,
   useMoviesQuery,
   useSeriesQuery,
   useStudiosQuery,
 } from "../state/MovieManagerApi";
+import { setMovieId } from "../state/SelectBoxSlice";
 
+import { HTTPExceptionType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 
 const MovieDataForm = () => {
   const formik = useFormikContext<MainPageFormValuesType>();
 
+  const dispatch = useAppDispatch();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
   const { data: movies } = useMoviesQuery();
   const { data: series, isLoading: isSeriesLoading } = useSeriesQuery();
   const { data: studios, isLoading: isStudiosLoading } = useStudiosQuery();
+  const [trigger] = useMovieDeleteMutation();
 
   const onRemoveMovie = async () => {
     if (movieId) {
@@ -28,19 +34,22 @@ const MovieDataForm = () => {
         .filename;
 
       if (window.confirm(`Really remove ${filename}?`)) {
-        const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/movies/${movieId}`,
-          {
-            method: "DELETE",
-          }
-        );
-        await response.json();
+        try {
+          await trigger(movieId).unwrap();
 
-        if (response.ok) {
           formik.setStatus(`Successfully removed ${filename}`);
           formik.resetForm();
-        } else {
-          formik.setStatus(`Error removing ${filename}`);
+          dispatch(setMovieId(""));
+        } catch (error) {
+          const { status, data } = error as FetchBaseQueryError;
+
+          if (status !== 422) {
+            const {
+              detail: { message },
+            } = data as HTTPExceptionType;
+
+            formik.setStatus(message ? message : "Unknown server error");
+          }
         }
       }
     }
@@ -50,7 +59,7 @@ const MovieDataForm = () => {
     <MovieSection title="Movie Data">
       <div className="h-64">
         <form onSubmit={formik.handleSubmit}>
-          <fieldset>
+          <fieldset disabled={movieId === ""}>
             <div>
               <MovieDataFormRow title="Name">
                 <Field

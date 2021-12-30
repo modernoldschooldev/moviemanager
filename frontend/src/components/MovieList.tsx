@@ -15,17 +15,11 @@ const MovieList = () => {
   const { setFieldValue, setStatus } =
     useFormikContext<MainPageFormValuesType>();
 
-  const reduxDispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
   const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
-  const { data: movies, isLoading, isSuccess } = useMoviesQuery();
-
-  useEffect(() => {
-    if (movieId === "" && isSuccess && movies) {
-      movies.length > 0 && reduxDispatch(setMovieId(movies[0].id.toString()));
-    }
-  }, [movieId, movies, isSuccess, reduxDispatch]);
+  const { data: movies, isLoading } = useMoviesQuery();
 
   useEffect(() => {
     (async () => {
@@ -65,9 +59,9 @@ const MovieList = () => {
         <select
           className="h-64 w-full"
           size={10}
-          defaultValue={movieId && movieId}
+          defaultValue={movieId ? movieId : undefined}
           onChange={(e) => {
-            reduxDispatch(setMovieId(e.target.value));
+            dispatch(setMovieId(e.target.value));
             setStatus("");
           }}
         >

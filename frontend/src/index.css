@@ -14,6 +14,6 @@
   }
 
   .movie-data-button {
-    @apply font-bold inline-block mx-2 p-2 rounded-lg text-white tracking-wider uppercase w-1/2;
+    @apply disabled:bg-gray-400 disabled:hover:bg-gray-400 font-bold inline-block mx-2 p-2 rounded-lg text-white tracking-wider uppercase w-1/2;
   }
 }

@@ -71,24 +71,26 @@ const CategorySelector = () => {
         {isLoading ? (
           <Loading />
         ) : (
-          <div className="gap-1 grid grid-cols-3 overflow-y-auto">
-            {categories?.map((category) => (
-              <div key={category.id}>
-                <label>
-                  <Field
-                    type="checkbox"
-                    name="movieCategories"
-                    value={category.id.toString()}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      formik.handleChange(e);
-                      onUpdateCategory(e.target.value, e.target.checked);
-                    }}
-                  />{" "}
-                  {category.name}
-                </label>
-              </div>
-            ))}
-          </div>
+          <fieldset disabled={movieId === ""}>
+            <div className="gap-1 grid grid-cols-3 overflow-y-auto">
+              {categories?.map((category) => (
+                <div key={category.id}>
+                  <label>
+                    <Field
+                      type="checkbox"
+                      name="movieCategories"
+                      value={category.id.toString()}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        formik.handleChange(e);
+                        onUpdateCategory(e.target.value, e.target.checked);
+                      }}
+                    />{" "}
+                    {category.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </fieldset>
         )}
       </div>
     </MovieSection>

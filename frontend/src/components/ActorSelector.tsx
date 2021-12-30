@@ -15,7 +15,7 @@ import {
 } from "../state/MovieManagerApi";
 import { setAvailableId, setSelectedId } from "../state/SelectBoxSlice";
 
-import { MovieType } from "../types/api";
+import { HTTPExceptionType, MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 
 const ActorSelector = () => {
@@ -51,18 +51,14 @@ const ActorSelector = () => {
           } ${data.name}`
         );
       } catch (error) {
-        switch ((error as FetchBaseQueryError).status) {
-          case 404:
-            formik.setStatus("Server could not find actor");
-            break;
+        const { status, data } = error as FetchBaseQueryError;
 
-          case 409:
-            formik.setStatus(`Actor ${actorName} is already selected`);
-            break;
+        if (status !== 422) {
+          const {
+            detail: { message },
+          } = data as HTTPExceptionType;
 
-          default:
-            formik.setStatus("Unknown server error");
-            break;
+          formik.setStatus(message ? message : "Unknown server error");
         }
       }
     }

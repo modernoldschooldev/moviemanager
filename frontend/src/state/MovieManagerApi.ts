@@ -8,7 +8,10 @@ import {
   SeriesType,
   StudioType,
 } from "../types/api";
-import { MovieActorAssociationType } from "../types/state";
+import {
+  MovieActorAssociationType,
+  MovieCategoryAssociationType,
+} from "../types/state";
 
 const api = createApi({
   reducerPath: "movieManagerApi",
@@ -54,6 +57,29 @@ const api = createApi({
       invalidatesTags: ["movie", "movies"],
     }),
 
+    // add an category to a movie
+    movieCategoryAdd: builder.mutation<MovieType, MovieCategoryAssociationType>(
+      {
+        query: ({ categoryId, movieId }) => ({
+          url: `/movie_category?movie_id=${movieId}&category_id=${categoryId}`,
+          method: "POST",
+        }),
+        invalidatesTags: ["movie"],
+      }
+    ),
+
+    // delete an category from a movie
+    movieCategoryDelete: builder.mutation<
+      MovieType,
+      MovieCategoryAssociationType
+    >({
+      query: ({ categoryId, movieId }) => ({
+        url: `/movie_category?movie_id=${movieId}&category_id=${categoryId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["movie"],
+    }),
+
     // fetch movies from backend
     movies: builder.query<MovieFileType[], void>({
       query: () => "/movies",
@@ -80,6 +106,8 @@ export const {
   useMovieQuery,
   useMovieActorAddMutation,
   useMovieActorDeleteMutation,
+  useMovieCategoryAddMutation,
+  useMovieCategoryDeleteMutation,
   useMoviesQuery,
   useSeriesQuery,
   useStudiosQuery,

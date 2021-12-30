@@ -17,6 +17,7 @@ const MovieList = () => {
 
   const reduxDispatch = useAppDispatch();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
+
   const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
   const { data: movies, isLoading, isSuccess } = useMoviesQuery();
 

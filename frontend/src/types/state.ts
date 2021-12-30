@@ -4,6 +4,11 @@ export interface MovieActorAssociationType {
   movieId: string;
 }
 
+export interface MovieCategoryAssociationType {
+  categoryId: string;
+  movieId: string;
+}
+
 export interface SelectBoxSliceType {
   availableId: string;
   movieId: string;

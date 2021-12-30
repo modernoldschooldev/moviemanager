@@ -1,58 +1,66 @@
+import { FetchBaseQueryError, skipToken } from "@reduxjs/toolkit/dist/query";
 import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
 import MovieSection from "./MovieSection";
 
 import { useAppSelector } from "../state/hooks";
-import { useCategoriesQuery } from "../state/MovieManagerApi";
+import {
+  useCategoriesQuery,
+  useMovieCategoryAddMutation,
+  useMovieCategoryDeleteMutation,
+  useMovieQuery,
+} from "../state/MovieManagerApi";
 
-import { MovieType } from "../types/api";
+import { HTTPExceptionType, MovieType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
 
 const CategorySelector = () => {
   const formik = useFormikContext<MainPageFormValuesType>();
   const movieId = useAppSelector((state) => state.selectBox.movieId);
 
+  const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
   const { data: categories, isLoading } = useCategoriesQuery();
+
+  const [movieCategoryAddTrigger] = useMovieCategoryAddMutation();
+  const [movieCategoryDeleteTrigger] = useMovieCategoryDeleteMutation();
 
   const onUpdateCategory = async (id: string, selected: boolean) => {
     if (movieId) {
-      const queryString = new URLSearchParams({
-        movie_id: movieId,
-        category_id: id,
-      });
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND}/movie_category?${queryString}`,
-        {
-          method: selected ? "POST" : "DELETE",
-        }
-      );
-      const data: MovieType = await response.json();
+      const trigger = selected
+        ? movieCategoryAddTrigger
+        : movieCategoryDeleteTrigger;
 
       const categoryName = categories?.filter(
         (category) => category.id === +id
       )[0].name;
 
-      switch (response.status) {
-        case 200:
-          formik.setStatus(
-            `Successfully ${
-              selected ? "added" : "removed"
-            } category ${categoryName} ${selected ? "to" : "from"} ${data.name}`
-          );
-          break;
+      try {
+        const data: MovieType = await trigger({
+          categoryId: id,
+          movieId,
+        }).unwrap();
 
-        case 404:
-          formik.setStatus("Server could not find category");
-          break;
+        formik.setStatus(
+          `Successfully ${
+            selected ? "added" : "removed"
+          } category ${categoryName} ${selected ? "to" : "from"} ${data.name}`
+        );
+      } catch (error) {
+        const { status, data } = error as FetchBaseQueryError;
 
-        case 409:
-          formik.setStatus(`Category ${categoryName} is already selected`);
-          break;
+        formik.setFieldValue(
+          "movieCategories",
+          movie?.categories.map((category) => category.id.toString())
+        );
 
-        default:
-          formik.setStatus("Unknown server error");
-          break;
+        if (status !== 422) {
+          const {
+            detail: { message },
+          } = data as HTTPExceptionType;
+
+          formik.setStatus(message ? message : "Unknown server error");
+        }
       }
     }
   };

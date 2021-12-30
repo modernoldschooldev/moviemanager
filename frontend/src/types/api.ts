@@ -5,6 +5,23 @@ export interface BaseMovieProperty {
 
 export interface ActorType extends BaseMovieProperty {}
 export interface CategoryType extends BaseMovieProperty {}
+
+export interface HTTPExceptionType {
+  detail: {
+    message: string;
+  };
+}
+
+export interface HTTPValidationErrorType {
+  detail: [
+    {
+      loc: string[];
+      msg: string;
+      type: string;
+    }
+  ];
+}
+
 export interface MovieType {
   id: number;
   filename: string;

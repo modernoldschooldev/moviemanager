@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { Field, useFormikContext } from "formik";
 
 import Loading from "./Loading";
@@ -11,13 +10,10 @@ import {
   useSeriesQuery,
   useStudiosQuery,
 } from "../state/MovieManagerApi";
-import StateContext from "../state/StateContext";
 
 import { MainPageFormValuesType } from "../types/form";
-import { Actions } from "../types/state";
 
 const MovieDataForm = () => {
-  const { dispatch } = useContext(StateContext);
   const formik = useFormikContext<MainPageFormValuesType>();
 
   const movieId = useAppSelector((state) => state.selectBox.movieId);
@@ -43,11 +39,6 @@ const MovieDataForm = () => {
         if (response.ok) {
           formik.setStatus(`Successfully removed ${filename}`);
           formik.resetForm();
-
-          dispatch({
-            type: Actions.SetActorsSelected,
-            payload: [],
-          });
         } else {
           formik.setStatus(`Error removing ${filename}`);
         }

@@ -86,6 +86,15 @@ const api = createApi({
       providesTags: ["movies"],
     }),
 
+    // import movies from backend
+    moviesImport: builder.mutation<MovieFileType[], void>({
+      query: () => ({
+        url: "/movies",
+        method: "POST",
+      }),
+      invalidatesTags: ["movies"],
+    }),
+
     // fetch series from backend
     series: builder.query<SeriesType[], void>({
       query: () => "/series",
@@ -109,6 +118,7 @@ export const {
   useMovieCategoryAddMutation,
   useMovieCategoryDeleteMutation,
   useMoviesQuery,
+  useMoviesImportMutation,
   useSeriesQuery,
   useStudiosQuery,
 } = api;

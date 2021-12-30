@@ -9,6 +9,7 @@ import MovieSection from "./MovieSection";
 import { useAppDispatch, useAppSelector } from "../state/hooks";
 import {
   useActorsQuery,
+  useMovieActorAddMutation,
   useMovieActorDeleteMutation,
   useMovieQuery,
 } from "../state/MovieManagerApi";
@@ -26,38 +27,31 @@ const ActorSelector = () => {
   );
   const { data: actorsAvailable, isLoading } = useActorsQuery();
   const { data: movie } = useMovieQuery(movieId ? movieId : skipToken);
+
+  const [movieActorAddTrigger] = useMovieActorAddMutation();
   const [movieActorDeleteTrigger] = useMovieActorDeleteMutation();
 
   const onUpdateActor = async (selected: boolean) => {
     if (movieId) {
       const id = selected ? availableId : selectedId;
+      const trigger = selected ? movieActorAddTrigger : movieActorDeleteTrigger;
 
       const actorName = actorsAvailable?.filter((actor) => actor.id === +id)[0]
         .name;
 
-      if (selected) {
-        const queryString = new URLSearchParams({
-          movie_id: movieId,
-          actor_id: id,
-        });
+      try {
+        const data: MovieType = await trigger({
+          actorId: id,
+          movieId,
+        }).unwrap();
 
-        const response = await fetch(
-          `${process.env.REACT_APP_BACKEND}/movie_actor?${queryString}`,
-          {
-            method: selected ? "POST" : "DELETE",
-          }
+        formik.setStatus(
+          `Successfully ${selected ? "added" : "removed"} ${actorName} ${
+            selected ? "to" : "from"
+          } ${data.name}`
         );
-        const data: MovieType = await response.json();
-
-        switch (response.status) {
-          case 200:
-            formik.setStatus(
-              `Successfully ${selected ? "added" : "removed"} ${actorName} ${
-                selected ? "to" : "from"
-              } ${data.name}`
-            );
-            break;
-
+      } catch (error) {
+        switch ((error as FetchBaseQueryError).status) {
           case 404:
             formik.setStatus("Server could not find actor");
             break;
@@ -69,33 +63,6 @@ const ActorSelector = () => {
           default:
             formik.setStatus("Unknown server error");
             break;
-        }
-      } else {
-        try {
-          const data: MovieType = await movieActorDeleteTrigger({
-            actorId: id,
-            movieId,
-          }).unwrap();
-
-          formik.setStatus(
-            `Successfully ${selected ? "added" : "removed"} ${actorName} ${
-              selected ? "to" : "from"
-            } ${data.name}`
-          );
-        } catch (error) {
-          switch ((error as FetchBaseQueryError).status) {
-            case 404:
-              formik.setStatus("Server could not find actor");
-              break;
-
-            case 409:
-              formik.setStatus(`Actor ${actorName} is already selected`);
-              break;
-
-            default:
-              formik.setStatus("Unknown server error");
-              break;
-          }
         }
       }
     }

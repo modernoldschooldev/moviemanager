@@ -9,6 +9,11 @@ export interface MovieCategoryAssociationType {
   movieId: string;
 }
 
+export interface MoviePropertyType {
+  id: string;
+  name: string;
+}
+
 export interface MovieUpdateType {
   id: string;
   name: string | null;

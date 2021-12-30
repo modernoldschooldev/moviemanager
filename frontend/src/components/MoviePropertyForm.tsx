@@ -4,14 +4,33 @@ import { Field, Formik, FormikHelpers, useFormikContext } from "formik";
 import MoviePropertyFormSelector from "./MoviePropertyFormSelector";
 
 import {
+  useActorAddMutation,
+  useActorDeleteMutation,
   useActorsQuery,
+  useActorUpdateMutation,
   useCategoriesQuery,
+  useCategoryAddMutation,
+  useCategoryDeleteMutation,
+  useCategoryUpdateMutation,
+  useSeriesAddMutation,
+  useSeriesDeleteMutation,
   useSeriesQuery,
+  useSeriesUpdateMutation,
+  useStudioAddMutation,
+  useStudioDeleteMutation,
   useStudiosQuery,
+  useStudioUpdateMutation,
 } from "../state/MovieManagerApi";
 
 import { AdminFormValuesType } from "../types/form";
-import { ActorType, CategoryType, SeriesType, StudioType } from "../types/api";
+import {
+  ActorType,
+  CategoryType,
+  HTTPExceptionType,
+  SeriesType,
+  StudioType,
+} from "../types/api";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 
 const NameSelectorChanged = () => {
   const {
@@ -86,6 +105,22 @@ const MoviePropertyForm = () => {
   const { data: series } = useSeriesQuery();
   const { data: studios } = useStudiosQuery();
 
+  const [actorAddTrigger] = useActorAddMutation();
+  const [actorDeleteTrigger] = useActorDeleteMutation();
+  const [actorUpdateTrigger] = useActorUpdateMutation();
+
+  const [categoryAddTrigger] = useCategoryAddMutation();
+  const [categoryDeleteTrigger] = useCategoryDeleteMutation();
+  const [categoryUpdateTrigger] = useCategoryUpdateMutation();
+
+  const [seriesAddTrigger] = useSeriesAddMutation();
+  const [seriesDeleteTrigger] = useSeriesDeleteMutation();
+  const [seriesUpdateTrigger] = useSeriesUpdateMutation();
+
+  const [studioAddTrigger] = useStudioAddMutation();
+  const [studioDeleteTrigger] = useStudioDeleteMutation();
+  const [studioUpdateTrigger] = useStudioUpdateMutation();
+
   const initialValues: AdminFormValuesType = {
     action: "add",
     name: "",
@@ -93,99 +128,114 @@ const MoviePropertyForm = () => {
     selection: "actor",
   };
 
-  const onSubmit = (
+  const onSubmit = async (
     { action, name, nameSelection, selection }: AdminFormValuesType,
     helpers: FormikHelpers<AdminFormValuesType>
   ) => {
-    const helper = async (endpoint: string) => {
-      // avoid trying to remove the None element
-      if (action === "remove" && nameSelection === "") {
-        helpers.setStatus("Please make a selection first");
-        return;
-      }
+    // avoid trying to remove the None element
+    if (action === "remove" && nameSelection === "") {
+      helpers.setStatus("Please make a selection first");
+      return;
+    }
 
-      const selectionTitle =
-        selection.charAt(0).toUpperCase() + selection.slice(1);
+    const selectionTitle =
+      selection.charAt(0).toUpperCase() + selection.slice(1);
 
-      const baseURL = `${process.env.REACT_APP_BACKEND}/${endpoint}`;
-      let url = `${baseURL}/${nameSelection}`;
-      let method: "POST" | "DELETE" | "PUT";
-      let headers = {
-        "Content-Type": "application/json",
-      };
-      let body: string | undefined = JSON.stringify({ name });
-      let verb: "added" | "removed" | "updated";
-
-      switch (action) {
-        case "add":
-          url = baseURL;
-          method = "POST";
-          verb = "added";
-          break;
-
-        case "remove":
-          method = "DELETE";
-          body = undefined;
-          verb = "removed";
-          break;
-
-        case "update":
-          method = "PUT";
-          verb = "updated";
-          break;
-      }
-
-      const response = await fetch(url, {
-        method,
-        headers,
-        body,
-      });
-      await response.json();
-
-      switch (response.status) {
-        case 200:
-          helpers.setStatus(`${selectionTitle} ${name} ${verb}`);
-          break;
-
-        case 404:
-          helpers.setStatus(`${selectionTitle} ${name} not found`);
-          break;
-
-        case 409:
-          helpers.setStatus(`${selectionTitle} ${name} already exists`);
-          break;
-
-        case 412:
-          helpers.setStatus(
-            `${selectionTitle} ${name} is on a movie and cannot be removed`
-          );
-          break;
-
-        default:
-          helpers.setStatus(`Server returned HTTP ${response.status}`);
-          break;
-      }
+    let trigger;
+    let verb: "added" | "removed" | "updated";
+    const params = {
+      id: nameSelection,
+      name,
     };
 
-    switch (selection) {
-      case "actor":
-        helper("actors");
+    switch (action) {
+      case "add":
+        verb = "added";
+
+        switch (selection) {
+          case "actor":
+            trigger = actorAddTrigger;
+            break;
+
+          case "category":
+            trigger = categoryAddTrigger;
+            break;
+
+          case "series":
+            trigger = seriesAddTrigger;
+            break;
+
+          case "studio":
+            trigger = studioAddTrigger;
+            break;
+        }
         break;
 
-      case "category":
-        helper("categories");
+      case "remove":
+        verb = "removed";
+
+        switch (selection) {
+          case "actor":
+            trigger = actorDeleteTrigger;
+            break;
+
+          case "category":
+            trigger = categoryDeleteTrigger;
+            break;
+
+          case "series":
+            trigger = seriesDeleteTrigger;
+            break;
+
+          case "studio":
+            trigger = studioDeleteTrigger;
+            break;
+        }
         break;
 
-      case "series":
-        helper("series");
-        break;
+      case "update":
+        verb = "updated";
 
-      case "studio":
-        helper("studios");
+        switch (selection) {
+          case "actor":
+            trigger = actorUpdateTrigger;
+            break;
+
+          case "category":
+            trigger = categoryUpdateTrigger;
+            break;
+
+          case "series":
+            trigger = seriesUpdateTrigger;
+            break;
+
+          case "studio":
+            trigger = studioUpdateTrigger;
+            break;
+        }
         break;
     }
 
-    helpers.setFieldValue("name", "");
+    try {
+      await trigger(params).unwrap();
+
+      helpers.setStatus(`${selectionTitle} ${name} ${verb}`);
+      helpers.setFieldValue("name", "");
+
+      if (action === "remove") {
+        helpers.setFieldValue("nameSelection", "");
+      }
+    } catch (error) {
+      const { status, data } = error as FetchBaseQueryError;
+
+      if (status !== 422) {
+        const {
+          detail: { message },
+        } = data as HTTPExceptionType;
+
+        helpers.setStatus(message ? message : "Unknown server error");
+      }
+    }
   };
 
   return (

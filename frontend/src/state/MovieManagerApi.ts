@@ -11,6 +11,7 @@ import {
 import {
   MovieActorAssociationType,
   MovieCategoryAssociationType,
+  MoviePropertyType,
   MovieUpdateType,
 } from "../types/state";
 
@@ -22,6 +23,35 @@ const api = createApi({
   }),
 
   endpoints: (builder) => ({
+    // add new actor to backend
+    actorAdd: builder.mutation<ActorType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: "/actors",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["actors"],
+    }),
+
+    // delete actor from backend
+    actorDelete: builder.mutation<void, MoviePropertyType>({
+      query: ({ id }) => ({
+        url: `/actors/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["actors"],
+    }),
+
+    // update actor on backend
+    actorUpdate: builder.mutation<ActorType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: `/actors/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["actors", "movie", "movies"],
+    }),
+
     // fetch actors from backend
     actors: builder.query<ActorType[], void>({
       query: () => "/actors",
@@ -32,6 +62,35 @@ const api = createApi({
     categories: builder.query<CategoryType[], void>({
       query: () => "/categories",
       providesTags: ["categories"],
+    }),
+
+    // add new category to backend
+    categoryAdd: builder.mutation<CategoryType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: "/categories",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["categories"],
+    }),
+
+    // delete category from backend
+    categoryDelete: builder.mutation<void, MoviePropertyType>({
+      query: ({ id }) => ({
+        url: `/categories/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["categories"],
+    }),
+
+    // update category on backend
+    categoryUpdate: builder.mutation<CategoryType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: `/categories/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["categories", "movie"],
     }),
 
     // fetch movie info from backend
@@ -121,6 +180,64 @@ const api = createApi({
       providesTags: ["series"],
     }),
 
+    // add new series to backend
+    seriesAdd: builder.mutation<SeriesType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: "/series",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["series"],
+    }),
+
+    // delete series from backend
+    seriesDelete: builder.mutation<void, MoviePropertyType>({
+      query: ({ id }) => ({
+        url: `/series/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["series"],
+    }),
+
+    // update series on backend
+    seriesUpdate: builder.mutation<SeriesType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: `/series/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["series", "movie", "movies"],
+    }),
+
+    // add new studio to backend
+    studioAdd: builder.mutation<StudioType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: "/studios",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["studios"],
+    }),
+
+    // delete studio from backend
+    studioDelete: builder.mutation<void, MoviePropertyType>({
+      query: ({ id }) => ({
+        url: `/studios/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["studios"],
+    }),
+
+    // update studio on backend
+    studioUpdate: builder.mutation<StudioType, MoviePropertyType>({
+      query: ({ id, ...body }) => ({
+        url: `/studios/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["studios", "movie", "movies"],
+    }),
+
     // fetch studios from backend
     studios: builder.query<StudioType[], void>({
       query: () => "/studios",
@@ -130,8 +247,14 @@ const api = createApi({
 });
 
 export const {
+  useActorAddMutation,
+  useActorDeleteMutation,
+  useActorUpdateMutation,
   useActorsQuery,
   useCategoriesQuery,
+  useCategoryAddMutation,
+  useCategoryDeleteMutation,
+  useCategoryUpdateMutation,
   useMovieQuery,
   useMovieDeleteMutation,
   useMovieActorAddMutation,
@@ -142,6 +265,12 @@ export const {
   useMoviesQuery,
   useMoviesImportMutation,
   useSeriesQuery,
+  useSeriesAddMutation,
+  useSeriesDeleteMutation,
+  useSeriesUpdateMutation,
+  useStudioAddMutation,
+  useStudioDeleteMutation,
+  useStudioUpdateMutation,
   useStudiosQuery,
 } = api;
 

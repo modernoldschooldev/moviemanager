@@ -75,7 +75,7 @@ def generate_movie_filename(movie: models.Movie) -> str:
     return filename
 
 
-def generate_sort_name(name: str) -> str:
+def generate_sort_name(name: Optional[str]) -> Optional[str]:
     """Generate a name ignoring articles, case, and special characters.
 
     Args:
@@ -84,6 +84,9 @@ def generate_sort_name(name: str) -> str:
     Returns:
         sort_name: The converted name.
     """
+
+    if name is None:
+        return None
 
     return re.sub(
         r'^(?:a|an|the) ',  # replace articles at the start of the line

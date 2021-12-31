@@ -38,5 +38,6 @@ loggers:
     level: INFO
   uvicorn.access:
     level: INFO
+    propagate: False
     handlers:
       - access

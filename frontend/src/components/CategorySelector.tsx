@@ -68,12 +68,12 @@ const CategorySelector = () => {
 
   return (
     <MovieSection title="Categories">
-      <div>
+      <div className="h-72 overflow-y-auto">
         {isLoading ? (
           <Loading />
         ) : (
           <fieldset disabled={!movieId}>
-            <div className="gap-1 grid grid-cols-3 h-72 overflow-y-auto">
+            <div className="gap-1 grid grid-cols-3">
               {categories?.map((category) => (
                 <div key={category.id}>
                   <label>

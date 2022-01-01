@@ -52,6 +52,50 @@ Watch the application be built from scratch on
 2. npm install
 3. npm start
 
+## TODO List
+
+### Frontend Automated Test Suite
+
+- render movie list
+  - do we get the list of movies?
+- render actor selector
+  - do we get the list of actors?
+- render categories
+  - do we get the category checkboxes?
+- render main page
+  - can we select a movie?
+    - does movie selection fill out movie data form?
+    - does movie selection fill out selected actors?
+    - does movie data select our categories?
+  - does remove button bring up confirm?
+  - does selecting update trigger a status message?
+  - does adding/removing an actor?
+  - does adding/removing a category?
+- render full app
+  - can we switch to admin page?
+  - can we switch back?
+- render admin page
+  - change action to update
+    - does the select box appear?
+    - does it have the actors in it?
+    - can we update an actor's name?
+    - can we change it to one that already exists?
+  - change action to remove
+    - does the text box disappear?
+    - can we remove a None selection?
+    - can we remove anything else?
+    - can we remove a property associated with a movie?
+    - does remove trigger a confirm?
+  - change action to add
+    - does text box reappear?
+    - does select box disappear?
+  - repeat tests for category, series, studio
+  - does import movies button work?
+
+### Backend Automated Test Suite
+
+- TBD
+
 ## License
 
 Copyright (C) 2021 Modern Old School Developer

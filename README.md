@@ -23,6 +23,35 @@ Watch the application be built from scratch on
 - SQLAlchemy
 - Sqlite
 
+## How to run this application
+
+### FastAPI Backend
+
+**Requires python >= 3.6, virtualenv, and pip**
+
+1. Inside the backend/db folder, create a movies and imports directory
+1. Add movie files to imports
+1. Create venv
+
+    ```bash
+    # Linux/WSL and macOS only
+    # Windows native is too quirky -- use WSL
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    ```
+
+1. Start backend with `python run.py`
+
+### React Frontend
+
+**Requires Node >= 14**
+
+1. Go to frontend folder in terminal
+2. npm install
+3. npm start
+
 ## License
 
 Copyright (C) 2021 Modern Old School Developer

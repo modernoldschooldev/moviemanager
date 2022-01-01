@@ -36,7 +36,7 @@ app = FastAPI(
 # add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r'https?://(?:127\.0\.0\.1|localhost):300[0-9]',
+    allow_origin_regex=r'https?://(?:127\.0\.0\.1|localhost)(?::300[0-9])?',
     allow_methods=['*'],
     allow_headers=['*'],
 )

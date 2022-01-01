@@ -33,14 +33,14 @@ Watch the application be built from scratch on
 1. Add movie files to imports
 1. Create venv
 
-    ```bash
-    # Linux/WSL and macOS only
-    # Windows native is too quirky -- use WSL
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    ```
+   ```bash
+   # Linux/WSL and macOS only
+   # Windows native is too quirky -- use WSL
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
 
 1. Start backend with `python run.py`
 
@@ -56,10 +56,6 @@ Watch the application be built from scratch on
 
 ### Frontend Automated Test Suite
 
-- render movie list
-  - do we get the list of movies?
-- render actor selector
-  - do we get the list of actors?
 - render categories
   - do we get the category checkboxes?
 - render main page

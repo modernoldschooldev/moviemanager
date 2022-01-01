@@ -123,11 +123,38 @@ describe("Test MainPage", () => {
     ).toBeInTheDocument();
   });
 
+  // check that a series is in the Series select box after loading
+  it("Loads the series into the MovieDataForm series select box", async () => {
+    expect(
+      await screen.findByRole("option", {
+        name: "Guardians of the Galaxy",
+      })
+    ).toBeInTheDocument();
+  });
+
+  // check that a studio is in the Studio select box after loading
+  it("Loads the studios into the MovieDataForm studio select box", async () => {
+    expect(
+      await screen.findByRole("option", {
+        name: "Disney",
+      })
+    ).toBeInTheDocument();
+  });
+
   // check that an actor is in the Available Actors select box after loading
   it("Loads the actors into the ActorSelector", async () => {
     expect(
       await screen.findByRole("option", {
         name: "Elijah Wood",
+      })
+    ).toBeInTheDocument();
+  });
+
+  // check that a category is in the CategorySelector after loading
+  it("Loads the categories into the CategorySelector", async () => {
+    expect(
+      await screen.findByRole("checkbox", {
+        name: "sci-fi",
       })
     ).toBeInTheDocument();
   });

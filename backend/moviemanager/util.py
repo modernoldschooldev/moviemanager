@@ -3,14 +3,23 @@ import os.path
 import re
 from pathlib import Path
 from typing import List, Optional, Tuple
+from enum import Enum
 
 from sqlalchemy.orm import Session
 
+from .config import get_db_path
+
 from . import crud, models
-from .config import get_config
 from .exceptions import ListFilesException, PathException
 
-config = get_config()
+
+class PathType(Enum):
+    ACTOR = 'actors'
+    CATEGORY = 'categories'
+    MOVIE = 'movies'
+    IMPORT = 'imports'
+    SERIES = 'series'
+    STUDIO = 'studios'
 
 
 def generate_movie_filename(movie: models.Movie) -> str:
@@ -99,6 +108,22 @@ def generate_sort_name(name: Optional[str]) -> Optional[str]:
     )
 
 
+def get_movie_path(path_type: PathType, full: bool = True) -> str:
+    """Gets the a relative or full path to the movie files.
+
+    Args:
+        path_type: The type of files requested.
+        full: True for the full path; false for a relative path.
+
+    Returns:
+        path: The path to the movie files.
+    """
+
+    path = get_db_path() if full else '../..'
+
+    return f'{path}/{path_type.value}'
+
+
 def list_files(path: str) -> List[str]:
     """List all files in a directory in alphabetical order.
 
@@ -128,8 +153,11 @@ def migrate_file(filename: str, adding: bool = True) -> None:
         adding: True when moving to movies folder; False for the imports.
     """
 
-    base_current = config['imports'] if adding else config['movies']
-    base_new = config['movies'] if adding else config['imports']
+    imports = get_movie_path(PathType.IMPORT)
+    movies = get_movie_path(PathType.MOVIE)
+
+    base_current = imports if adding else movies
+    base_new = movies if adding else imports
 
     path_current = f'{base_current}/{filename}'
     path_new = f'{base_new}/{filename}'
@@ -318,7 +346,7 @@ def rename_movie_file(
     filename_current = movie.filename
     filename_new = generate_movie_filename(movie)
 
-    path_base = config['movies']
+    path_base = get_movie_path(PathType.MOVIE)
     path_current = f'{path_base}/{filename_current}'
     path_new = f'{path_base}/{filename_new}'
 
@@ -385,7 +413,7 @@ def update_link(
         PathError: If any file operation fails.
     """
 
-    path_movies = os.path.abspath(config['movies'])
+    path_movies = get_movie_path(PathType.MOVIE, False)
     path_file = f'{path_movies}/{filename}'
 
     path_base = f'{path_link_base}/{name}'
@@ -429,22 +457,22 @@ def update_link(
 def update_actor_link(filename: str, name: str, selected: bool) -> None:
     """Updates an actor property link; update_link has more info."""
 
-    update_link(filename, config['actors'], name, selected)
+    update_link(filename, get_movie_path(PathType.ACTOR), name, selected)
 
 
 def update_category_link(filename: str, name: str, selected: bool) -> None:
     """Updates a category property link; update_link has more info.."""
 
-    update_link(filename, config['categories'], name, selected)
+    update_link(filename, get_movie_path(PathType.CATEGORY), name, selected)
 
 
 def update_series_link(filename: str, name: str, selected: bool) -> None:
     """Updates a series property link; update_link has more info.."""
 
-    update_link(filename, config['series'], name, selected)
+    update_link(filename, get_movie_path(PathType.SERIES), name, selected)
 
 
 def update_studio_link(filename: str, name: str, selected: bool) -> None:
     """Updates a studio property link; update_link has more info.."""
 
-    update_link(filename, config['studios'], name, selected)
+    update_link(filename, get_movie_path(PathType.STUDIO), name, selected)

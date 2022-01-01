@@ -5,15 +5,15 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import crud, models, util
-from .config import init
+from . import config, crud, models, util
 from .database import engine, get_db
 from .exceptions import (DuplicateEntryException, IntegrityConstraintException,
                          InvalidIDException, ListFilesException, PathException)
 from .schemas import *
 
-# setup logging and get app configuration
-logger, config = init()
+# setup logging
+config.setup_logging()
+logger = config.get_logger()
 
 description = '''# Movie Manager Backend
 
@@ -673,7 +673,7 @@ def movies_get_one(id: int, db: Session = Depends(get_db)):
 )
 def movies_import(db: Session = Depends(get_db)):
     try:
-        files = util.list_files(config['imports'])
+        files = util.list_files(util.get_movie_path(util.PathType.IMPORT))
     except ListFilesException as e:
         logger.error(str(e))
 

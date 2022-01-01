@@ -1,6 +1,11 @@
 .vscode/
 __pycache__
-db/
-backend/sqlite.db*
+backend/db/actors
+backend/db/categories
+backend/db/imports
+backend/db/movies
+backend/db/series
+backend/db/sqlite.db*
+backend/db/studios
 node_modules
 venv/

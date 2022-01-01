@@ -1,13 +1,13 @@
-from . import crud, models, util
-from .config import init
+from . import config, crud, models, util
 from .database import SessionLocal
 
 
-def _main():
+def relink_property_files():
     """Recreates property link files from database."""
 
-    # setup logging and get app configuration
-    logger, _ = init()
+    # setup logging
+    config.setup_logging()
+    logger = config.get_logger()
 
     db = SessionLocal()
     movies = crud.get_all_movies(db)
@@ -36,4 +36,4 @@ def _main():
 
 if __name__ == '__main__':
     # invoke me with python -m moviemanager.relink
-    _main()
+    relink_property_files()

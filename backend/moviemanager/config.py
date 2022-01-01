@@ -2,71 +2,32 @@ import os
 import sys
 from logging import Logger, getLogger
 from logging.config import dictConfig
-from typing import Dict, Tuple
 
 import yaml
 
-DEFAULT_CONFIG_PATH = './config.yaml'
-DEFAULT_LOGGING_PATH = './logging.yaml'
-
-################################################################################
-# function decorator
-
-
-def run_once(f):
-    # Thanks to aaronasterling for this idea
-    # https://stackoverflow.com/a/4104188/1730980
-
-    def helper(*args, **kwargs):
-        if not helper.has_run:
-            helper.has_run = True
-            helper.data = f(*args, **kwargs)
-
-        return helper.data
-
-    helper.has_run = False
-    return helper
+DEFAULT_DB_PATH = './db'
 
 ################################################################################
 # config functions
 
 
-def init() -> Tuple[Logger, Dict[str, str]]:
-    """Setup application logging and global configuration.
+def get_db_path() -> str:
+    """Returns the movie DB path."""
 
-    Returns:
-        logger: The application logger.
-        config: The configuration dictionary.
-    """
-
-    setup_logging()
-
-    logger = get_logger()
-    config = get_config()
-
-    return (logger, config)
+    return os.getenv('MM_DB_PATH', DEFAULT_DB_PATH)
 
 
-@run_once
-def get_config() -> Dict[str, str]:
-    """Reads the global configuration dictionary from the yaml config file.
+def get_log_config() -> str:
+    """Returns the logging config path."""
 
-    Returns:
-        config: The configuration dictionary.
-    """
+    path_override = os.getenv('MM_LOG_CONFIG_PATH')
 
-    path = os.getenv('MM_CONFIG_PATH', DEFAULT_CONFIG_PATH)
+    if path_override is not None:
+        path = path_override
+    else:
+        path = f'{get_db_path()}/logging.yaml'
 
-    try:
-        with open(path, 'r') as f:
-            data = yaml.safe_load(f)
-    except:
-        logger = getLogger()
-        logger.critical('Failed to read the config file %s', path)
-
-        sys.exit(1)
-
-    return data
+    return path
 
 
 def get_logger() -> Logger:
@@ -75,10 +36,21 @@ def get_logger() -> Logger:
     return getLogger('moviemanager')
 
 
+def get_sqlite_path() -> str:
+    """Returns path to the sqlite DB file."""
+
+    path_override = os.getenv('MM_SQLITE_PATH')
+
+    if path_override is not None:
+        return path_override
+
+    return f'{get_db_path()}/sqlite.db'
+
+
 def setup_logging() -> None:
     """Configures logging for the application using the yaml config file."""
 
-    path = os.getenv('MM_LOGGING_PATH', DEFAULT_LOGGING_PATH)
+    path = get_log_config()
 
     try:
         with open(path, 'r') as f:

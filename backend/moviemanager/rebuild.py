@@ -1,17 +1,17 @@
 import sys
 from typing import Dict, List
 
-from . import crud, models, util
-from .config import init
+from . import config, crud, models, util
 from .database import SessionLocal, engine
 from .exceptions import ListFilesException
 
 
-def _main():
+def rebuild_db():
     """Recreates the sqlite database from information on the file system."""
 
     # setup logging and get app configuration
-    logger, config = init()
+    config.setup_logging()
+    logger = config.get_logger()
 
     # create the database tables and get a connection
     models.Base.metadata.create_all(bind=engine)
@@ -21,7 +21,8 @@ def _main():
 
     # list the movie files
     try:
-        movie_files = util.list_files(config['movies'])
+        path = util.get_movie_path(util.PathType.MOVIE)
+        movie_files = util.list_files(path)
     except ListFilesException as e:
         logger.critical(str(e))
         sys.exit(1)
@@ -33,15 +34,21 @@ def _main():
     series = []
     studios = []
 
-    for path in ('actors', 'categories', 'series', 'studios'):
-        files: List[str] = locals()[path]
+    for path_type in (
+        util.PathType.ACTOR,
+        util.PathType.CATEGORY,
+        util.PathType.SERIES,
+        util.PathType.STUDIO
+    ):
+        files: List[str] = locals()[path_type.value]
+        path = util.get_movie_path(path_type)
 
         try:
-            files.extend(util.list_files(config[path]))
-            logger.info('Loaded %s from link directory %s', path, config[path])
+            files.extend(util.list_files(path))
+            logger.info('Loaded %s from link directory %s', path_type, path)
         except ListFilesException:
             logger.warn(
-                'Unable to load %s from link directory %s', path, config[path]
+                'Failed to load %s from link directory %s', path_type, path
             )
 
     # create association lists of movies -> properties
@@ -51,20 +58,27 @@ def _main():
     movie_series = {filename: [] for filename in movie_files}
     movie_studios = {filename: [] for filename in movie_files}
 
-    for path in ('actors', 'categories', 'series', 'studios'):
-        names: List[str] = locals()[path]
+    for path_type in (
+        util.PathType.ACTOR,
+        util.PathType.CATEGORY,
+        util.PathType.SERIES,
+        util.PathType.STUDIO
+    ):
+        names: List[str] = locals()[path_type.value]
+        path = util.get_movie_path(path_type)
 
         for name in names:
-            try:
-                full_path = f'{config[path]}/{name}'
-                files = util.list_files(full_path)
+            full_path = f'{path}/{name}'
 
+            try:
+                files = util.list_files(full_path)
                 logger.info('Loaded link files from %s', full_path)
             except ListFilesException:
                 logger.error('Unable to read link files in %s', full_path)
                 continue
 
-            properties: Dict[str, List[str]] = locals()[f'movie_{path}']
+            properties: Dict[str, List[str]] = \
+                locals()[f'movie_{path_type.value}']
 
             for file in files:
                 # if this test is false, it means there is a broken link
@@ -72,7 +86,8 @@ def _main():
                 if file in properties:
                     properties[file].append(name)
                     logger.info(
-                        'Associated movie %s with %s in %s', file, name, path
+                        'Associated movie %s with %s in %s',
+                        file, name, path_type
                     )
                 else:
                     logger.warn('Broken link file %s/%s', full_path, file)
@@ -211,4 +226,4 @@ def _main():
 
 if __name__ == '__main__':
     # invoke me with python -m moviemanager.rebuild
-    _main()
+    rebuild_db()

@@ -3,9 +3,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-from .config import get_config
-
-config = get_config()
+from .config import get_sqlite_path
 
 
 def _fk_pragma_on_connect(e: Engine, _):
@@ -19,7 +17,7 @@ def _fk_pragma_on_connect(e: Engine, _):
 # set check_same_thread to False or sqlite will have issues if uvicorn
 # changes threads while accessing the database
 engine = create_engine(
-    f'sqlite:///{config["sqlite_db"]}',
+    f'sqlite:///{get_sqlite_path()}',
     connect_args={'check_same_thread': False}
 )
 

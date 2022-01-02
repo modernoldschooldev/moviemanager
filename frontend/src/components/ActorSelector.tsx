@@ -85,7 +85,11 @@ const ActorSelector = () => {
                 }}
               >
                 {actorsAvailable?.map((actor) => (
-                  <option key={actor.id} value={actor.id}>
+                  <option
+                    key={actor.id}
+                    value={actor.id}
+                    data-testid={`actors-available-${actor.id}`}
+                  >
                     {actor.name}
                   </option>
                 ))}
@@ -107,7 +111,11 @@ const ActorSelector = () => {
                 }}
               >
                 {movie?.actors.map((actor) => (
-                  <option key={actor.id} value={actor.id}>
+                  <option
+                    key={actor.id}
+                    value={actor.id}
+                    data-testid={`actors-selected-${actor.id}`}
+                  >
                     {actor.name}
                   </option>
                 ))}

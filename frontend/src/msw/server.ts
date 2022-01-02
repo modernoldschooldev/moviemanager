@@ -4,7 +4,6 @@ import { setupServer } from "msw/node";
 import {
   actors,
   categories,
-  lotrActors,
   lotrMovie,
   movies,
   series,
@@ -21,7 +20,7 @@ import {
 } from "../types/api";
 
 // creates full URL to endpoint with base URL defined in REACT_APP_BACKEND
-const backend = (path: string) =>
+export const backend = (path: string) =>
   new URL(path, process.env.REACT_APP_BACKEND).toString();
 
 // mock server endpoints
@@ -36,6 +35,12 @@ const endpoints = [
     backend("/categories"),
     (req, res, ctx) => {
       return res(ctx.delay(150), ctx.json(categories));
+    }
+  ),
+  rest.post<DefaultRequestBody, PathParams, MovieType>(
+    backend("/movie_actor"),
+    (req, res, ctx) => {
+      return res(ctx.delay(150), ctx.json(lotrMovie));
     }
   ),
   rest.get<DefaultRequestBody, PathParams, MovieType>(

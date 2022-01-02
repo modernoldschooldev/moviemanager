@@ -63,20 +63,22 @@ const MovieDataForm = () => {
         <form onSubmit={formik.handleSubmit}>
           <fieldset disabled={!movieId}>
             <div>
-              <MovieDataFormRow title="Name">
+              <MovieDataFormRow name="movieName" title="Name">
                 <Field
                   className="movie-data-input"
                   type="text"
                   name="movieName"
+                  id="movieName"
                 />
               </MovieDataFormRow>
 
-              <MovieDataFormRow title="Studio">
+              <MovieDataFormRow name="movieStudioId" title="Studio">
                 {isStudiosLoading ? (
                   <Loading />
                 ) : (
                   <select
                     className="py-1 rounded-lg w-full"
+                    id="movieStudioId"
                     {...formik.getFieldProps("movieStudioId")}
                   >
                     <option value="">None</option>
@@ -89,12 +91,13 @@ const MovieDataForm = () => {
                 )}
               </MovieDataFormRow>
 
-              <MovieDataFormRow title="Series">
+              <MovieDataFormRow name="movieSeriesId" title="Series">
                 {isSeriesLoading ? (
                   <Loading />
                 ) : (
                   <select
                     className="py-1 rounded-lg w-full"
+                    id="movieSeriesId"
                     {...formik.getFieldProps("movieSeriesId")}
                   >
                     <option value="">None</option>
@@ -107,11 +110,12 @@ const MovieDataForm = () => {
                 )}
               </MovieDataFormRow>
 
-              <MovieDataFormRow title="Series #">
+              <MovieDataFormRow name="movieSeriesNumber" title="Series #">
                 <Field
                   className="movie-data-input"
                   type="text"
                   name="movieSeriesNumber"
+                  id="movieSeriesNumber"
                 />
               </MovieDataFormRow>
 

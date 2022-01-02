@@ -1,4 +1,4 @@
-export interface MovieDataFormRowProps extends TitleProps {
+export interface NameTitleProps extends TitleProps {
   name: string;
 }
 

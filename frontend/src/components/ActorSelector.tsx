@@ -72,9 +72,10 @@ const ActorSelector = () => {
           {isLoading ? (
             <Loading />
           ) : (
-            <ActorSelectorList title="Available">
+            <ActorSelectorList name="actorsAvailable" title="Available">
               <select
                 className="border border-green-500 w-full"
+                id="actorsAvailable"
                 size={10}
                 defaultValue={availableId}
                 onChange={(e) => dispatch(setAvailableId(e.target.value))}
@@ -82,7 +83,6 @@ const ActorSelector = () => {
                 onKeyPress={(e) => {
                   e.key === "Enter" && onUpdateActor(true);
                 }}
-                data-testid="actors-available-listbox"
               >
                 {actorsAvailable?.map((actor) => (
                   <option key={actor.id} value={actor.id}>
@@ -93,10 +93,11 @@ const ActorSelector = () => {
             </ActorSelectorList>
           )}
 
-          <ActorSelectorList title="Selected">
+          <ActorSelectorList name="actorsSelected" title="Selected">
             {movieId && movie && movie.actors && movie.actors.length > 0 ? (
               <select
                 className="border border-green-500 w-full"
+                id="actorsSelected"
                 size={10}
                 defaultValue={selectedId}
                 onChange={(e) => dispatch(setSelectedId(e.target.value))}
@@ -104,7 +105,6 @@ const ActorSelector = () => {
                 onKeyPress={(e) => {
                   e.key === "Enter" && onUpdateActor(false);
                 }}
-                data-testid="actors-selected-listbox"
               >
                 {movie?.actors.map((actor) => (
                   <option key={actor.id} value={actor.id}>

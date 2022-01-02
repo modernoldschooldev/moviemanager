@@ -45,9 +45,11 @@ describe("Test MovieDataForm", () => {
     expect(textboxes.length).toBe(2);
     textboxes.forEach((textbox) => expect(textbox).toBeDisabled());
 
-    // 2 comboboxes - Series and Studio
-    const comboboxes = await screen.findAllByRole("combobox");
-    expect(comboboxes.length).toBe(2);
-    comboboxes.forEach((combobox) => expect(combobox).toBeDisabled());
+    expect(
+      await screen.findByRole("combobox", { name: "Series" })
+    ).toBeDisabled();
+    expect(
+      await screen.findByRole("combobox", { name: "Studio" })
+    ).toBeDisabled();
   });
 });

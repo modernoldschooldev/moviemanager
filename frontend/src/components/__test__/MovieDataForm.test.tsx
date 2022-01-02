@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "../../test-utils";
 
-import { server } from "../../msw";
+import { server } from "../../msw/server";
+
 import MockFormikContext from "./MockFormikContext";
 import MovieDataForm from "../MovieDataForm";
 
@@ -24,7 +25,7 @@ describe("Test MovieDataForm", () => {
   it("Loads the series into the series combobox", async () => {
     expect(
       await screen.findByRole("option", {
-        name: "Guardians of the Galaxy",
+        name: "Lord of the Rings",
       })
     ).toBeInTheDocument();
   });
@@ -32,7 +33,7 @@ describe("Test MovieDataForm", () => {
   it("Loads the studios into the studios combobox", async () => {
     expect(
       await screen.findByRole("option", {
-        name: "Disney",
+        name: "New Line Cinema",
       })
     ).toBeInTheDocument();
   });

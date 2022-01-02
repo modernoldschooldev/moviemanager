@@ -8,7 +8,7 @@ import {
   waitForElementToBeRemoved,
 } from "../../test-utils";
 
-import { server } from "../../msw";
+import { server } from "../../msw/server";
 import MainPage from "../MainPage";
 
 beforeAll(() => server.listen());
@@ -29,7 +29,7 @@ describe("Test MainPage", () => {
 
     // find the movie list and select movie with ID 2
     const moviesList = await screen.findByTestId("movies-listbox");
-    user.selectOptions(moviesList, "2");
+    user.selectOptions(moviesList, "1");
 
     // find the remove and update buttons and make sure they get enabled
     const removeButton = screen.getByRole("button", { name: /remove/i });
@@ -40,7 +40,7 @@ describe("Test MainPage", () => {
 
     // find the movie name form element and ensure it is enabled
     expect(
-      await screen.findByDisplayValue("Beauty and the Beast")
+      await screen.findByDisplayValue("The Return of the King")
     ).toBeEnabled();
 
     // find the studio combobox - ensure it is enabled and has value 1
@@ -55,7 +55,7 @@ describe("Test MainPage", () => {
       "Series"
     );
     expect(seriesCombobox).toBeEnabled();
-    expect(seriesCombobox.value).toBe("");
+    expect(seriesCombobox.value).toBe("1");
 
     // find fantasy category - ensure it is enabled and checked
     const category: HTMLInputElement = await screen.findByRole("checkbox", {
@@ -74,6 +74,6 @@ describe("Test MainPage", () => {
     const seriesNumber: HTMLInputElement = screen.getByRole("textbox", {
       name: "Series #",
     });
-    expect(seriesNumber.value).toBe("");
+    expect(seriesNumber.value).toBe("3");
   });
 });

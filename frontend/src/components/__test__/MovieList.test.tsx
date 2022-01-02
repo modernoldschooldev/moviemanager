@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "../../test-utils";
 
-import { server } from "../../msw";
+import { server } from "../../msw/server";
+
 import MockFormikContext from "./MockFormikContext";
 import MovieList from "../MovieList";
 
@@ -25,7 +26,7 @@ describe("Test MovieList", () => {
   it("Loads the movies into the MovieList", async () => {
     expect(
       await screen.findByRole("option", {
-        name: "Beauty and the Beast.mp4",
+        name: /The Return of the King/,
       })
     ).toBeInTheDocument();
   });

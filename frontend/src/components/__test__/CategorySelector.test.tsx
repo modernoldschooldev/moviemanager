@@ -1,7 +1,8 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "../../test-utils";
 
-import { server } from "../../msw";
+import { server } from "../../msw/server";
+
 import CategorySelector from "../CategorySelector";
 import MockFormikContext from "./MockFormikContext";
 
@@ -24,7 +25,7 @@ describe("Test CategorySelector", () => {
   it("Loads the categories into the CategorySelector", async () => {
     expect(
       await screen.findByRole("checkbox", {
-        name: "sci-fi",
+        name: "fantasy",
       })
     ).toBeInTheDocument();
   });

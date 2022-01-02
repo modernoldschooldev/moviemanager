@@ -1,7 +1,9 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, screen } from "../../test-utils";
 
-import { server } from "../../msw";
+import { lotrActors } from "../../msw/defaults";
+import { server } from "../../msw/server";
+
 import ActorSelector from "../ActorSelector";
 import MockFormikContext from "./MockFormikContext";
 
@@ -22,11 +24,11 @@ describe("Test ActorSelector", () => {
   it("Renders the ActorSelector without errors", () => {});
 
   it("Loads the actors into the ActorSelector", async () => {
-    expect(
-      await screen.findByRole("option", {
-        name: "Elijah Wood",
-      })
-    ).toBeInTheDocument();
+    for (let actor of lotrActors) {
+      expect(
+        await screen.findByRole("option", { name: actor })
+      ).toBeInTheDocument();
+    }
   });
 
   it("Has the available actors listbox disabled on first load", async () => {

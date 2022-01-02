@@ -6,6 +6,7 @@ import MockFormikContext from "./MockFormikContext";
 import MovieList from "../MovieList";
 
 beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Test MovieList", () => {

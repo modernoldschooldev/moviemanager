@@ -64,6 +64,7 @@ const MovieList = () => {
             dispatch(setMovieId(e.target.value));
             setStatus("");
           }}
+          data-testid="movies-listbox"
         >
           {movies?.map((movie) => (
             <option key={movie.id} value={movie.id}>

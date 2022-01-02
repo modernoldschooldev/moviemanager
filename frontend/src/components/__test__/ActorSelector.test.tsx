@@ -6,6 +6,7 @@ import ActorSelector from "../ActorSelector";
 import MockFormikContext from "./MockFormikContext";
 
 beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Test ActorSelector", () => {

@@ -82,6 +82,7 @@ const ActorSelector = () => {
                 onKeyPress={(e) => {
                   e.key === "Enter" && onUpdateActor(true);
                 }}
+                data-testid="actors-available-listbox"
               >
                 {actorsAvailable?.map((actor) => (
                   <option key={actor.id} value={actor.id}>
@@ -103,6 +104,7 @@ const ActorSelector = () => {
                 onKeyPress={(e) => {
                   e.key === "Enter" && onUpdateActor(false);
                 }}
+                data-testid="actors-selected-listbox"
               >
                 {movie?.actors.map((actor) => (
                   <option key={actor.id} value={actor.id}>

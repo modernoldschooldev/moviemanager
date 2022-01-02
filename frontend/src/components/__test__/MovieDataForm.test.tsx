@@ -6,6 +6,7 @@ import MockFormikContext from "./MockFormikContext";
 import MovieDataForm from "../MovieDataForm";
 
 beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Test MovieDataForm", () => {

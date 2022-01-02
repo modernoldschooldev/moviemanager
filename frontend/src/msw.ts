@@ -41,6 +41,34 @@ const endpoints = [
       ])
     );
   }),
+  rest.get(backend("/movies/2"), (req, res, ctx) => {
+    return res(
+      ctx.delay(150),
+      ctx.json({
+        id: 2,
+        filename: "Beauty and the Beast.mp4",
+        name: "Beauty and the Beast",
+        actors: [
+          {
+            id: 1,
+            name: "Elijah Wood",
+          },
+        ],
+        categories: [
+          {
+            id: 2,
+            name: "fantasy",
+          },
+        ],
+        series: null,
+        series_number: null,
+        studio: {
+          id: 1,
+          name: "Disney",
+        },
+      })
+    );
+  }),
   rest.get(backend("/movies"), (req, res, ctx) => {
     return res(
       ctx.delay(150),

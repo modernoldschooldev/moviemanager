@@ -6,6 +6,7 @@ import CategorySelector from "../CategorySelector";
 import MockFormikContext from "./MockFormikContext";
 
 beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Test CategorySelector", () => {

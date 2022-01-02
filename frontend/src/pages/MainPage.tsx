@@ -7,18 +7,11 @@ import MovieDataForm from "../components/MovieDataForm";
 import MovieList from "../components/MovieList";
 
 import { useAppSelector } from "../state/hooks";
+import { mainPageFormInitialValues } from "../state/formik";
 import { useMovieUpdateMutation } from "../state/MovieManagerApi";
 
 import { HTTPExceptionType } from "../types/api";
 import { MainPageFormValuesType } from "../types/form";
-
-const initialValues: MainPageFormValuesType = {
-  movieName: "",
-  movieStudioId: "",
-  movieSeriesId: "",
-  movieSeriesNumber: "",
-  movieCategories: [],
-};
 
 const MainPage = () => {
   const movieId = useAppSelector((state) => state.selectBox.movieId);
@@ -57,7 +50,7 @@ const MainPage = () => {
   };
 
   return (
-    <Formik initialValues={initialValues} onSubmit={onSubmit}>
+    <Formik initialValues={mainPageFormInitialValues} onSubmit={onSubmit}>
       {() => (
         <>
           <div className="lg:flex">

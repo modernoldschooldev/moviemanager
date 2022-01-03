@@ -36,6 +36,10 @@ export const actors: ActorType[] = [
     id: 7,
     name: "Viggo Mortensen",
   },
+  {
+    id: 8,
+    name: "Chris Pratt",
+  },
 ];
 
 export const categories: CategoryType[] = [

@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/extend-expect";
 import user from "@testing-library/user-event";
+
 import { DefaultRequestBody, PathParams, rest } from "msw";
 
 import {
@@ -33,8 +34,6 @@ describe("Test MainPage", () => {
     const moviesList = await screen.findByTestId("movies-listbox");
     user.selectOptions(moviesList, "1");
   });
-
-  //////////////////////////////////////////////////////////////////////////////
 
   // do nothing test just to display this message
   it("Renders the MainPage without errors", () => {});
@@ -112,9 +111,13 @@ describe("Test MainPage", () => {
   //////////////////////////////////////////////////////////////////////////////
 
   describe("Test ActorSelector Changes", () => {
+    const getActor = (name: string) => {
+      return actors.filter((actor) => actor.name === name)[0];
+    };
+
     const addAvailableActor = async (name: string) => {
       // find the ID of the actor in the mock data
-      const id = actors.filter((actor) => actor.name === name)[0].id;
+      const id = getActor(name).id;
 
       // find the listbox and the actor option
       const listbox = await screen.findByRole("listbox", { name: "Available" });
@@ -125,8 +128,24 @@ describe("Test MainPage", () => {
       user.dblClick(option);
     };
 
+    const removeSelectedActor = async (name: string) => {
+      // find the ID of the actor in the mock data
+      const id = getActor(name).id;
+
+      // find the listbox and the actor option
+      const listbox = await screen.findByRole("listbox", { name: "Selected" });
+      const option = await screen.findByTestId(`actors-selected-${id}`);
+
+      // select the item from the listbox and double-click to remove
+      user.selectOptions(listbox, option);
+      user.dblClick(option);
+    };
+
+    const name = "Elijah Wood";
+    const movieName = "The Return of the King";
+
     it("Fails to add duplicate Elijah Wood to Return of the King", async () => {
-      const name = "Elijah Wood";
+      const message = `Actor ${name} is already on ${movieName}`;
 
       // add temp endpoint to fake error
       server.use(
@@ -138,7 +157,7 @@ describe("Test MainPage", () => {
               ctx.status(409),
               ctx.json({
                 detail: {
-                  message: `Actor ${name} is already on Return of the King`,
+                  message,
                 },
               })
             );
@@ -150,25 +169,100 @@ describe("Test MainPage", () => {
       await addAvailableActor(name);
 
       // wait for the error message
-      expect(
-        await screen.findByText(
-          `Actor ${name} is already on Return of the King`
-        )
-      ).toBeInTheDocument();
+      expect(await screen.findByText(message)).toBeInTheDocument();
     });
 
-    it("Successfully adds Elijah Wood to Return of the King", async () => {
-      const name = "Elijah Wood";
+    it("Successfully adds Chris Pratt to Return of the King", async () => {
+      const name = "Chris Pratt";
+      const message = `Successfully added ${name} to ${movieName}`;
+
+      // add one time override to fake the actor being added
+      server.use(
+        rest.get<DefaultRequestBody, PathParams, MovieType>(
+          backend("/movies/:id"),
+          (req, res, ctx) => {
+            return res(
+              ctx.delay(150),
+              ctx.json({
+                ...lotrMovie,
+                actors: [...lotrMovie.actors, getActor(name)],
+              })
+            );
+          }
+        )
+      );
 
       // wait for the user to add the actor
       await addAvailableActor(name);
 
       // wait for the success message
+      expect(await screen.findByText(message)).toBeInTheDocument();
+
+      // wait for the actor to be added to the selected actors listbox
       expect(
-        await screen.findByText(
-          `Successfully added ${name} to The Return of the King`
-        )
+        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
       ).toBeInTheDocument();
+    });
+
+    it("Fails to remove Elijah Wood from Return of the King", async () => {
+      const message = `Failed to remove actor ${name} from ${movieName}`;
+
+      server.use(
+        rest.delete<DefaultRequestBody, PathParams, HTTPExceptionType>(
+          backend("/movie_actor"),
+          (req, res, ctx) => {
+            return res(
+              ctx.delay(150),
+              ctx.status(404),
+              ctx.json({
+                detail: { message },
+              })
+            );
+          }
+        )
+      );
+
+      // wait for the user to remove the actor
+      await removeSelectedActor(name);
+
+      // wait for the failure message
+      expect(await screen.findByText(message)).toBeInTheDocument();
+
+      // the actor should still be in the selected actors listbox
+      expect(
+        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
+      ).toBeInTheDocument();
+    });
+
+    it("Successfully removes Elijah Wood from Return of the King", async () => {
+      const message = `Successfully removed ${name} from The Return of the King`;
+
+      // add one time override to fake the actor being removed
+      server.use(
+        rest.get<DefaultRequestBody, PathParams, MovieType>(
+          backend("/movies/:id"),
+          (req, res, ctx) => {
+            return res(
+              ctx.delay(150),
+              ctx.json({
+                ...lotrMovie,
+                actors: lotrMovie.actors.filter((actor) => actor.name !== name),
+              })
+            );
+          }
+        )
+      );
+
+      // wait for the user to remove the actor
+      await removeSelectedActor(name);
+
+      // wait for the success message
+      expect(await screen.findByText(message)).toBeInTheDocument();
+
+      // wait for the actor to be removed from the selected actors listbox
+      await waitForElementToBeRemoved(
+        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
+      );
     });
   });
 

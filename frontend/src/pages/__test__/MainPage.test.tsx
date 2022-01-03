@@ -22,6 +22,9 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("Test MainPage", () => {
+  const actorName = "Elijah Wood";
+  const movieName = "The Return of the King";
+
   beforeEach(async () => {
     render(<MainPage />);
 
@@ -41,7 +44,7 @@ describe("Test MainPage", () => {
   //////////////////////////////////////////////////////////////////////////////
 
   describe("Test Movie Selection", () => {
-    it("Fills in the form values when a movie is selected", async () => {
+    it("Fills in form values when Return of the King is selected", async () => {
       // find the remove and update buttons
       const removeButton = screen.getByRole("button", { name: /remove/i });
       const updateButton = screen.getByRole("button", { name: /update/i });
@@ -51,9 +54,7 @@ describe("Test MainPage", () => {
       await waitFor(() => expect(updateButton).toBeEnabled());
 
       // find the movie name form element and ensure it is enabled
-      expect(
-        await screen.findByDisplayValue("The Return of the King")
-      ).toBeEnabled();
+      expect(await screen.findByDisplayValue(movieName)).toBeEnabled();
 
       // find the studio combobox
       const studioCombobox: HTMLSelectElement = await screen.findByLabelText(
@@ -141,11 +142,8 @@ describe("Test MainPage", () => {
       user.dblClick(option);
     };
 
-    const name = "Elijah Wood";
-    const movieName = "The Return of the King";
-
     it("Fails to add duplicate Elijah Wood to Return of the King", async () => {
-      const message = `Actor ${name} is already on ${movieName}`;
+      const message = `Actor ${actorName} is already on ${movieName}`;
 
       // add temp endpoint to fake error
       server.use(
@@ -166,15 +164,15 @@ describe("Test MainPage", () => {
       );
 
       // wait for the user to add the actor
-      await addAvailableActor(name);
+      await addAvailableActor(actorName);
 
       // wait for the error message
       expect(await screen.findByText(message)).toBeInTheDocument();
     });
 
     it("Successfully adds Chris Pratt to Return of the King", async () => {
-      const name = "Chris Pratt";
-      const message = `Successfully added ${name} to ${movieName}`;
+      const actorName = "Chris Pratt";
+      const message = `Successfully added ${actorName} to ${movieName}`;
 
       // add one time override to fake the actor being added
       server.use(
@@ -185,7 +183,7 @@ describe("Test MainPage", () => {
               ctx.delay(150),
               ctx.json({
                 ...lotrMovie,
-                actors: [...lotrMovie.actors, getActor(name)],
+                actors: [...lotrMovie.actors, getActor(actorName)],
               })
             );
           }
@@ -193,19 +191,19 @@ describe("Test MainPage", () => {
       );
 
       // wait for the user to add the actor
-      await addAvailableActor(name);
+      await addAvailableActor(actorName);
 
       // wait for the success message
       expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for the actor to be added to the selected actors listbox
       expect(
-        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
+        await screen.findByTestId(`actors-selected-${getActor(actorName).id}`)
       ).toBeInTheDocument();
     });
 
     it("Fails to remove Elijah Wood from Return of the King", async () => {
-      const message = `Failed to remove actor ${name} from ${movieName}`;
+      const message = `Failed to remove actor ${actorName} from ${movieName}`;
 
       server.use(
         rest.delete<DefaultRequestBody, PathParams, HTTPExceptionType>(
@@ -223,19 +221,19 @@ describe("Test MainPage", () => {
       );
 
       // wait for the user to remove the actor
-      await removeSelectedActor(name);
+      await removeSelectedActor(actorName);
 
       // wait for the failure message
       expect(await screen.findByText(message)).toBeInTheDocument();
 
       // the actor should still be in the selected actors listbox
       expect(
-        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
+        await screen.findByTestId(`actors-selected-${getActor(actorName).id}`)
       ).toBeInTheDocument();
     });
 
     it("Successfully removes Elijah Wood from Return of the King", async () => {
-      const message = `Successfully removed ${name} from The Return of the King`;
+      const message = `Successfully removed ${actorName} from The Return of the King`;
 
       // add one time override to fake the actor being removed
       server.use(
@@ -246,7 +244,9 @@ describe("Test MainPage", () => {
               ctx.delay(150),
               ctx.json({
                 ...lotrMovie,
-                actors: lotrMovie.actors.filter((actor) => actor.name !== name),
+                actors: lotrMovie.actors.filter(
+                  (actor) => actor.name !== actorName
+                ),
               })
             );
           }
@@ -254,14 +254,14 @@ describe("Test MainPage", () => {
       );
 
       // wait for the user to remove the actor
-      await removeSelectedActor(name);
+      await removeSelectedActor(actorName);
 
       // wait for the success message
       expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for the actor to be removed from the selected actors listbox
       await waitForElementToBeRemoved(
-        await screen.findByTestId(`actors-selected-${getActor(name).id}`)
+        await screen.findByTestId(`actors-selected-${getActor(actorName).id}`)
       );
     });
   });
@@ -285,6 +285,9 @@ describe("Test MainPage", () => {
     };
 
     it("Fails to remove the fantasy category from Return of the King", async () => {
+      const categoryName = "fantasy";
+      const message = `Failed to remove category ${categoryName} from ${movieName}`;
+
       // add one time endpoint to fake error from server
       server.use(
         rest.delete<DefaultRequestBody, PathParams, HTTPExceptionType>(
@@ -295,7 +298,7 @@ describe("Test MainPage", () => {
               ctx.status(404),
               ctx.json({
                 detail: {
-                  message: "Failed to remove invalid category ID",
+                  message,
                 },
               })
             );
@@ -303,21 +306,22 @@ describe("Test MainPage", () => {
         )
       );
 
-      const category = await getCategoryCheckbox("fantasy");
+      const checkbox = await getCategoryCheckbox(categoryName);
 
       // click the checkbox to remove the category
-      user.click(category);
+      user.click(checkbox);
 
       // look for the failure text from our one time error
-      expect(
-        await screen.findByText("Failed to remove invalid category ID")
-      ).toBeInTheDocument();
+      expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for formik to update the checkbox state
-      await waitFor(() => expect(category.checked).toBe(true));
+      await waitFor(() => expect(checkbox.checked).toBe(true));
     });
 
     it("Successfully removes fantasy category from Return of the King", async () => {
+      const categoryName = "fantasy";
+      const message = `Successfully removed category ${categoryName} from ${movieName}`;
+
       // add one time override to fake the category being removed
       server.use(
         rest.get<DefaultRequestBody, PathParams, MovieType>(
@@ -331,24 +335,21 @@ describe("Test MainPage", () => {
         )
       );
 
-      const category = await getCategoryCheckbox("fantasy");
+      const checkbox = await getCategoryCheckbox(categoryName);
 
       // click the checkbox to remove the category
-      user.click(category);
+      user.click(checkbox);
 
       // look for the success message
-      expect(
-        await screen.findByText(
-          "Successfully removed category fantasy from The Return of the King"
-        )
-      ).toBeInTheDocument();
+      expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for formik to update the checkbox state
-      await waitFor(() => expect(category.checked).toBe(false));
+      await waitFor(() => expect(checkbox.checked).toBe(false));
     });
 
     it("Fails to add action category to Return of the King", async () => {
-      const name = "action";
+      const categoryName = "action";
+      const message = `Failed to add category ${categoryName} to ${movieName}`;
 
       server.use(
         rest.post<DefaultRequestBody, PathParams, HTTPExceptionType>(
@@ -359,7 +360,7 @@ describe("Test MainPage", () => {
               ctx.status(404),
               ctx.json({
                 detail: {
-                  message: "Failed to add invalid category ID",
+                  message,
                 },
               })
             );
@@ -367,22 +368,21 @@ describe("Test MainPage", () => {
         )
       );
 
-      const category = await getCategoryCheckbox(name, false);
+      const checkbox = await getCategoryCheckbox(categoryName, false);
 
       // click the checkbox to add the category
-      user.click(category);
+      user.click(checkbox);
 
       // look for failure response
-      expect(
-        await screen.findByText("Failed to add invalid category ID")
-      ).toBeInTheDocument();
+      expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for formik to update the checkbox state
-      await waitFor(() => expect(category.checked).toBe(false));
+      await waitFor(() => expect(checkbox.checked).toBe(false));
     });
 
     it("Successfully adds action cateogry to Return of the King", async () => {
-      const name = "action";
+      const categoryName = "action";
+      const message = `Successfully added category ${categoryName} to ${movieName}`;
 
       // add one time override to fake the category being added
       server.use(
@@ -395,7 +395,9 @@ describe("Test MainPage", () => {
                 ...lotrMovie,
                 categories: [
                   ...lotrMovie.categories,
-                  categories.filter((category) => category.name === name)[0],
+                  categories.filter(
+                    (category) => category.name === categoryName
+                  )[0],
                 ],
               })
             );
@@ -403,20 +405,16 @@ describe("Test MainPage", () => {
         )
       );
 
-      const category = await getCategoryCheckbox(name, false);
+      const checkbox = await getCategoryCheckbox(categoryName, false);
 
       // click the checkbox to add the category
-      user.click(category);
+      user.click(checkbox);
 
       // look for the success message
-      expect(
-        await screen.findByText(
-          `Successfully added category ${name} to The Return of the King`
-        )
-      ).toBeInTheDocument();
+      expect(await screen.findByText(message)).toBeInTheDocument();
 
       // wait for formik to update the checkbox state
-      await waitFor(() => expect(category.checked).toBe(true));
+      await waitFor(() => expect(checkbox.checked).toBe(true));
     });
   });
 });

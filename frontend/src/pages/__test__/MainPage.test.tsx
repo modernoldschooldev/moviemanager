@@ -9,7 +9,7 @@ import {
   waitForElementToBeRemoved,
 } from "../../test-utils";
 
-import { actors, lotrMovie } from "../../msw/defaults";
+import { actors, lotrActors, lotrMovie } from "../../msw/defaults";
 import { backend, server } from "../../msw/server";
 
 import MainPage from "../MainPage";
@@ -42,10 +42,11 @@ describe("Test MainPage", () => {
   //////////////////////////////////////////////////////////////////////////////
 
   it("Fills in the form values when a movie is selected", async () => {
-    // find the remove and update buttons and make sure they get enabled
+    // find the remove and update buttons
     const removeButton = screen.getByRole("button", { name: /remove/i });
     const updateButton = screen.getByRole("button", { name: /update/i });
 
+    // wait for them to be enabled
     await waitFor(() => expect(removeButton).toBeEnabled());
     await waitFor(() => expect(updateButton).toBeEnabled());
 
@@ -54,32 +55,50 @@ describe("Test MainPage", () => {
       await screen.findByDisplayValue("The Return of the King")
     ).toBeEnabled();
 
-    // find the studio combobox - ensure it is enabled and has value 1
+    // find the studio combobox
     const studioCombobox: HTMLSelectElement = await screen.findByLabelText(
       "Studio"
     );
-    expect(studioCombobox).toBeEnabled();
-    expect(studioCombobox.value).toBe("1");
 
-    // find series combobox - ensure it is enabled and has value ""
+    // wait for the combobox to be enabled and have value 1
+    await waitFor(() => {
+      expect(studioCombobox).toBeEnabled();
+      expect(studioCombobox.value).toBe("1");
+    });
+
+    // find series combobox
     const seriesCombobox: HTMLSelectElement = await screen.findByLabelText(
       "Series"
     );
-    expect(seriesCombobox).toBeEnabled();
-    expect(seriesCombobox.value).toBe("1");
 
-    // find fantasy category - ensure it is enabled and checked
+    // wait for it to be enabled and have value 1
+    await waitFor(() => {
+      expect(seriesCombobox).toBeEnabled();
+      expect(seriesCombobox.value).toBe("1");
+    });
+
+    // find fantasy category
     const category: HTMLInputElement = await screen.findByRole("checkbox", {
       name: "fantasy",
     });
-    expect(category).toBeEnabled();
-    expect(category.checked).toBe(true);
 
-    // if actor appears twice, it must be in available and selected
-    const actorsSelected = await screen.findAllByRole("option", {
-      name: "Elijah Wood",
+    // wait for it to be enabled and checked
+    await waitFor(() => {
+      expect(category).toBeEnabled();
+      expect(category.checked).toBe(true);
     });
-    expect(actorsSelected.length).toBe(2);
+
+    // find actor IDs for all actors in Return of the King
+    const ids = actors
+      .filter((actor) => lotrActors.includes(actor.name))
+      .map((actor) => actor.id);
+
+    // ensure that each actor is in the selector actors listbox
+    for (let id of ids) {
+      expect(
+        await screen.findByTestId(`actors-selected-${id}`)
+      ).toBeInTheDocument();
+    }
 
     // find the series # - ensure it is enabled and has value ""
     const seriesNumber: HTMLInputElement = screen.getByRole("textbox", {

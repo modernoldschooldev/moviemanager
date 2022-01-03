@@ -109,17 +109,33 @@ describe("Test MainPage", () => {
 
   //////////////////////////////////////////////////////////////////////////////
 
-  it("Fails and then succeeds to add Elijah Wood to Return of the King", async () => {
+  const addAvailableActor = async (name: string) => {
+    // find the ID of the actor in the mock data
+    const id = actors.filter((actor) => actor.name === name)[0].id;
+
+    // find the listbox and the actor option
+    const listbox = await screen.findByRole("listbox", { name: "Available" });
+    const option = await screen.findByTestId(`actors-available-${id}`);
+
+    // select the item from the listbox and double-click to add
+    user.selectOptions(listbox, option);
+    user.dblClick(option);
+  };
+
+  it("Fails to add duplicate Elijah Wood to Return of the King", async () => {
+    const name = "Elijah Wood";
+
+    // add temp endpoint to fake error
     server.use(
       rest.post<DefaultRequestBody, PathParams, HTTPExceptionType>(
         backend("/movie_actor"),
         (req, res, ctx) => {
-          return res.once(
+          return res(
             ctx.delay(150),
             ctx.status(409),
             ctx.json({
               detail: {
-                message: "Actor Elijah Wood is already on Return of the King",
+                message: `Actor ${name} is already on Return of the King`,
               },
             })
           );
@@ -127,23 +143,25 @@ describe("Test MainPage", () => {
       )
     );
 
-    const id = actors.filter((actor) => actor.name === "Elijah Wood")[0].id;
-    const listbox = await screen.findByRole("listbox", { name: /available/i });
-    const option = await screen.findByTestId(`actors-available-${id}`);
+    // wait for the user to add the actor
+    await addAvailableActor(name);
 
-    user.selectOptions(listbox, option);
-    user.dblClick(option);
-
+    // wait for the error message
     expect(
-      await screen.findByText(
-        "Actor Elijah Wood is already on Return of the King"
-      )
+      await screen.findByText(`Actor ${name} is already on Return of the King`)
     ).toBeInTheDocument();
+  });
 
-    user.dblClick(option);
+  it("Successfully adds Elijah Wood to Return of the King", async () => {
+    const name = "Elijah Wood";
+
+    // wait for the user to add the actor
+    await addAvailableActor(name);
+
+    // wait for the success message
     expect(
       await screen.findByText(
-        "Successfully added Elijah Wood to The Return of the King"
+        `Successfully added ${name} to The Return of the King`
       )
     ).toBeInTheDocument();
   });

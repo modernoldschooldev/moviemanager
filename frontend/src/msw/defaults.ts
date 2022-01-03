@@ -43,6 +43,10 @@ export const categories: CategoryType[] = [
     id: 1,
     name: "fantasy",
   },
+  {
+    id: 2,
+    name: "action",
+  },
 ];
 
 export const movies: MovieFileType[] = [

@@ -9,7 +9,7 @@ import {
   waitForElementToBeRemoved,
 } from "../../test-utils";
 
-import { actors, lotrActors, lotrMovie } from "../../msw/defaults";
+import { actors, categories, lotrActors, lotrMovie } from "../../msw/defaults";
 import { backend, server } from "../../msw/server";
 
 import MainPage from "../MainPage";
@@ -168,8 +168,84 @@ describe("Test MainPage", () => {
 
   //////////////////////////////////////////////////////////////////////////////
 
-  it("Removes and readds the fantasy category to Return of the King", async () => {
-    // setup one time endpoint overrides
+  const getCategoryCheckbox = async (name: string, checked: boolean = true) => {
+    // find the checkbox
+    const category: HTMLInputElement = await screen.findByRole("checkbox", {
+      name,
+    });
+
+    // wait for the checkbox status to update
+    await waitFor(() => expect(category.checked).toBe(checked));
+
+    return category;
+  };
+
+  it("Fails to remove the fantasy category from Return of the King", async () => {
+    // add one time endpoint to fake error from server
+    server.use(
+      rest.delete<DefaultRequestBody, PathParams, HTTPExceptionType>(
+        backend("/movie_category"),
+        (req, res, ctx) => {
+          return res.once(
+            ctx.delay(150),
+            ctx.status(404),
+            ctx.json({
+              detail: {
+                message: "Failed to remove invalid category ID",
+              },
+            })
+          );
+        }
+      )
+    );
+
+    const category = await getCategoryCheckbox("fantasy");
+
+    // click the checkbox to remove the category
+    user.click(category);
+
+    // look for the failure text from our one time error
+    expect(
+      await screen.findByText("Failed to remove invalid category ID")
+    ).toBeInTheDocument();
+
+    // wait for formik to update the checkbox state
+    await waitFor(() => expect(category.checked).toBe(true));
+  });
+
+  it("Successfully removes fantasy category from Return of the King", async () => {
+    // add one time override to fake the category being removed
+    server.use(
+      rest.get<DefaultRequestBody, PathParams, MovieType>(
+        backend("/movies/:id"),
+        (req, res, ctx) => {
+          return res(
+            ctx.delay(150),
+            ctx.json({ ...lotrMovie, categories: [] })
+          );
+        }
+      )
+    );
+
+    const category = await getCategoryCheckbox("fantasy");
+
+    // click the checkbox to remove the category
+    user.click(category);
+
+    // look for the success message
+    expect(
+      await screen.findByText(
+        "Successfully removed category fantasy from The Return of the King"
+      )
+    ).toBeInTheDocument();
+
+    // wait for formik to update the checkbox state
+    await waitFor(() => expect(category.checked).toBe(false));
+  });
+
+  it("Fails to add action category to Return of the King", async () => {
+    const name = "action";
+
     server.use(
       rest.post<DefaultRequestBody, PathParams, HTTPExceptionType>(
         backend("/movie_category"),
@@ -184,82 +260,54 @@ describe("Test MainPage", () => {
             })
           );
         }
-      ),
-      rest.delete<DefaultRequestBody, PathParams, HTTPExceptionType>(
-        backend("/movie_category"),
-        (req, res, ctx) => {
-          return res.once(
-            ctx.delay(150),
-            ctx.status(404),
-            ctx.json({
-              detail: {
-                message: "Failed to remove invalid category ID",
-              },
-            })
-          );
-        }
-      ),
-      rest.get<DefaultRequestBody, PathParams, MovieType>(
-        backend("/movies/:id"),
-        (req, res, ctx) => {
-          return res.once(
-            ctx.delay(150),
-            ctx.json({ ...lotrMovie, categories: [] })
-          );
-        }
       )
     );
 
-    // find the fantasy checkbox
-    const category: HTMLInputElement = await screen.findByRole("checkbox", {
-      name: "fantasy",
-    });
+    const category = await getCategoryCheckbox(name, false);
 
-    // wait for it to become checked by formik
-    await waitFor(() => expect(category.checked).toBe(true));
-
-    // click the checkbox to remove the category
+    // click the checkbox to add the category
     user.click(category);
 
-    // look for the failure text from our one time error
-    expect(
-      await screen.findByText("Failed to remove invalid category ID")
-    ).toBeInTheDocument();
-
-    // wait for formik to update the checkbox state
-    await waitFor(() => expect(category.checked).toBe(true));
-
-    // try to remove the category again
-    user.click(category);
-
-    // look for the success message
-    expect(
-      await screen.findByText(
-        "Successfully removed category fantasy from The Return of the King"
-      )
-    ).toBeInTheDocument();
-
-    // wait for formik to update the checkbox state
-    await waitFor(() => expect(category.checked).toBe(false));
-
-    // try to add the category
-    user.click(category);
-
-    // look for one time failure response
+    // look for failure response
     expect(
       await screen.findByText("Failed to add invalid category ID")
     ).toBeInTheDocument();
 
     // wait for formik to update the checkbox state
     await waitFor(() => expect(category.checked).toBe(false));
+  });
 
-    // try to add the category again
+  it("Successfully adds action cateogry to Return of the King", async () => {
+    const name = "action";
+
+    // add one time override to fake the category being added
+    server.use(
+      rest.get<DefaultRequestBody, PathParams, MovieType>(
+        backend("/movies/:id"),
+        (req, res, ctx) => {
+          return res(
+            ctx.delay(150),
+            ctx.json({
+              ...lotrMovie,
+              categories: [
+                ...lotrMovie.categories,
+                categories.filter((category) => category.name === name)[0],
+              ],
+            })
+          );
+        }
+      )
+    );
+
+    const category = await getCategoryCheckbox(name, false);
+
+    // click the checkbox to add the category
     user.click(category);
 
     // look for the success message
     expect(
       await screen.findByText(
-        "Successfully added category fantasy to The Return of the King"
+        `Successfully added category ${name} to The Return of the King`
       )
     ).toBeInTheDocument();
 

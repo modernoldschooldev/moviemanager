@@ -43,6 +43,18 @@ const endpoints = [
       return res(ctx.delay(150), ctx.json(lotrMovie));
     }
   ),
+  rest.delete<DefaultRequestBody, PathParams, MovieType>(
+    backend("/movie_category"),
+    (req, res, ctx) => {
+      return res(ctx.delay(150), ctx.json(lotrMovie));
+    }
+  ),
+  rest.post<DefaultRequestBody, PathParams, MovieType>(
+    backend("/movie_category"),
+    (req, res, ctx) => {
+      return res(ctx.delay(150), ctx.json(lotrMovie));
+    }
+  ),
   rest.get<DefaultRequestBody, PathParams, MovieType>(
     backend("/movies/:id"),
     (req, res, ctx) => {

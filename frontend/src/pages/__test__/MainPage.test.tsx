@@ -10,12 +10,23 @@ import {
   waitForElementToBeRemoved,
 } from "../../test-utils";
 
-import { actors, categories, lotrActors, lotrMovie } from "../../msw/defaults";
+import {
+  actors,
+  categories,
+  hobbitMovie,
+  lotrActors,
+  lotrMovie,
+} from "../../msw/defaults";
 import { backend, server } from "../../msw/server";
 
 import MainPage from "../MainPage";
 
-import { HTTPExceptionType, MovieType } from "../../types/api";
+import {
+  HTTPExceptionType,
+  MovieFileType,
+  MovieType,
+  MovieUpdateType,
+} from "../../types/api";
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -40,8 +51,6 @@ describe("Test MainPage", () => {
 
   // do nothing test just to display this message
   it("Renders the MainPage without errors", () => {});
-
-  //////////////////////////////////////////////////////////////////////////////
 
   describe("Test Movie Selection", () => {
     it("Fills in form values when Return of the King is selected", async () => {
@@ -108,8 +117,6 @@ describe("Test MainPage", () => {
       expect(seriesNumber.value).toBe("3");
     });
   });
-
-  //////////////////////////////////////////////////////////////////////////////
 
   describe("Test ActorSelector Changes", () => {
     const getActor = (name: string) => {
@@ -266,8 +273,6 @@ describe("Test MainPage", () => {
     });
   });
 
-  //////////////////////////////////////////////////////////////////////////////
-
   describe("Test CategorySelector Changes", () => {
     const getCategoryCheckbox = async (
       name: string,
@@ -415,6 +420,76 @@ describe("Test MainPage", () => {
 
       // wait for formik to update the checkbox state
       await waitFor(() => expect(checkbox.checked).toBe(true));
+    });
+  });
+
+  describe("Test MovieDataForm Changes", () => {
+    it("Successfully changes Return of the King -> Desolation of Smaug", async () => {
+      server.use(
+        rest.get<DefaultRequestBody, PathParams, MovieFileType[]>(
+          backend("/movies"),
+          (req, res, ctx) => {
+            return res(
+              ctx.delay(150),
+              ctx.json([
+                {
+                  id: 1,
+                  filename: hobbitMovie.filename,
+                },
+              ])
+            );
+          }
+        ),
+        rest.get<DefaultRequestBody, PathParams, MovieType>(
+          backend("/movies/:id"),
+          (req, res, ctx) => {
+            return res(ctx.delay(150), ctx.json(hobbitMovie));
+          }
+        ),
+        rest.put<MovieUpdateType, PathParams, MovieType>(
+          backend("/movies/:id"),
+          (req, res, ctx) => {
+            return res(ctx.delay(150), ctx.json(hobbitMovie));
+          }
+        )
+      );
+
+      const nameField: HTMLInputElement = screen.getByRole("textbox", {
+        name: "Name",
+      });
+      const studioSelector: HTMLSelectElement = screen.getByRole("combobox", {
+        name: "Studio",
+      });
+      const seriesSelector: HTMLSelectElement = screen.getByRole("combobox", {
+        name: "Series",
+      });
+      const seriesNumberField: HTMLInputElement = screen.getByRole("textbox", {
+        name: "Series #",
+      });
+      const updateButton = screen.getByRole("button", { name: /update/i });
+
+      user.clear(nameField);
+      user.type(nameField, hobbitMovie.name!);
+      expect(nameField.value).toBe(hobbitMovie.name);
+
+      const studioId = hobbitMovie.studio!.id.toString();
+      user.selectOptions(studioSelector, studioId);
+      expect(studioSelector.value).toBe(studioId);
+
+      const seriesId = hobbitMovie.series!.id.toString();
+      user.selectOptions(seriesSelector, seriesId);
+      expect(seriesSelector.value).toBe(seriesId);
+
+      const seriesNumber = hobbitMovie.series_number!.toString();
+      user.clear(seriesNumberField);
+      user.type(seriesNumberField, seriesNumber);
+      expect(seriesNumberField.value).toBe(seriesNumber);
+
+      user.click(updateButton);
+
+      const message = `Successfully updated movie ${hobbitMovie.name}`;
+      await screen.findByText(message);
+      await screen.findByRole("option", { name: hobbitMovie.filename });
     });
   });
 });

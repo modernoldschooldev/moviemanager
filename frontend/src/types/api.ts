@@ -7,9 +7,11 @@ export interface ActorType extends BaseMovieProperty {}
 export interface CategoryType extends BaseMovieProperty {}
 
 export interface HTTPExceptionType {
-  detail: {
-    message: string;
-  };
+  detail: MessageType;
+}
+
+export interface MessageType {
+  message: string;
 }
 
 export interface MovieType {

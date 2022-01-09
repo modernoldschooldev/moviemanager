@@ -23,6 +23,7 @@ import MainPage from "../MainPage";
 
 import {
   HTTPExceptionType,
+  MessageType,
   MovieFileType,
   MovieType,
   MovieUpdateType,
@@ -490,6 +491,50 @@ describe("Test MainPage", () => {
       const message = `Successfully updated movie ${hobbitMovie.name}`;
       await screen.findByText(message);
       await screen.findByRole("option", { name: hobbitMovie.filename });
+    });
+
+    it("Successfully removes Return of the King", async () => {
+      server.use(
+        rest.get<DefaultRequestBody, PathParams, MovieFileType[]>(
+          backend("/movies"),
+          (req, res, ctx) => {
+            return res(ctx.delay(150), ctx.json([]));
+          }
+        ),
+        rest.delete<DefaultRequestBody, PathParams, MessageType>(
+          backend("/movies/:id"),
+          (req, res, ctx) => {
+            return res(
+              ctx.delay(150),
+              ctx.json({ message: "Return of the King deleted" })
+            );
+          }
+        )
+      );
+
+      const nameField: HTMLInputElement = screen.getByRole("textbox", {
+        name: "Name",
+      });
+      const removeButton = screen.getByRole("button", { name: /remove/i });
+
+      // Thanks to wgoodall01 and Francois Zaninotto for this idea
+      // https://stackoverflow.com/questions/48728167/simulate-clicking-ok-or-cancel-in-a-confirmation-window-using-enzyme
+
+      const confirmSpy = jest.spyOn(window, "confirm");
+      confirmSpy.mockImplementation(jest.fn(() => true));
+
+      user.click(removeButton);
+      expect(window.confirm).toBeCalled();
+      confirmSpy.mockRestore();
+
+      await waitForElementToBeRemoved(() =>
+        screen.getByRole("option", { name: lotrMovie.filename })
+      );
+      await waitFor(() => expect(removeButton).toBeDisabled());
+      await waitFor(() => {
+        expect(nameField.value).toBe("");
+        expect(nameField).toBeDisabled();
+      });
     });
   });
 });

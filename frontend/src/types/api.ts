@@ -28,5 +28,12 @@ export interface MovieFileType {
   filename: string;
 }
 
+export interface MovieUpdateType {
+  name: string | null;
+  series_id: number | null;
+  series_number: number | null;
+  studio_id: number | null;
+}
+
 export interface SeriesType extends BaseMovieProperty {}
 export interface StudioType extends BaseMovieProperty {}

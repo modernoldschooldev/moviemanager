@@ -1,3 +1,5 @@
+import { MovieUpdateType } from "./api";
+
 // Redux types
 export interface MovieActorAssociationType {
   actorId: string;
@@ -14,12 +16,8 @@ export interface MoviePropertyType {
   name: string;
 }
 
-export interface MovieUpdateType {
+export interface MovieUpdateQueryType extends MovieUpdateType {
   id: string;
-  name: string | null;
-  series_id: number | null;
-  series_number: number | null;
-  studio_id: number | null;
 }
 
 export interface SelectBoxSliceType {

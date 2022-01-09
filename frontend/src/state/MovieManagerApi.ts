@@ -12,7 +12,7 @@ import {
   MovieActorAssociationType,
   MovieCategoryAssociationType,
   MoviePropertyType,
-  MovieUpdateType,
+  MovieUpdateQueryType,
 } from "../types/state";
 
 const api = createApi({
@@ -150,7 +150,7 @@ const api = createApi({
     }),
 
     // updates a movie's information in the database
-    movieUpdate: builder.mutation<MovieType, MovieUpdateType>({
+    movieUpdate: builder.mutation<MovieType, MovieUpdateQueryType>({
       query: ({ id, ...body }) => ({
         url: `/movies/${id}`,
         method: "PUT",

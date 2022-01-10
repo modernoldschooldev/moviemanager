@@ -425,7 +425,25 @@ describe("Test MainPage", () => {
   });
 
   describe("Test MovieDataForm Changes", () => {
+    let nameField: HTMLInputElement;
+    let studioSelector: HTMLSelectElement;
+    let seriesSelector: HTMLSelectElement;
+    let seriesNumberField: HTMLInputElement;
+    let updateButton: HTMLButtonElement;
+    let removeButton: HTMLButtonElement;
+
+    // get all MovieDataForm fields before each test
+    beforeEach(() => {
+      nameField = screen.getByRole("textbox", { name: "Name" });
+      studioSelector = screen.getByRole("combobox", { name: "Studio" });
+      seriesSelector = screen.getByRole("combobox", { name: "Series" });
+      seriesNumberField = screen.getByRole("textbox", { name: "Series #" });
+      updateButton = screen.getByRole("button", { name: /update/i });
+      removeButton = screen.getByRole("button", { name: /remove/i });
+    });
+
     it("Successfully changes Return of the King -> Desolation of Smaug", async () => {
+      // mock the backend endpoints
       server.use(
         rest.get<DefaultRequestBody, PathParams, MovieFileType[]>(
           backend("/movies"),
@@ -455,45 +473,36 @@ describe("Test MainPage", () => {
         )
       );
 
-      const nameField: HTMLInputElement = screen.getByRole("textbox", {
-        name: "Name",
-      });
-      const studioSelector: HTMLSelectElement = screen.getByRole("combobox", {
-        name: "Studio",
-      });
-      const seriesSelector: HTMLSelectElement = screen.getByRole("combobox", {
-        name: "Series",
-      });
-      const seriesNumberField: HTMLInputElement = screen.getByRole("textbox", {
-        name: "Series #",
-      });
-      const updateButton = screen.getByRole("button", { name: /update/i });
-
+      // replace the movie name
       user.clear(nameField);
       user.type(nameField, hobbitMovie.name!);
       expect(nameField.value).toBe(hobbitMovie.name);
 
+      // update the movie studio
       const studioId = hobbitMovie.studio!.id.toString();
       user.selectOptions(studioSelector, studioId);
       expect(studioSelector.value).toBe(studioId);
 
+      // update the movie series
       const seriesId = hobbitMovie.series!.id.toString();
       user.selectOptions(seriesSelector, seriesId);
       expect(seriesSelector.value).toBe(seriesId);
 
+      // update the movie series number
       const seriesNumber = hobbitMovie.series_number!.toString();
       user.clear(seriesNumberField);
       user.type(seriesNumberField, seriesNumber);
       expect(seriesNumberField.value).toBe(seriesNumber);
 
+      // click the update button
       user.click(updateButton);
 
-      const message = `Successfully updated movie ${hobbitMovie.name}`;
-      await screen.findByText(message);
+      await screen.findByText(`Successfully updated movie ${hobbitMovie.name}`);
       await screen.findByRole("option", { name: hobbitMovie.filename });
     });
 
     it("Successfully removes Return of the King", async () => {
+      // mock the backend endpoints
       server.use(
         rest.get<DefaultRequestBody, PathParams, MovieFileType[]>(
           backend("/movies"),
@@ -506,35 +515,93 @@ describe("Test MainPage", () => {
           (req, res, ctx) => {
             return res(
               ctx.delay(150),
-              ctx.json({ message: "Return of the King deleted" })
+              ctx.json({
+                message: `Successfully removed movie ${hobbitMovie.name}`,
+              })
             );
           }
         )
       );
 
-      const nameField: HTMLInputElement = screen.getByRole("textbox", {
-        name: "Name",
-      });
-      const removeButton = screen.getByRole("button", { name: /remove/i });
-
       // Thanks to wgoodall01 and Francois Zaninotto for this idea
       // https://stackoverflow.com/questions/48728167/simulate-clicking-ok-or-cancel-in-a-confirmation-window-using-enzyme
 
+      // grab the movie list entry and selected actors listbox
+      // so we can await their removal later
+      const movieListOption = await screen.findByRole("option", {
+        name: lotrMovie.filename,
+      });
+
+      // mock the window.confirm function to always return true
       const confirmSpy = jest.spyOn(window, "confirm");
       confirmSpy.mockImplementation(jest.fn(() => true));
 
+      // click remove to remove the movie
       user.click(removeButton);
+
+      // make sure the window.confirm function was called
       expect(window.confirm).toBeCalled();
       confirmSpy.mockRestore();
 
-      await waitForElementToBeRemoved(() =>
-        screen.getByRole("option", { name: lotrMovie.filename })
-      );
-      await waitFor(() => expect(removeButton).toBeDisabled());
+      // make sure the movie was removed from the MovieList
+      await waitForElementToBeRemoved(movieListOption);
+
+      // check that form elements are disabled and empty
+
+      // name textbox
       await waitFor(() => {
         expect(nameField.value).toBe("");
         expect(nameField).toBeDisabled();
       });
+
+      // studio combobox
+      await waitFor(() => {
+        expect(studioSelector.value).toBe("");
+        expect(studioSelector).toBeDisabled();
+      });
+
+      // series combobox
+      await waitFor(() => {
+        expect(seriesSelector.value).toBe("");
+        expect(seriesSelector).toBeDisabled();
+      });
+
+      // series number textbox
+      await waitFor(() => {
+        expect(seriesNumberField.value).toBe("");
+        expect(seriesNumberField).toBeDisabled();
+      });
+
+      // update/remove buttons
+      await waitFor(() => {
+        expect(removeButton).toBeDisabled();
+        expect(updateButton).toBeDisabled();
+      });
+
+      // category checkboxes
+      const checkboxes: HTMLInputElement[] = await screen.findAllByRole(
+        "checkbox"
+      );
+
+      for (let checkbox of checkboxes) {
+        await waitFor(() => {
+          expect(checkbox.checked).toBe(false);
+          expect(checkbox).toBeDisabled();
+        });
+      }
+
+      // available actors listbox
+      await waitFor(() => {
+        expect(
+          screen.getByRole("listbox", { name: "Available" })
+        ).toBeDisabled();
+      });
+
+      // selected actors should be replaced with a None heading
+      await screen.findByRole("heading", { name: "None" });
+
+      // if we found the None heading, then the actors listbox must be gone
+      expect(screen.queryByRole("listbox", { name: "Selected" })).toBeNull();
     });
   });
 });

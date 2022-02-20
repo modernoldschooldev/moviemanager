@@ -36,7 +36,6 @@ Watch the application be built from scratch on
 
 **Requires python >= 3.6, virtualenv, and pip**
 
-1. Inside the backend/db folder, create a movies and imports directory
 1. Add movie files to imports
 1. Create venv
 

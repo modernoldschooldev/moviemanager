@@ -1,11 +1,13 @@
-.vscode/
+.vscode
 __pycache__
 backend/db/actors
 backend/db/categories
-backend/db/imports
-backend/db/movies
+backend/db/imports/*
+!backend/db/imports/.keep
+backend/db/movies/*
+!backend/db/movies/.keep
 backend/db/series
 backend/db/sqlite.db*
 backend/db/studios
 node_modules
-venv/
+venv

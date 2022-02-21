@@ -25,32 +25,38 @@ class BasePropertySchema(BaseModel):
     class Config:
         orm_mode = True
 
+
 ################################################################################
 # Database Models
 
 
 class ActorSchema(BasePropertySchema):
     """Schema describing an actor database object."""
+
     pass
 
 
 class CategorySchema(BasePropertySchema):
     """Schema describing a category database object."""
+
     pass
 
 
 class MovieFileSchema(BaseMovieSchema):
     """Limited movie schema with only the filename and ID."""
+
     pass
 
 
 class SeriesSchema(BasePropertySchema):
     """Schema describing a series database object."""
+
     pass
 
 
 class StudioSchema(BasePropertySchema):
     """Schema describing a studio database object."""
+
     pass
 
 
@@ -71,6 +77,7 @@ class MovieSchema(BaseMovieSchema):
     class Config:
         orm_mode = True
 
+
 ################################################################################
 # JSON Schemas
 
@@ -88,6 +95,7 @@ class MovieUpdateSchema(BaseModel):
     series_id: Optional[int] = None
     series_number: Optional[int] = None
     studio_id: Optional[int] = None
+
 
 ################################################################################
 # Exception Models

@@ -5,7 +5,7 @@ from logging.config import dictConfig
 
 import yaml
 
-DEFAULT_DB_PATH = './db'
+DEFAULT_DB_PATH = "./db"
 
 ################################################################################
 # config functions
@@ -14,18 +14,18 @@ DEFAULT_DB_PATH = './db'
 def get_db_path() -> str:
     """Returns the movie DB path."""
 
-    return os.getenv('MM_DB_PATH', DEFAULT_DB_PATH)
+    return os.getenv("MM_DB_PATH", DEFAULT_DB_PATH)
 
 
 def get_log_config() -> str:
     """Returns the logging config path."""
 
-    path_override = os.getenv('MM_LOG_CONFIG_PATH')
+    path_override = os.getenv("MM_LOG_CONFIG_PATH")
 
     if path_override is not None:
         path = path_override
     else:
-        path = f'{get_db_path()}/logging.yaml'
+        path = f"{get_db_path()}/logging.yaml"
 
     return path
 
@@ -33,18 +33,18 @@ def get_log_config() -> str:
 def get_logger() -> Logger:
     """Returns the application logger."""
 
-    return getLogger('moviemanager')
+    return getLogger("moviemanager")
 
 
 def get_sqlite_path() -> str:
     """Returns path to the sqlite DB file."""
 
-    path_override = os.getenv('MM_SQLITE_PATH')
+    path_override = os.getenv("MM_SQLITE_PATH")
 
     if path_override is not None:
         return path_override
 
-    return f'{get_db_path()}/sqlite.db'
+    return f"{get_db_path()}/sqlite.db"
 
 
 def setup_logging() -> None:
@@ -53,11 +53,11 @@ def setup_logging() -> None:
     path = get_log_config()
 
     try:
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             data = yaml.safe_load(f)
     except:
         logger = getLogger()
-        logger.critical('Failed to read the logging config file %s', path)
+        logger.critical("Failed to read the logging config file %s", path)
 
         sys.exit(1)
 

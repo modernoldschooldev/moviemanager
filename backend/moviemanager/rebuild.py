@@ -15,7 +15,7 @@ def rebuild_db():
 
     # create the database tables and get a connection
     models.Base.metadata.create_all(bind=engine)
-    logger.info('Created sqlite table schemas')
+    logger.info("Created sqlite table schemas")
 
     db = SessionLocal()
 
@@ -38,18 +38,16 @@ def rebuild_db():
         util.PathType.ACTOR,
         util.PathType.CATEGORY,
         util.PathType.SERIES,
-        util.PathType.STUDIO
+        util.PathType.STUDIO,
     ):
         files: List[str] = locals()[path_type.value]
         path = util.get_movie_path(path_type)
 
         try:
             files.extend(util.list_files(path))
-            logger.info('Loaded %s from link directory %s', path_type, path)
+            logger.info("Loaded %s from link directory %s", path_type, path)
         except ListFilesException:
-            logger.warn(
-                'Failed to load %s from link directory %s', path_type, path
-            )
+            logger.warn("Failed to load %s from link directory %s", path_type, path)
 
     # create association lists of movies -> properties
     # seed these with the files in the link directories
@@ -62,23 +60,22 @@ def rebuild_db():
         util.PathType.ACTOR,
         util.PathType.CATEGORY,
         util.PathType.SERIES,
-        util.PathType.STUDIO
+        util.PathType.STUDIO,
     ):
         names: List[str] = locals()[path_type.value]
         path = util.get_movie_path(path_type)
 
         for name in names:
-            full_path = f'{path}/{name}'
+            full_path = f"{path}/{name}"
 
             try:
                 files = util.list_files(full_path)
-                logger.info('Loaded link files from %s', full_path)
+                logger.info("Loaded link files from %s", full_path)
             except ListFilesException:
-                logger.error('Unable to read link files in %s', full_path)
+                logger.error("Unable to read link files in %s", full_path)
                 continue
 
-            properties: Dict[str, List[str]] = \
-                locals()[f'movie_{path_type.value}']
+            properties: Dict[str, List[str]] = locals()[f"movie_{path_type.value}"]
 
             for file in files:
                 # if this test is false, it means there is a broken link
@@ -86,11 +83,10 @@ def rebuild_db():
                 if file in properties:
                     properties[file].append(name)
                     logger.info(
-                        'Associated movie %s with %s in %s',
-                        file, name, path_type
+                        "Associated movie %s with %s in %s", file, name, path_type
                     )
                 else:
-                    logger.warn('Broken link file %s/%s', full_path, file)
+                    logger.warn("Broken link file %s/%s", full_path, file)
 
     # get the remaining movie data from the movie files
     movie_name = {filename: None for filename in movie_files}
@@ -102,39 +98,37 @@ def rebuild_db():
             studio_name,
             series_name,
             series_number,
-            actor_names
+            actor_names,
         ) = util.parse_filename(file)
 
         if name is not None:
             movie_name[file] = name
-            logger.info('Parsed name %s from file %s', name, file)
+            logger.info("Parsed name %s from file %s", name, file)
 
         if actor_names is not None:
-            file_actors = actor_names.split(', ')
+            file_actors = actor_names.split(", ")
 
             actors.extend(file_actors)
             movie_actors[file].extend(file_actors)
 
-            logger.info('Parsed actors (%s) from file %s', actor_names, file)
+            logger.info("Parsed actors (%s) from file %s", actor_names, file)
 
         if series_name is not None:
             series.append(series_name)
             movie_series[file].append(series_name)
 
-            logger.info('Parsed series %s from file %s', series_name, file)
+            logger.info("Parsed series %s from file %s", series_name, file)
 
         if series_number is not None:
             movie_series_number[file] = series_number
 
-            logger.info(
-                'Parsed series number %s from file %s', series_number, file
-            )
+            logger.info("Parsed series number %s from file %s", series_number, file)
 
         if studio_name is not None:
             studios.append(studio_name)
             movie_studios[file].append(studio_name)
 
-            logger.info('Parsed studio %s from file %s', studio_name, file)
+            logger.info("Parsed studio %s from file %s", studio_name, file)
 
     # deduplicate and alphabetize the movie properties
     actors = sorted(set(actors))
@@ -145,36 +139,31 @@ def rebuild_db():
     # create database entries for the movie properties
     # generate an association of names to DB entries
     actor_by_name = {
-        actor.name: actor for actor in [
-            crud.add_actor(db, actor) for actor in actors
-        ]
+        actor.name: actor for actor in [crud.add_actor(db, actor) for actor in actors]
     }
 
-    logger.info('Imported actors into database')
+    logger.info("Imported actors into database")
 
     category_by_name = {
-        category.name: category for category in [
-            crud.add_category(db, category) for category in categories
-        ]
+        category.name: category
+        for category in [crud.add_category(db, category) for category in categories]
     }
 
-    logger.info('Imported categories into database')
+    logger.info("Imported categories into database")
 
     series_by_name = {
-        series.name: series for series in [
-            crud.add_series(db, series) for series in series
-        ]
+        series.name: series
+        for series in [crud.add_series(db, series) for series in series]
     }
 
-    logger.info('Imported series into database')
+    logger.info("Imported series into database")
 
     studio_by_name = {
-        studio.name: studio for studio in [
-            crud.add_studio(db, studio) for studio in studios
-        ]
+        studio.name: studio
+        for studio in [crud.add_studio(db, studio) for studio in studios]
     }
 
-    logger.info('Imported studios into database')
+    logger.info("Imported studios into database")
 
     # add the movies files to the database with their property associations
     for filename in movie_files:
@@ -199,9 +188,7 @@ def rebuild_db():
         # deduplicate actors and categories
         # create a list of DB objects for the movie associations
         movie_actors_set = set(movie_actors[filename])
-        actors_list = [
-            actor_by_name[actor_name] for actor_name in movie_actors_set
-        ]
+        actors_list = [actor_by_name[actor_name] for actor_name in movie_actors_set]
 
         movie_categories_set = set(movie_categories[filename])
         categories_list = [
@@ -221,9 +208,9 @@ def rebuild_db():
             True,
         )
 
-        logger.info('Imported movie %s into database', filename)
+        logger.info("Imported movie %s into database", filename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # invoke me with python -m moviemanager.rebuild
     rebuild_db()

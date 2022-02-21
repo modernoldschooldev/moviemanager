@@ -1,25 +1,24 @@
 import os
 import os.path
 import re
+from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Tuple
-from enum import Enum
 
 from sqlalchemy.orm import Session
 
-from .config import get_db_path
-
 from . import crud, models
+from .config import get_db_path
 from .exceptions import ListFilesException, PathException
 
 
 class PathType(Enum):
-    ACTOR = 'actors'
-    CATEGORY = 'categories'
-    MOVIE = 'movies'
-    IMPORT = 'imports'
-    SERIES = 'series'
-    STUDIO = 'studios'
+    ACTOR = "actors"
+    CATEGORY = "categories"
+    MOVIE = "movies"
+    IMPORT = "imports"
+    SERIES = "series"
+    STUDIO = "studios"
 
 
 def generate_movie_filename(movie: models.Movie) -> str:
@@ -33,33 +32,33 @@ def generate_movie_filename(movie: models.Movie) -> str:
     """
 
     # start with a blank filename
-    filename = ''
+    filename = ""
 
     # save the file extension for later
     _, ext = os.path.splitext(movie.filename)
 
     # add the studio name in [] brackets
     if movie.studio is not None:
-        filename += f'[{movie.studio.name}]'
+        filename += f"[{movie.studio.name}]"
 
     # add the series name and number in {} braces
     if movie.series is not None:
         if len(filename) > 0:
-            filename += ' '
+            filename += " "
 
-        filename += f'{{{movie.series.name}'
+        filename += f"{{{movie.series.name}"
 
         if movie.series_number is not None:
-            filename += f' {movie.series_number}'
+            filename += f" {movie.series_number}"
 
-        filename += '}'
+        filename += "}"
 
     # add the movie name
     if movie.name is not None:
         if len(filename) > 0:
-            filename += ' '
+            filename += " "
 
-        filename += f'{movie.name}'
+        filename += f"{movie.name}"
 
     # add the actors as a comma separated list inside () parentheses
     if len(movie.actors) > 0:
@@ -69,7 +68,7 @@ def generate_movie_filename(movie: models.Movie) -> str:
         # drop the actors if the filename length will exceed 255 characters
         if len(filename) + len(actors) < 250:
             if len(filename) > 0:
-                filename += ' '
+                filename += " "
 
             filename += actors
 
@@ -78,7 +77,7 @@ def generate_movie_filename(movie: models.Movie) -> str:
 
     # if all we end up with is the file extension, we must not have had any
     # movie properties. just use the existing filename in that case.
-    if (filename == ext):
+    if filename == ext:
         filename = movie.filename
 
     return filename
@@ -98,12 +97,12 @@ def generate_sort_name(name: Optional[str]) -> Optional[str]:
         return None
 
     return re.sub(
-        r'^(?:a|an|the) ',  # replace articles at the start of the line
-        '',
+        r"^(?:a|an|the) ",  # replace articles at the start of the line
+        "",
         re.sub(
-            r'[^a-z0-9 ]',  # replace non alphanumerics anywhere in the name
-            '',
-            name.lower(),   # convert to lowercase
+            r"[^a-z0-9 ]",  # replace non alphanumerics anywhere in the name
+            "",
+            name.lower(),  # convert to lowercase
         ),
     )
 
@@ -119,9 +118,9 @@ def get_movie_path(path_type: PathType, full: bool = True) -> str:
         path: The path to the movie files.
     """
 
-    path = get_db_path() if full else '../..'
+    path = get_db_path() if full else "../.."
 
-    return f'{path}/{path_type.value}'
+    return f"{path}/{path_type.value}"
 
 
 def list_files(path: str) -> List[str]:
@@ -140,7 +139,7 @@ def list_files(path: str) -> List[str]:
     try:
         files = sorted(os.listdir(path))
     except:
-        raise ListFilesException(f'Failed to read path {path}')
+        raise ListFilesException(f"Failed to read path {path}")
 
     return files
 
@@ -159,25 +158,21 @@ def migrate_file(filename: str, adding: bool = True) -> None:
     base_current = imports if adding else movies
     base_new = movies if adding else imports
 
-    path_current = f'{base_current}/{filename}'
-    path_new = f'{base_new}/{filename}'
+    path_current = f"{base_current}/{filename}"
+    path_new = f"{base_new}/{filename}"
 
     if os.path.exists(path_new):
-        raise PathException(
-            f'Moving {filename} to {base_new} conflicts with existing'
-        )
+        raise PathException(f"Moving {filename} to {base_new} conflicts with existing")
 
     try:
         os.rename(path_current, path_new)
     except:
-        raise PathException(
-            f'Failed to move {path_current} -> {path_new}'
-        )
+        raise PathException(f"Failed to move {path_current} -> {path_new}")
 
 
-def parse_filename(filename: str) -> Tuple[
-    str, Optional[str], Optional[str], Optional[str], Optional[str]
-]:
+def parse_filename(
+    filename: str,
+) -> Tuple[str, Optional[str], Optional[str], Optional[str], Optional[str]]:
     """Parses a filename for movie properties.
 
     Args:
@@ -196,31 +191,23 @@ def parse_filename(filename: str) -> Tuple[
     # [Studio] {Series Series#} MovieName (Actor1, Actor2, ..., ActorN)
     regex = (
         # Start of line
-        r'^'
-
+        r"^"
         # Optional studio
-        r'(?:\[([A-Za-z0-9 :.,\'-]+)\])?'
-
+        r"(?:\[([A-Za-z0-9 :.,\'-]+)\])?"
         # Optional space
-        r' ?'
-
+        r" ?"
         # Optional series name/number
-        r'(?:{([A-Za-z0-9 :.,\'-]+?)(?: ([0-9]+))?})?'
-
+        r"(?:{([A-Za-z0-9 :.,\'-]+?)(?: ([0-9]+))?})?"
         # Optional space
-        r' ?'
-
+        r" ?"
         # Optional movie Name
-        r'([A-Za-z0-9 :.,\'-]+?)?'
-
+        r"([A-Za-z0-9 :.,\'-]+?)?"
         # Optional space
-        r' ?'
-
+        r" ?"
         # Optional actor list
-        r'(?:\(([A-Za-z0-9 .,\'-]+)\))?'
-
+        r"(?:\(([A-Za-z0-9 .,\'-]+)\))?"
         # End of line
-        r'$'
+        r"$"
     )
 
     studio_name = None
@@ -231,24 +218,14 @@ def parse_filename(filename: str) -> Tuple[
     matches = re.search(regex, name)
 
     if matches is not None:
-        (
-            studio_name,
-            series_name,
-            series_number,
-            name,
-            actor_names
-        ) = matches.groups()
+        (studio_name, series_name, series_number, name, actor_names) = matches.groups()
 
     return (name, studio_name, series_name, series_number, actor_names)
 
 
-def parse_file_info(db: Session, filename: str) -> Tuple[
-    str,
-    Optional[int],
-    Optional[int],
-    Optional[int],
-    List[models.Actor],
-]:
+def parse_file_info(
+    db: Session, filename: str
+) -> Tuple[str, Optional[int], Optional[int], Optional[int], List[models.Actor],]:
     """Parses file information from a filename.
 
     Args:
@@ -268,13 +245,9 @@ def parse_file_info(db: Session, filename: str) -> Tuple[
     series_number = None
     actors = None
 
-    (
-        name,
-        studio_name,
-        series_name,
-        series_number,
-        actor_names
-    ) = parse_filename(filename)
+    (name, studio_name, series_name, series_number, actor_names) = parse_filename(
+        filename
+    )
 
     if studio_name is not None:
         studio = crud.get_studio_by_name(db, studio_name)
@@ -290,10 +263,10 @@ def parse_file_info(db: Session, filename: str) -> Tuple[
 
     if actor_names is not None:
         actors = [
-            actor for actor in
-            (
+            actor
+            for actor in (
                 crud.get_actor_by_name(db, actor_name)
-                for actor_name in actor_names.split(', ')
+                for actor_name in actor_names.split(", ")
             )
             if actor is not None
         ]
@@ -347,14 +320,14 @@ def rename_movie_file(
     filename_new = generate_movie_filename(movie)
 
     path_base = get_movie_path(PathType.MOVIE)
-    path_current = f'{path_base}/{filename_current}'
-    path_new = f'{path_base}/{filename_new}'
+    path_current = f"{path_base}/{filename_current}"
+    path_new = f"{path_base}/{filename_new}"
 
     if path_current != path_new:
         if os.path.exists(path_new):
             raise PathException(
-                f'Renaming {movie.filename} -> {filename_new} '
-                f'conflicts with existing'
+                f"Renaming {movie.filename} -> {filename_new} "
+                f"conflicts with existing"
             )
 
         os.rename(path_current, path_new)
@@ -365,7 +338,7 @@ def rename_movie_file(
             update_actor_link(
                 filename_current,
                 actor.name if actor_current is None else actor_current,
-                False
+                False,
             )
             update_actor_link(filename_new, actor.name, True)
 
@@ -374,7 +347,7 @@ def rename_movie_file(
             update_category_link(
                 filename_current,
                 category.name if category_current is None else category_current,
-                False
+                False,
             )
             update_category_link(filename_new, category.name, True)
 
@@ -382,7 +355,7 @@ def rename_movie_file(
             update_series_link(
                 filename_current,
                 movie.series.name if series_current is None else series_current,
-                False
+                False,
             )
             update_series_link(filename_new, movie.series.name, True)
 
@@ -390,17 +363,12 @@ def rename_movie_file(
             update_studio_link(
                 filename_current,
                 movie.studio.name if studio_current is None else studio_current,
-                False
+                False,
             )
             update_studio_link(filename_new, movie.studio.name, True)
 
 
-def update_link(
-    filename: str,
-    path_link_base: str,
-    name: str,
-    selected: bool
-) -> None:
+def update_link(filename: str, path_link_base: str, name: str, selected: bool) -> None:
     """Updates a property link to a movie file.
 
     Args:
@@ -414,10 +382,10 @@ def update_link(
     """
 
     path_movies = get_movie_path(PathType.MOVIE, False)
-    path_file = f'{path_movies}/{filename}'
+    path_file = f"{path_movies}/{filename}"
 
-    path_base = f'{path_link_base}/{name}'
-    path_link = f'{path_base}/{filename}'
+    path_base = f"{path_link_base}/{name}"
+    path_link = f"{path_base}/{filename}"
 
     if selected:
         # create the link directory if it doesn't already exist
@@ -426,27 +394,21 @@ def update_link(
                 path = Path(path_base)
                 path.mkdir(parents=True, exist_ok=True)
             except:
-                raise PathException(
-                    f'Link directory {path_base} could not be created'
-                )
+                raise PathException(f"Link directory {path_base} could not be created")
 
         # add the symlink to the link directory
         if not os.path.lexists(path_link):
             try:
                 os.symlink(path_file, path_link)
             except:
-                raise PathException(
-                    f'Failed to create link {path_file} -> {path_link}'
-                )
+                raise PathException(f"Failed to create link {path_file} -> {path_link}")
     else:
         # remove the symlink if it exists
         if os.path.lexists(path_link):
             try:
                 os.remove(path_link)
             except:
-                raise PathException(
-                    f'Failed to delete link {path_file} -> {path_link}'
-                )
+                raise PathException(f"Failed to delete link {path_file} -> {path_link}")
 
             try:
                 os.rmdir(path_base)

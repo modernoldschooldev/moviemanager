@@ -1,13 +1,12 @@
-FROM python:3.8-slim
+FROM python:3.8-slim-bullseye
 
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY db/logging.yaml ./db/
-COPY moviemanager ./moviemanager/
+COPY moviemanager ./moviemanager
 
 EXPOSE 8000
 
-CMD [ "uvicorn", "moviemanager.main:app", "--host", "0.0.0.0", "--log-config", "db/logging.yaml" ]
+CMD [ "uvicorn", "moviemanager.main:app", "--host", "0.0.0.0", "--log-config", "/var/db/moviemanager/logging.yaml" ]

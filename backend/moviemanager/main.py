@@ -620,6 +620,10 @@ def movies_import(db: Session = Depends(get_db)):
     movies = []
 
     for file in files:
+        # skip the .keep files
+        if file == ".keep":
+            continue
+
         (name, studio_id, series_id, series_number, actors) = util.parse_file_info(
             db, file
         )

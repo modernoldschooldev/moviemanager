@@ -1,8 +1,8 @@
 import sys
 from typing import Dict, List
 
-from . import config, crud, models, util
-from .database import SessionLocal, engine
+from . import config, crud, util
+from .database import get_db_session, init_db
 from .exceptions import ListFilesException
 
 
@@ -14,10 +14,8 @@ def rebuild_db():
     logger = config.get_logger()
 
     # create the database tables and get a connection
-    models.Base.metadata.create_all(bind=engine)
-    logger.info("Created sqlite table schemas")
-
-    db = SessionLocal()
+    init_db()
+    db = get_db_session()
 
     # list the movie files
     try:

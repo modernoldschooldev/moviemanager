@@ -1,5 +1,5 @@
 from . import config, crud, models, util
-from .database import SessionLocal
+from .database import get_db_session, init_db
 
 
 def relink_property_files():
@@ -9,7 +9,10 @@ def relink_property_files():
     config.setup_logging()
     logger = config.get_logger()
 
-    db = SessionLocal()
+    # setup database connection
+    init_db()
+    db = get_db_session()
+
     movies = crud.get_all_movies(db)
 
     for movie in movies:

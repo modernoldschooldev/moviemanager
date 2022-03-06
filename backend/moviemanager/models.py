@@ -1,14 +1,15 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from .database import Base
+TableBase = declarative_base()
 
 ################################################################################
 # association tables
 
 movie_actors = Table(
     "movie_actors",
-    Base.metadata,
+    TableBase.metadata,
     Column(
         "movie_id",
         ForeignKey("movies.id"),
@@ -23,7 +24,7 @@ movie_actors = Table(
 
 movie_categories = Table(
     "movie_categories",
-    Base.metadata,
+    TableBase.metadata,
     Column("movie_id", ForeignKey("movies.id"), primary_key=True),
     Column(
         "category_id",
@@ -36,7 +37,7 @@ movie_categories = Table(
 # table models
 
 
-class Actor(Base):
+class Actor(TableBase):
     # Thanks to The Aelfinn for passive_deletes='all'
     # https://stackoverflow.com/a/42982117/1730980
 
@@ -54,7 +55,7 @@ class Actor(Base):
     )
 
 
-class Category(Base):
+class Category(TableBase):
     # Thanks to The Aelfinn for passive_deletes='all'
     # https://stackoverflow.com/a/42982117/1730980
 
@@ -72,7 +73,7 @@ class Category(Base):
     )
 
 
-class Movie(Base):
+class Movie(TableBase):
     __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True)
@@ -126,7 +127,7 @@ class Movie(Base):
     )
 
 
-class Series(Base):
+class Series(TableBase):
     # Thanks to The Aelfinn for passive_deletes='all'
     # https://stackoverflow.com/a/42982117/1730980
 
@@ -144,7 +145,7 @@ class Series(Base):
     )
 
 
-class Studio(Base):
+class Studio(TableBase):
     # Thanks to The Aelfinn for passive_deletes='all'
     # https://stackoverflow.com/a/42982117/1730980
 

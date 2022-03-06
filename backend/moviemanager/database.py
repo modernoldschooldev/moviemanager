@@ -1,41 +1,47 @@
 from sqlalchemy import create_engine, event
-from sqlalchemy.engine.base import Engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session, sessionmaker
 
+from . import models
 from .config import get_sqlite_path
 
+__factory = None
 
-def _fk_pragma_on_connect(e: Engine, _):
+
+def _fk_pragma_on_connect(conn: Connection, _):
     # Thanks to conny for the SQLAlchemy foreign key pragma solution
     # https://stackoverflow.com/a/7831210/1730980
 
-    e.execute("pragma foreign_keys=ON")
+    conn.execute("pragma foreign_keys=ON")
 
 
-def get_db() -> Session:
+def get_db_session() -> Session:
     """Returns a new database session."""
 
-    db = SessionLocal()
+    if __factory is None:
+        raise Exception("Must call init_db first!")
 
-    try:
+    with __factory() as db:
         yield db
-    finally:
-        db.close()
 
 
-# create the sqlite engine
-# set check_same_thread to False or sqlite will have issues if uvicorn
-# changes threads while accessing the database
-engine = create_engine(
-    f"sqlite:///{get_sqlite_path()}", connect_args={"check_same_thread": False}
-)
+def init_db() -> None:
+    global __factory
 
-# enable foreign key integry checks on sqlite
-event.listen(engine, "connect", _fk_pragma_on_connect)
+    # create the sqlite engine
+    # set check_same_thread to False or sqlite will have issues if uvicorn
+    # changes threads while accessing the database
+    engine = create_engine(
+        f"sqlite:///{get_sqlite_path()}",
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
 
-# this creates our database sessions
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    # enable foreign key integry checks on sqlite
+    event.listen(engine, "connect", _fk_pragma_on_connect)
 
-# this is the object that will define our database schema
-Base = declarative_base()
+    # this creates our database sessions
+    __factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    # create sqlite database table schemas
+    models.TableBase.metadata.create_all(bind=engine)

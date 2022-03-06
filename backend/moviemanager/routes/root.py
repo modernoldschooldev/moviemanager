@@ -1,13 +1,10 @@
 from fastapi import APIRouter
-
-from ..schemas import MessageSchema
+from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=MessageSchema,
-)
-def hello():
-    return {"message": "Hello from FastAPI"}
+@router.get("/")
+def root():
+    # redirect / to docs
+    return RedirectResponse("/docs")

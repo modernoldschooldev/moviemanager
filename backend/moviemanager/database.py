@@ -13,6 +13,17 @@ def _fk_pragma_on_connect(e: Engine, _):
     e.execute("pragma foreign_keys=ON")
 
 
+def get_db() -> Session:
+    """Returns a new database session."""
+
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # create the sqlite engine
 # set check_same_thread to False or sqlite will have issues if uvicorn
 # changes threads while accessing the database
@@ -28,14 +39,3 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # this is the object that will define our database schema
 Base = declarative_base()
-
-
-def get_db() -> Session:
-    """Returns a new database session."""
-
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()

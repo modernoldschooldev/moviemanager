@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "moviemanager"
+version = "2.2.2"
+description = "Movie Manager Demo Application"
+authors = ["John Ratliff <john@technoplaza.net>"]
+license = "GPL-3"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+fastapi = "^0.75.0"
+uvicorn = "^0.17.6"
+SQLAlchemy = "^1.4.32"
+PyYAML = "^6.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+pytest = "^7.0.1"
+requests = "^2.27.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

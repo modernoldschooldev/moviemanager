@@ -55,7 +55,7 @@ def setup_logging() -> None:
     try:
         with open(path, "r") as f:
             data = yaml.safe_load(f)
-    except:
+    except OSError:
         logger = getLogger()
         logger.critical("Failed to read the logging config file %s", path)
 

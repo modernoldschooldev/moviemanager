@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
@@ -5,8 +7,19 @@ from sqlalchemy.orm import Session
 from .. import crud, util
 from ..config import get_logger
 from ..database import get_db_session
-from ..exceptions import *
-from ..schemas import *
+from ..exceptions import (
+    DuplicateEntryException,
+    InvalidIDException,
+    ListFilesException,
+    PathException,
+)
+from ..schemas import (
+    HTTPExceptionSchema,
+    MessageSchema,
+    MovieFileSchema,
+    MovieSchema,
+    MovieUpdateSchema,
+)
 
 logger = get_logger()
 router = APIRouter(prefix="/movies")

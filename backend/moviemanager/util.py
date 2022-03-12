@@ -138,7 +138,7 @@ def list_files(path: str) -> List[str]:
 
     try:
         files = sorted(os.listdir(path))
-    except:
+    except OSError:
         raise ListFilesException(f"Failed to read path {path}")
 
     return files
@@ -166,7 +166,7 @@ def migrate_file(filename: str, adding: bool = True) -> None:
 
     try:
         os.rename(path_current, path_new)
-    except:
+    except OSError:
         raise PathException(f"Failed to move {path_current} -> {path_new}")
 
 
@@ -225,7 +225,7 @@ def parse_filename(
 
 def parse_file_info(
     db: Session, filename: str
-) -> Tuple[str, Optional[int], Optional[int], Optional[int], List[models.Actor],]:
+) -> Tuple[str, Optional[int], Optional[int], Optional[int], List[models.Actor]]:
     """Parses file information from a filename.
 
     Args:
@@ -393,26 +393,26 @@ def update_link(filename: str, path_link_base: str, name: str, selected: bool) -
             try:
                 path = Path(path_base)
                 path.mkdir(parents=True, exist_ok=True)
-            except:
+            except OSError:
                 raise PathException(f"Link directory {path_base} could not be created")
 
         # add the symlink to the link directory
         if not os.path.lexists(path_link):
             try:
                 os.symlink(path_file, path_link)
-            except:
+            except OSError:
                 raise PathException(f"Failed to create link {path_file} -> {path_link}")
     else:
         # remove the symlink if it exists
         if os.path.lexists(path_link):
             try:
                 os.remove(path_link)
-            except:
+            except OSError:
                 raise PathException(f"Failed to delete link {path_file} -> {path_link}")
 
             try:
                 os.rmdir(path_base)
-            except:
+            except OSError:
                 pass
 
 

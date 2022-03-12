@@ -4,7 +4,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, util
-from .exceptions import *
+from .exceptions import (
+    DuplicateEntryException,
+    IntegrityConstraintException,
+    InvalidIDException,
+)
 from .schemas import MovieUpdateSchema
 
 

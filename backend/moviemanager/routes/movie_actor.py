@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from .. import crud
 from ..config import get_logger
 from ..database import get_db_session
-from ..exceptions import *
-from ..schemas import *
+from ..exceptions import DuplicateEntryException, InvalidIDException, PathException
+from ..schemas import HTTPExceptionSchema, MovieSchema
 
 logger = get_logger()
 router = APIRouter(prefix="/movie_actor")

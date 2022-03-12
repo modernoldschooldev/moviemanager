@@ -11,6 +11,10 @@ services:
   backend:
     build:
       context: ./backend
+    command: >-
+      uvicorn moviemanager.main:app
+      --host 0.0.0.0
+      --log-config /var/db/moviemanager/logging.yaml
     ports:
       - 8000:8000
     environment:

@@ -25,7 +25,7 @@ Backend API for the Modern Old School Developer's Movie Manager Application
 app = FastAPI(
     title="Movie Manager Backend",
     description=description,
-    version="1.0.0",
+    version="2.2.2",
     license_info={
         "name": "GPLv3",
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",

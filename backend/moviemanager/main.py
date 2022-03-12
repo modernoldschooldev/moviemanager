@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import routes
+from . import __version__, routes
 from .config import setup_logging
 from .database import init_db
 
@@ -16,7 +16,7 @@ Backend API for the Modern Old School Developer's Movie Manager Application
 app = FastAPI(
     title="Movie Manager Backend",
     description=description,
-    version="2.2.2",
+    version=__version__,
     license_info={
         "name": "GPLv3",
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",

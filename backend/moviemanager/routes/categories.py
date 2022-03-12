@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/categories")
 
 
 @router.post(
-    "/categories",
+    "",
     response_model=CategorySchema,
     response_description="The created category",
     responses={
@@ -43,7 +43,7 @@ def categories_add(
 
 
 @router.delete(
-    "/categories/{id}",
+    "/{id}",
     response_model=MessageSchema,
     responses={
         404: {
@@ -80,7 +80,7 @@ def categories_delete(
 
 
 @router.get(
-    "/categories",
+    "",
     response_model=List[CategorySchema],
     response_description="A list of categories",
     summary="Get all categories",
@@ -91,7 +91,7 @@ def categories_get_all(db: Session = Depends(get_db_session)):
 
 
 @router.put(
-    "/categories/{id}",
+    "/{id}",
     response_model=CategorySchema,
     response_description="The updated category",
     responses={

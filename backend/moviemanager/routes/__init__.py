@@ -1,8 +1,8 @@
 from . import (
     actors,
     categories,
-    movie_actors,
-    movie_categories,
+    movie_actor,
+    movie_category,
     movies,
     root,
     series,

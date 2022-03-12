@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/actors")
 
 
 @router.post(
-    "/actors",
+    "",
     response_model=ActorSchema,
     response_description="The created actor",
     responses={
@@ -43,7 +43,7 @@ def actors_add(
 
 
 @router.delete(
-    "/actors/{id}",
+    "/{id}",
     response_model=MessageSchema,
     responses={
         404: {
@@ -80,7 +80,7 @@ def actors_delete(
 
 
 @router.get(
-    "/actors",
+    "",
     response_model=List[ActorSchema],
     response_description="A list of actors",
     summary="Get all actors",
@@ -91,7 +91,7 @@ def actors_get_all(db: Session = Depends(get_db_session)):
 
 
 @router.put(
-    "/actors/{id}",
+    "/{id}",
     response_model=ActorSchema,
     response_description="The updated actor",
     responses={

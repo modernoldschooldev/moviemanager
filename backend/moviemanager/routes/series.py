@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/series")
 
 
 @router.post(
-    "/series",
+    "",
     response_model=SeriesSchema,
     response_description="The created series",
     responses={
@@ -43,7 +43,7 @@ def series_add(
 
 
 @router.delete(
-    "/series/{id}",
+    "/{id}",
     response_model=MessageSchema,
     responses={
         404: {
@@ -80,7 +80,7 @@ def series_delete(
 
 
 @router.get(
-    "/series",
+    path="",
     response_model=List[SeriesSchema],
     response_description="A list of series",
     summary="Get all series",
@@ -91,7 +91,7 @@ def series_get_all(db: Session = Depends(get_db_session)):
 
 
 @router.put(
-    "/series/{id}",
+    "/{id}",
     response_model=SeriesSchema,
     response_description="The updated series",
     responses={

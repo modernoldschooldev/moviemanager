@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/movie_category")
 
 
 @router.post(
-    "/movie_category",
+    "",
     response_model=MovieSchema,
     response_description="The updated movie information",
     responses={
@@ -60,7 +60,7 @@ def movie_category_add(
 
 
 @router.delete(
-    "/movie_category",
+    "",
     response_model=MovieSchema,
     response_description="The updated movie information",
     responses={

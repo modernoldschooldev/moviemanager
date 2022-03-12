@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/movies")
 
 
 @router.delete(
-    "/movies/{id}",
+    "/{id}",
     response_model=MessageSchema,
     responses={
         404: {
@@ -50,7 +50,7 @@ def movies_delete(
 
 
 @router.get(
-    "/movies",
+    "",
     response_model=List[MovieFileSchema],
     response_description="A list of movie IDs and filenames",
     summary="Get all movies",
@@ -61,7 +61,7 @@ def movies_get_all(db: Session = Depends(get_db_session)):
 
 
 @router.get(
-    "/movies/{id}",
+    "/{id}",
     response_model=MovieSchema,
     response_description="The requested movie information",
     responses={
@@ -86,7 +86,7 @@ def movies_get_one(id: int, db: Session = Depends(get_db_session)):
 
 
 @router.post(
-    "/movies",
+    "",
     response_model=List[MovieFileSchema],
     response_description="A list of the imported movie filenames and IDs",
     responses={
@@ -149,7 +149,7 @@ def movies_import(db: Session = Depends(get_db_session)):
 
 
 @router.put(
-    "/movies/{id}",
+    "/{id}",
     response_model=MovieSchema,
     response_description="The updated movie information",
     responses={

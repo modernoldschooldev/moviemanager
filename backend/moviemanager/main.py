@@ -1,18 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import routes
 from .config import setup_logging
 from .database import init_db
-from .routes import (
-    actors,
-    categories,
-    movie_actors,
-    movie_categories,
-    movies,
-    root,
-    series,
-    studios,
-)
 
 # create FastAPI application
 description = """# Movie Manager Backend
@@ -44,14 +35,14 @@ app.add_middleware(
 ################################################################################
 # API Routers
 
-app.include_router(root.router)
-app.include_router(actors.router)
-app.include_router(categories.router)
-app.include_router(movie_actors.router)
-app.include_router(movie_categories.router)
-app.include_router(movies.router)
-app.include_router(series.router)
-app.include_router(studios.router)
+app.include_router(routes.root.router)
+app.include_router(routes.actors.router)
+app.include_router(routes.categories.router)
+app.include_router(routes.movie_actor.router)
+app.include_router(routes.movie_category.router)
+app.include_router(routes.movies.router)
+app.include_router(routes.series.router)
+app.include_router(routes.studios.router)
 
 ################################################################################
 # setup logging and database connection

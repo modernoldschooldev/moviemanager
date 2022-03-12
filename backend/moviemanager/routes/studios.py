@@ -9,11 +9,11 @@ from ..exceptions import *
 from ..schemas import *
 
 logger = get_logger()
-router = APIRouter()
+router = APIRouter(prefix="/studios")
 
 
 @router.post(
-    "/studios",
+    "",
     response_model=StudioSchema,
     response_description="The created studio",
     responses={
@@ -43,7 +43,7 @@ def studios_add(
 
 
 @router.delete(
-    "/studios/{id}",
+    "/{id}",
     responses={
         404: {
             "model": HTTPExceptionSchema,
@@ -79,7 +79,7 @@ def studios_delete(
 
 
 @router.get(
-    "/studios",
+    "",
     response_model=List[StudioSchema],
     response_description="A list of studios",
     summary="Get all studios",
@@ -90,7 +90,7 @@ def studios_get_all(db: Session = Depends(get_db_session)):
 
 
 @router.put(
-    "/studios/{id}",
+    "/{id}",
     response_model=StudioSchema,
     response_description="The updated studio",
     responses={

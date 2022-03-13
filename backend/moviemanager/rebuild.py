@@ -15,7 +15,7 @@ def rebuild_db():
 
     # create the database tables and get a connection
     init_db()
-    db = get_db_session()
+    db = next(get_db_session())
 
     # list the movie files
     try:

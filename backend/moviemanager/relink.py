@@ -11,7 +11,7 @@ def relink_property_files():
 
     # setup database connection
     init_db()
-    db = get_db_session()
+    db = next(get_db_session())
 
     movies = crud.get_all_movies(db)
 

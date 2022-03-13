@@ -1,5 +1,5 @@
 # movie manager python package
-__version__ = "1.0.0"
+__version__ = "2.2.2"
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

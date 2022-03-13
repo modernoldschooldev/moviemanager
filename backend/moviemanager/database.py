@@ -32,7 +32,7 @@ def init_db() -> None:
     # set check_same_thread to False or sqlite will have issues if uvicorn
     # changes threads while accessing the database
     engine = create_engine(
-        f"sqlite:///{get_sqlite_path()}",
+        get_sqlite_path(),
         echo=False,
         connect_args={"check_same_thread": False},
     )

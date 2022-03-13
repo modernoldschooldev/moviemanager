@@ -39,12 +39,9 @@ def get_logger() -> Logger:
 def get_sqlite_path() -> str:
     """Returns path to the sqlite DB file."""
 
-    path_override = os.getenv("MM_SQLITE_PATH")
+    path = os.getenv("MM_SQLITE_PATH", f"{get_db_path()}/sqlite.db")
 
-    if path_override is not None:
-        return path_override
-
-    return f"{get_db_path()}/sqlite.db"
+    return f"sqlite:///{path}"
 
 
 def setup_logging() -> None:

@@ -10,19 +10,28 @@ from ..exceptions import DuplicateEntryException
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_database(tmp_path_factory, module_mocker: MockerFixture, request):
-    path: Path = tmp_path_factory.mktemp("database") / "db.sqlite3"
+def setup_database(module_mocker: MockerFixture, request):
+    # shared memory database connection URI
+    sqlite3_url = "file::memory:?cache=shared"
+
+    # patch return value of get_sqlite_path() function call in init_db
     module_mocker.patch(
-        "moviemanager.database.get_sqlite_path", return_value=path.as_posix()
+        "moviemanager.database.get_sqlite_path",
+        return_value=f"sqlite:///{sqlite3_url}&uri=true",
     )
 
-    connection = sqlite3.connect(path.as_posix())
+    # setup sqlalchemy session factory
+    init_db()
+
+    # seed database with initial values
+    connection = sqlite3.connect(sqlite3_url)
     filename = Path(request.fspath).parent / "data" / "init.sql"
 
     with open(filename, "r") as f:
         connection.executescript(f.read())
 
-    init_db()
+    # yield the connection to keep the in-memory database until testing is over
+    yield connection
 
 
 @pytest.fixture()
